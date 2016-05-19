@@ -1,9 +1,9 @@
 import React, { PropTypes } from 'react'
 import {formatMoney, formatNumber} from 'accounting';
 
-import {CellsTitle, Progress, MediaBoxDescription, MediaBox} from 'react-weui';
+import {CellsTitle, Progress, MediaBox, MediaBoxDescription} from 'react-weui';
 
-class StatByProject extends React.Component {
+class StatByYear extends React.Component {
   static propTypes = {
     stat: React.PropTypes.array
   };
@@ -14,20 +14,20 @@ class StatByProject extends React.Component {
     let {stat, totalAmount, totalCount, lastUpdated} = this.props;
     let year = (new Date(lastUpdated)).getYear() + 1900;
     let month = (new Date(lastUpdated)).getMonth();
-    console.log(stat)
     return (
       <div className="progress">
         <div className="hd">
-          <h1 className="page_title">按项目统计</h1>
+          <h1 className="page_title">年度统计</h1>
         </div>
         <div className="bd spacing">
+
           {
             stat.map((item, i) => {
               if(item.value) return (
                 <div key={i}>
                   <CellsTitle>
                     <a href="#">
-                      {item._id}
+                      {item._id}年
                     </a>
                   </CellsTitle>
                   <CellsTitle>
@@ -51,4 +51,4 @@ class StatByProject extends React.Component {
   }
 }
 
-export default StatByProject;
+export default StatByYear;
