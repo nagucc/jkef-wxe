@@ -3,7 +3,6 @@ FROM node:5
 ADD *.json /rsk/
 ADD src /rsk/src
 ADD tools /rsk/tools
-ADD lib /rsk/lib
 WORKDIR /rsk
 
 RUN npm install
