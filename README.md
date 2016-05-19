@@ -4,8 +4,28 @@
 ##使用方法
 
 ### Docker
+使用docker-compose：
+```yaml
+web:
+  image: nagucc/jkef-wxe:1.0
+  restart: always
+  links:
+  - redis:wx_redis
+  ports:
+  - 3000
+  environment:
+  - REDIS_HOST=wx_redis
+  - MONGO_URL=your_mongo_url
+redis:
+  image: redis:2.8
+  restart: always
+
+```
+
 
 ### 环境变量
 需要通过环境变量设置以下参数：
 
 - `MONGO_URL` 必须的，MongoDB数据库的连接字符串
+- `REDIS_HOST` 必须的，系统使用的Redis数据库的地址
+- `REDIS_PORT` 默认为 `6379`，系统使用的Redis数据库的端口
