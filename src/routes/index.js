@@ -19,6 +19,7 @@ import content from './content';
 import error from './error';
 
 import statByProject from './stat-by-project';
+import statByYear from './stat-by-year';
 
 export default {
 
@@ -26,6 +27,7 @@ export default {
 
   children: [
     statByProject,
+    statByYear,
     home,
     contact,
     login,

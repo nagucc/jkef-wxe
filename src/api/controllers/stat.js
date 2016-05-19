@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import {getStatByProject} from '../models/data-access';
+import {getStatByProject, getStatByYear} from '../models/data-access';
 
 const router = new Router();
 
@@ -10,5 +10,13 @@ router.get('/by-project', async(req, res) => {
     res.send({ret: -1, msg: e});
   }
 });
+
+router.get('/by-year', async (req, res) => {
+  try{
+    res.send({ret: 0, data: await getStatByYear()});
+  } catch(e) {
+    res.send({ret: -1, msg: e});
+  }
+})
 
 export default router;
