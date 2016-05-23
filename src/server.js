@@ -25,7 +25,8 @@ import routes from './routes';
 import assets from './assets';
 import { port, auth, analytics } from './config';
 
-import statModel from './api/controllers/stat';
+import statCtrl from './api/controllers/stat';
+import acceptorsCtrl from './api/controllers/acceptors';
 
 const app = express();
 
@@ -47,7 +48,8 @@ app.use(bodyParser.json());
 /*
 注册API
  */
-app.use('/api/stat', statModel);
+app.use('/api/stat', statCtrl);
+app.use('/api/acceptors', acceptorsCtrl);
 require('./api/controllers/worker');
 
 //
