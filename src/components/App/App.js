@@ -10,15 +10,17 @@
 import React, { Component, PropTypes } from 'react';
 import emptyFunction from 'fbjs/lib/emptyFunction';
 import s from './App.scss';
+import { Provider } from 'react-redux';
 
 class App extends Component {
 
   static propTypes = {
     context: PropTypes.shape({
+      store: PropTypes.object.isRequired,
       insertCss: PropTypes.func,
       setTitle: PropTypes.func,
       setMeta: PropTypes.func,
-    }),
+    }).isRequired,
     children: PropTypes.element.isRequired,
     error: PropTypes.object,
   };
@@ -49,9 +51,11 @@ class App extends Component {
 
   render() {
     return !this.props.error ? (
-      <div className="container">
-        {this.props.children}
-      </div>
+      <Provider store={store}>
+        <div className="container">
+          {this.props.children}
+        </div>
+      </Provider>
     ) : this.props.children;
   }
 
