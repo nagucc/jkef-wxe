@@ -22,3 +22,16 @@ export const findAcceptorsByProject = async (project, pageIndex = 0) => {
   if(result.ret === 0) return result.data;
   else throw new Error(`find acceptors by project failed:${JSON.stringify(result.msg)}`);
 }
+
+export const findAcceptors = async ({ project, year, text, pageIndex, pageSize } = {
+  pageIndex: 0,
+  pageSize: 20,
+}) => {
+  let query = `project=${project ? encodeURIComponent(project) : ''}`;
+  query += `&year=${year || ''}`;
+  query += `&text=${text ? encodeURIComponent(text) : ''}`;
+  query += `&pageSize=${pageSize || 20}`;
+  const result = await getJson(`/api/acceptors/list/${pageIndex}?${query}`);
+  if (result.ret === 0) return result.data;
+  else throw new Error(`find acceptors failed:${JSON.stringify(result.msg)}`);
+};

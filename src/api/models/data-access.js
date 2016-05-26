@@ -98,20 +98,20 @@ export const findAcceptors = ({text, year, project, projections, skip, limit} = 
   skip: 0,
   limit: 20
 }) => {
-  let condition = { isDeleted: {$ne: true} };
-  if(text) {
+  let condition = { isDeleted: { $ne: true } };
+  if (text) {
     var reg = new RegExp(text);
     condition = Object.assign(condition, {
       '$or': [{ name: reg }, {phone: reg}]
     })
   }
-  if(project) {
+  if (project) {
     condition = Object.assign(condition, {
       'records.project': project
     });
   }
 
-  if(year) {
+  if (year) {
     year = parseInt(year);
     condition = Object.assign(condition, {
       'records': {
@@ -127,14 +127,15 @@ export const findAcceptors = ({text, year, project, projections, skip, limit} = 
   return new Promise((resolve, reject) => {
     useAcceptors(async col => {
       try {
-        let result = await col.find(condition, projections)
+        const totalCount = await col.count(condition);
+        const data = await col.find(condition, projections)
+          .sort({ name: 1 })
           .skip(skip)
-          .limit(limit)
-          .sort({name: 1}).toArray();
-        resolve(result);
+          .limit(limit).toArray();
+        resolve({ totalCount, data });
       } catch (e) {
         reject(e);
       }
     });
   });
-}
+};
