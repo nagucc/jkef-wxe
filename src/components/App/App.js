@@ -50,13 +50,18 @@ class App extends Component {
   }
 
   render() {
-    return !this.props.error ? (
+    if (this.props.error) {
+      return this.props.children;
+    }
+
+    const store = this.props.context.store;
+    return (
       <Provider store={store}>
         <div className="container">
           {this.props.children}
         </div>
       </Provider>
-    ) : this.props.children;
+    );
   }
 
 }
