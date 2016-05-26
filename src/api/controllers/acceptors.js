@@ -7,7 +7,6 @@ router.get('/list/:pageIndex', async(req, res) => {
   let {pageIndex} = req.params;
   let pageSize = 20;
   let {project} = req.query;
-  console.log('project=', project)
   try{
     let data = await findAcceptors({
       project,

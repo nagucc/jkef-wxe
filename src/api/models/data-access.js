@@ -124,13 +124,13 @@ export const findAcceptors = ({text, year, project, projections, skip, limit} = 
       }
     });
   }
-  console.log('###', condition)
   return new Promise((resolve, reject) => {
     useAcceptors(async col => {
       try {
         let result = await col.find(condition, projections)
           .skip(skip)
-          .limit(limit).toArray();
+          .limit(limit)
+          .sort({name: 1}).toArray();
         resolve(result);
       } catch (e) {
         reject(e);
