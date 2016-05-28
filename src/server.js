@@ -29,6 +29,7 @@ import { setRuntimeVariable } from './actions/runtime';
 
 import statCtrl from './api/controllers/stat';
 import acceptorsCtrl from './api/controllers/acceptors';
+import wxeAuthCtrl from './api/controllers/wxe-auth';
 
 const app = express();
 
@@ -43,7 +44,7 @@ global.navigator.userAgent = global.navigator.userAgent || 'all';
 // Register Node.js middleware
 // -----------------------------------------------------------------------------
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(cookieParser());
+app.use(cookieParser('jkef.nagu.cc cookie key'));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
@@ -53,6 +54,7 @@ app.use(bodyParser.json());
 app.use('/api/stat', statCtrl);
 app.use('/api/acceptors', acceptorsCtrl);
 require('./api/controllers/worker');
+app.use('/api/wxe-auth', wxeAuthCtrl);
 
 //
 // Authentication

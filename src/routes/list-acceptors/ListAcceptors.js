@@ -9,11 +9,27 @@ class ListAcceptors extends React.Component {
   static propTypes = {
     data: React.PropTypes.array,
     totalCount: PropTypes.number,
+    error: PropTypes.object,
     dispatch: PropTypes.func,
     fetchAcceptors: PropTypes.func.isRequired,
     cleanAcceptors: PropTypes.func.isRequired,
+    getMe: PropTypes.func,
     query: PropTypes.object,
   };
+  async componentDidMount() {
+    const me = await this.props.getMe();
+    // 判断 ret 的值： 0, -1, 999
+    if (me.ret === 0) {
+    } else if (me.ret === -1) {
+      window.location = `/api/wxe-auth?redirect_uri=${window.location.href}`;
+    } else if (me.ret === 999) {
+      alert(`服务器异常：${me.msg}`);
+    }
+  }
+  componentWillReceiveProps(nextProps) {
+    const { error } = nextProps;
+    if ( error && error.ret !== 0) alert(`错误：${error.msg}`);
+  }
   nextPage() {
     const { dispatch, fetchAcceptors, query } = this.props;
     query.pageIndex++;

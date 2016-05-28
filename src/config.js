@@ -11,7 +11,7 @@
 /* jscs:disable maximumLineLength */
 
 export const port = process.env.PORT || 3000;
-export const host = process.env.WEBSITE_HOSTNAME || `localhost:${port}`;
+export const host = process.env.WEBSITE_HOSTNAME || `wx.nagu.cc:${port}`;
 
 export const databaseUrl = process.env.DATABASE_URL || 'sqlite:database.sqlite';
 
@@ -49,3 +49,16 @@ export const auth = {
 
 // Mongodb 数据库服务器Url
 export const mongoUrl = process.env.MONGO_URL || 'mongodb://localhost/jkef';
+
+export const redisConfig = {
+  host: process.env.HOST_REDIS || 'localhost',
+  port: process.env.PORT_REDIS || 6379,
+};
+
+export const wxentConfig = {
+  corpId: process.env.WXE_CORPID,
+  secret: process.env.WXE_SECRET,
+  angetId: process.env.WXE_AGENTID || 5,
+};
+
+export const manageDpt = process.env.MANAGER_DEPT || '5'
