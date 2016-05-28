@@ -20,7 +20,7 @@ import error from './error';
 
 import statByProject from './stat-by-project';
 import statByYear from './stat-by-year';
-import ceeResultRegistration from './cee-result-registration';
+import listAcceptors from './list-acceptors';
 
 export default {
 
@@ -29,7 +29,7 @@ export default {
   children: [
     statByProject,
     statByYear,
-    ceeResultRegistration,
+    listAcceptors,
     home,
     contact,
     login,

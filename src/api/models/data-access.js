@@ -93,3 +93,49 @@ export const getStatByYear = () => {
     });
   });
 }
+
+export const findAcceptors = ({text, year, project, projections, skip, limit} = {
+  skip: 0,
+  limit: 20
+}) => {
+  let condition = { isDeleted: { $ne: true } };
+  if (text) {
+    var reg = new RegExp(text);
+    condition = Object.assign(condition, {
+      '$or': [{ name: reg }, {phone: reg}]
+    })
+  }
+  if (project) {
+    condition = Object.assign(condition, {
+      'records.project': project
+    });
+  }
+
+  if (year) {
+    year = parseInt(year);
+    condition = Object.assign(condition, {
+      'records': {
+        $elemMatch: {
+          date: {
+            $gte: new Date(year, 0, 1),
+            $lt: new Date(year + 1, 0, 1)
+          }
+        }
+      }
+    });
+  }
+  return new Promise((resolve, reject) => {
+    useAcceptors(async col => {
+      try {
+        const totalCount = await col.count(condition);
+        const data = await col.find(condition, projections)
+          .sort({ name: 1 })
+          .skip(skip)
+          .limit(limit).toArray();
+        resolve({ totalCount, data });
+      } catch (e) {
+        reject(e);
+      }
+    });
+  });
+};

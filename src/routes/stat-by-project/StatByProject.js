@@ -11,10 +11,9 @@ class StatByProject extends React.Component {
     stat: []
   };
   render () {
-    let {stat, totalAmount, totalCount, lastUpdated} = this.props;
+    const {stat, totalAmount, totalCount, lastUpdated} = this.props;
     let year = (new Date(lastUpdated)).getYear() + 1900;
     let month = (new Date(lastUpdated)).getMonth() + 1;
-    console.log(stat)
     return (
       <div className="progress">
         <div className="hd">
@@ -26,14 +25,14 @@ class StatByProject extends React.Component {
               if(item.value) return (
                 <div key={i}>
                   <CellsTitle>
-                    <a href="#">
+                    <a href={`/acceptors/list/?project=${encodeURIComponent(item._id)}`} >
                       {item._id}
                     </a>
                   </CellsTitle>
                   <CellsTitle>
                     {formatMoney(item.value.amount, '¥')}元 | {formatNumber(item.value.count)}人次
                   </CellsTitle>
-                  <Progress value={(item.value.amount/totalAmount)*100} />
+                  <Progress value={(item.value.amount / totalAmount) * 100} />
 
                 </div>
               )

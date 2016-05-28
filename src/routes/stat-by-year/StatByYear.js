@@ -26,7 +26,7 @@ class StatByYear extends React.Component {
               if(item.value) return (
                 <div key={i}>
                   <CellsTitle>
-                    <a href="#">
+                    <a href={`/acceptors/list/?year=${item._id}`}>
                       {item._id}年
                     </a>
                   </CellsTitle>
