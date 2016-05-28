@@ -12,7 +12,8 @@ router.get('/list/:pageIndex',
   getUser({ wxapi }),
   async (req, res) => {
     const { pageIndex } = req.params;
-    const { project, year, text, pageSize } = req.query;
+    let { project } = req.query;
+    const { year, text, pageSize } = req.query;
 
     // 判断是否正确取到用户数据
     // 若出现错误，则返回
@@ -22,10 +23,14 @@ router.get('/list/:pageIndex',
     }
     const { department } = req.user;
     // 如果用户不在管理组中，且project参数为'助学金'或空，则返回错误
-    if (!department.includes(parseInt(manageDpt, 10))
-        && (project === '助学金' || !project)) {
-      res.send({ ret: 401, msg: '当前用户仅能查看奖学金或其他列表' });
-      return;
+    if (!department.includes(parseInt(manageDpt, 10))) {
+      if (project === '助学金') {
+        res.send({ ret: 401, msg: '您目前不能查看助学金受赠者列表' });
+        return;
+      } else if (!project) {
+        // 当用户不在管理组中，且project为空时，将project设置为'奖学金'
+        project = '奖学金';
+      }
     }
     try {
       const data = await findAcceptors({
