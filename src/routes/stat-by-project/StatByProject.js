@@ -13,7 +13,7 @@ class StatByProject extends React.Component {
   render () {
     const {stat, totalAmount, totalCount, lastUpdated} = this.props;
     let year = (new Date(lastUpdated)).getYear() + 1900;
-    let month = (new Date(lastUpdated)).getMonth();
+    let month = (new Date(lastUpdated)).getMonth() + 1;
     console.log(stat)
     return (
       <div className="progress">

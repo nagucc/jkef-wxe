@@ -13,7 +13,7 @@ class StatByYear extends React.Component {
   render () {
     let {stat, totalAmount, totalCount, lastUpdated} = this.props;
     let year = (new Date(lastUpdated)).getYear() + 1900;
-    let month = (new Date(lastUpdated)).getMonth();
+    let month = (new Date(lastUpdated)).getMonth() + 1;
     return (
       <div className="progress">
         <div className="hd">
