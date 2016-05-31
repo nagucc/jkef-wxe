@@ -148,7 +148,7 @@ idCard.number作为唯一标识字段，添加或更新acceptor
 export const addAcceptor = async ({ name, isMale, phone, idCard } = {
   name: mustBeProvided(),
   isMale: null,
-  mobile: mustBeProvided(),
+  phone: null,
   idCard: mustBeProvided(),
 }) => new Promise((resolve, reject) => {
   useAcceptors(async col => {

@@ -76,10 +76,10 @@ router.put('/add',
     }
     const { name, isMale, phone, idCard } = req.body;
     // 2. 姓名、手机号、证件信息均不能为空
-    if (!name || !phone || !idCard.type || !idCard.number) {
+    if (!name || !idCard.type || !idCard.number) {
       res.send({
         ret: -1,
-        msg: '姓名、手机号、证件信息均不能为空',
+        msg: '姓名、证件信息均不能为空',
       });
       return;
     }
