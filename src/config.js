@@ -61,4 +61,5 @@ export const wxentConfig = {
   angetId: process.env.WXE_AGENTID || 5,
 };
 
-export const manageDpt = process.env.MANAGER_DEPT || '5'
+export const manageDpt = process.env.MANAGER_DEPT || '5';
+export const supervisorDpt = process.env.SUPERVISOR_DEPT || '5';
