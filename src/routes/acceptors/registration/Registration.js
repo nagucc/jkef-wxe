@@ -1,4 +1,5 @@
 import React, { PropTypes } from 'react';
+import { connect } from 'react-redux';
 import { CellsTitle, CellHeader, CellBody,
   Form, FormCell, Input, Select, Button } from 'react-weui';
 /*
@@ -8,13 +9,24 @@ import { CellsTitle, CellHeader, CellBody,
 class Registration extends React.Component {
   static propTypes = {
     isManager: PropTypes.bool,
+    dispatch: PropTypes.func,
+    setIdCardTypeGroup: PropTypes.func,
+    setIdCardTypePerson: PropTypes.func,
+    showRegistration: PropTypes.func,
+    ui: PropTypes.object,
   };
-  constractor() {
-  }
   typeChanged(e) {
-    this.setState({
-      isGroup: e.target.value === '组织机构代码证',
-    });
+    const { dispatch, setIdCardTypeGroup, setIdCardTypePerson, showRegistration } = this.props;
+    switch (e.target.value) {
+      case '组织机构代码证':
+        dispatch(setIdCardTypeGroup());
+        break;
+      case '身份证':
+        dispatch(setIdCardTypePerson());
+        break;
+      default:
+        dispatch(showRegistration());
+    }
   }
   submit() {
     // 设置userid的值
@@ -35,7 +47,7 @@ class Registration extends React.Component {
     console.log(data)
   }
   render() {
-    const { isManager } = this.props;
+    const { isManager, ui } = this.props;
     return (
       <div className="progress">
         <div className="hd">
@@ -80,45 +92,58 @@ class Registration extends React.Component {
                 </FormCell>
               ) : null
             }
-            <CellsTitle>基本信息</CellsTitle>
-            <FormCell>
-              <CellHeader>名称</CellHeader>
-              <CellBody>
-                <Input placeholder="姓名或组织名称" id="name" />
-              </CellBody>
-            </FormCell>
-            {
-              this.state && !this.state.isGroup ? (
-                <FormCell select>
+          </Form>
+          {
+            ui.baseInfoPanel.visiable ? (
+              <Form>
+                <CellsTitle>基本信息</CellsTitle>
+                <FormCell>
+                  <CellHeader>名称</CellHeader>
                   <CellBody>
-                    <Select data={[{
-                      value: null,
-                      label: '请选择性别',
-                    }, {
-                      value: true,
-                      label: '男',
-                    }, {
-                      value: false,
-                      label: '女',
-                    }]}
-                      id="isMale"
-                    />
+                    <Input placeholder="姓名或组织名称" id="name" />
                   </CellBody>
                 </FormCell>
-              ) : null
-            }
-            <FormCell>
-              <CellHeader>手机号码</CellHeader>
-              <CellBody>
-                <Input placeholder="请输入手机号码" id="phone" />
-              </CellBody>
-            </FormCell>
-            <Button onClick={this.submit.bind(this)} >确定</Button>
-          </Form>
+                {
+                  ui.isMale.visiable ? (
+                    <FormCell select>
+                      <CellBody>
+                        <Select data={[{
+                          value: null,
+                          label: '请选择性别',
+                        }, {
+                          value: true,
+                          label: '男',
+                        }, {
+                          value: false,
+                          label: '女',
+                        }]}
+                          id="isMale"
+                        />
+                      </CellBody>
+                    </FormCell>
+                  ) : null
+                }
+                <FormCell>
+                  <CellHeader>手机号码</CellHeader>
+                  <CellBody>
+                    <Input placeholder="请输入手机号码" id="phone" />
+                  </CellBody>
+                </FormCell>
+              </Form>
+            ) : null
+          }
+          {
+            ui.submitButton.visiable ? (
+              <Button onClick={this.submit.bind(this)} >确定</Button>
+            ) : null
+          }
         </div>
       </div>
     );
   }
 }
 
-export default Registration;
+const mapStateToProps = state => ({
+  ...state.acceptors.registration,
+});
+export default connect(mapStateToProps)(Registration);

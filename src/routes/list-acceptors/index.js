@@ -7,7 +7,7 @@ export default {
 
   path: '/acceptors/list',
 
-  async action({ query, context }) {
+  async action({ query, context }) { // eslint-disable-line react/prop-types
     const { dispatch } = context.store;
     const qs = Object.assign({}, {
       pageIndex: 0,
