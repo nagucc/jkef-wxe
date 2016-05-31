@@ -1,5 +1,6 @@
 import { combineReducers } from 'redux';
-import { FETCHED_ME, ME_FETCHED_FAILED } from '../constants';
+import { FETCHED_ME, ME_FETCHED_FAILED,
+  USER_IS_MANAGER, USER_IS_SUPERVISOR } from '../constants';
 
 const data = (state = {}, action) => {
   switch (action.type) {
@@ -19,7 +20,22 @@ const error = (state = '', action) => {
   }
 };
 
+const roles = (state = {
+  isManager: false,
+  isSupervisor: false,
+}, action) => {
+  switch (action.type) {
+    case USER_IS_MANAGER:
+      return { ...state, isManager: true };
+    case USER_IS_SUPERVISOR:
+      return { ...state, isSupervisor: true };
+    default:
+      return { ...state, isManager: false, isSupervisor: false };
+  }
+};
+
 export default combineReducers({
   data,
   error,
+  roles,
 });

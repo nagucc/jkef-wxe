@@ -18,6 +18,18 @@ export const FETCHED_ME = 'FETCHED_ME';
 // 获取当前用户信息失败
 export const ME_FETCHED_FAILED = 'ME_FETCHED_FAILED';
 
+// 用户是普通游客
+export const USER_IS_GUEST = 'USER_IS_GUEST';
+
+// 用户是普通已登录用户
+export const USER_IS_MEMBER = 'USER_IS_MEMBER';
+
+// 用户是supervisor
+export const USER_IS_SUPERVISOR = 'USER_IS_SUPERVISOR';
+
+// 用户是Manager
+export const USER_IS_MANAGER = 'USER_IS_MANAGER';
+
 
 /*
 acceptors/registration 页面
