@@ -1,27 +1,27 @@
 import fetch from '../core/fetch';
 
 export const getJson = async(url, options) => {
-  let res = await fetch(url, options);
+  const res = await fetch(url, options);
   return await res.json();
 };
 
 export const getStatByProject = async () => {
   const result = await getJson('/api/stat/by-project');
   if (result.ret === 0) return result.data;
-  else throw new Error('getStatByProject failed');
+  throw new Error('getStatByProject failed');
 };
 
 export const getStatByYear = async () => {
   const result = await getJson('/api/stat/by-year');
   if (result.ret === 0) return result.data;
-  else throw new Error('getStatByYear failed');
+  throw new Error('getStatByYear failed');
 };
 
 export const findAcceptorsByProject = async (project, pageIndex = 0) => {
-  let result = await getJson(`/api/acceptors/list/${pageIndex}?project=${encodeURIComponent(project)}`);
-  if(result.ret === 0) return result.data;
-  else throw new Error(`find acceptors by project failed:${JSON.stringify(result.msg)}`);
-}
+  const result = await getJson(`/api/acceptors/list/${pageIndex}?project=${encodeURIComponent(project)}`);
+  if (result.ret === 0) return result.data;
+  throw new Error(`find acceptors by project failed:${JSON.stringify(result.msg)}`);
+};
 
 export const findAcceptors = async ({ project, year, text, pageIndex, pageSize } = {
   pageIndex: 0,
@@ -36,5 +36,32 @@ export const findAcceptors = async ({ project, year, text, pageIndex, pageSize }
   });
   const result = await res.json();
   if (result.ret === 0) return result.data;
-  else throw result;
+  else throw result; // eslint-disable-line no-else-return
+};
+
+export const getMe = async () => {
+  let result;
+  try {
+    const res = await fetch('/api/wxe-auth/me', {
+      credentials: 'same-origin',
+    });
+    result = await res.json();
+  } catch (e) {
+    // 服务器错误
+    return { ret: 999, msg: e };
+  }
+  if (result.ret === 0) return result.data;
+  throw result;
+};
+
+export const getMyRoles = async () => {
+  try {
+    const res = await fetch('/api/wxe-auth/me/roles', {
+      credentials: 'same-origin',
+    });
+    return await res.json();
+  } catch (e) {
+    // 其他错误
+    return { ret: 999, msg: e };
+  }
 };
