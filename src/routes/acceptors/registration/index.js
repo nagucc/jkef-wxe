@@ -3,6 +3,7 @@ import Registration from './Registration';
 import { showRegistration,
   setIdCardTypeGroup,
   setIdCardTypePerson } from '../../../actions/acceptors/registration';
+import { getMyRoles } from '../../fetch-data';
 
 export default {
 
@@ -15,6 +16,7 @@ export default {
       setIdCardTypePerson,
       setIdCardTypeGroup,
       showRegistration,
+      getMyRoles,
     };
     return <Registration {...props} />;
   },

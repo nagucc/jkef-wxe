@@ -16,21 +16,9 @@ export default {
     dispatch(cleanAcceptors());
     dispatch(fetchAcceptors(query));
 
-    const getMe = async () => {
-      try {
-        const res = await fetch('/api/wxe-auth/me', {
-          credentials: 'same-origin',
-        });
-        return await res.json();
-      } catch (e) {
-        // 其他错误
-        return { ret: 999, msg: e };
-      }
-    };
     const props = {
       fetchAcceptors,
       cleanAcceptors,
-      getMe,
       query: qs,
     };
     return <ListAcceptors {...props} />;

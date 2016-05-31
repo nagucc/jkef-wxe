@@ -2,6 +2,8 @@ import React, { PropTypes } from 'react';
 import { connect } from 'react-redux';
 import { CellsTitle, CellHeader, CellBody,
   Form, FormCell, Input, Select, Button } from 'react-weui';
+import NeedSignup from '../../../components/NeedSignup';
+
 /*
 受赠者登记表
 包括：姓名、证件信息、性别、手机号
@@ -13,8 +15,12 @@ class Registration extends React.Component {
     setIdCardTypeGroup: PropTypes.func,
     setIdCardTypePerson: PropTypes.func,
     showRegistration: PropTypes.func,
+    getMyRoles: PropTypes.func,
     ui: PropTypes.object,
   };
+  componentDidMount() {
+    // const { getMe, getMyRoles } = this.props;
+  }
   typeChanged(e) {
     const { dispatch, setIdCardTypeGroup, setIdCardTypePerson, showRegistration } = this.props;
     switch (e.target.value) {
@@ -50,6 +56,7 @@ class Registration extends React.Component {
     const { isManager, ui } = this.props;
     return (
       <div className="progress">
+        <NeedSignup />
         <div className="hd">
           <h1 className="page_title">受赠者登记</h1>
         </div>
