@@ -3,6 +3,7 @@ import Registration from './Registration';
 import { showRegistration,
   setIdCardTypeGroup,
   setIdCardTypePerson } from '../../../actions/acceptors/registration';
+import { setUserRole } from '../../../actions/wxe-auth';
 import { getMyRoles } from '../../fetch-data';
 
 export default {
@@ -17,6 +18,7 @@ export default {
       setIdCardTypeGroup,
       showRegistration,
       getMyRoles,
+      setUserRole,
     };
     return <Registration {...props} />;
   },

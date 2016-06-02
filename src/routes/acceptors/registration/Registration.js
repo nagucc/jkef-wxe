@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { CellsTitle, CellHeader, CellBody,
   Form, FormCell, Input, Select, Button } from 'react-weui';
 import NeedSignup from '../../../components/NeedSignup';
+import CheckRoles from '../../../components/CheckRoles';
 
 /*
 受赠者登记表
@@ -15,12 +16,10 @@ class Registration extends React.Component {
     setIdCardTypeGroup: PropTypes.func,
     setIdCardTypePerson: PropTypes.func,
     showRegistration: PropTypes.func,
-    getMyRoles: PropTypes.func,
+    setUserRole: PropTypes.func,
     ui: PropTypes.object,
+    me: PropTypes.object,
   };
-  componentDidMount() {
-    // const { getMe, getMyRoles } = this.props;
-  }
   typeChanged(e) {
     const { dispatch, setIdCardTypeGroup, setIdCardTypePerson, showRegistration } = this.props;
     switch (e.target.value) {
@@ -53,10 +52,11 @@ class Registration extends React.Component {
     console.log(data)
   }
   render() {
-    const { isManager, ui } = this.props;
+    const { me, ui, dispatch, setUserRole } = this.props;
     return (
       <div className="progress">
-        <NeedSignup />
+        <NeedSignup success={() => dispatch(setUserRole({ signup: true }))} />
+        <CheckRoles success={roles => dispatch(setUserRole(roles))} />
         <div className="hd">
           <h1 className="page_title">受赠者登记</h1>
         </div>
@@ -86,20 +86,20 @@ class Registration extends React.Component {
                 <Input placeholder="请输入证件号码" id="idCardNumber" />
               </CellBody>
             </FormCell>
-            {
-              isManager ? <CellsTitle>企业号帐号绑定</CellsTitle> : null
-            }
-            {
-              isManager ? (
+          </Form>
+          {
+            ui.wxePanel.visiable ? (
+              <Form>
+                <CellsTitle>企业号帐号绑定</CellsTitle>
                 <FormCell>
                   <CellHeader>帐号</CellHeader>
                   <CellBody>
                     <Input placeholder="企业号帐号" id="userid" />
                   </CellBody>
                 </FormCell>
-              ) : null
-            }
-          </Form>
+              </Form>
+            ) : null
+          }
           {
             ui.baseInfoPanel.visiable ? (
               <Form>
@@ -152,5 +152,6 @@ class Registration extends React.Component {
 
 const mapStateToProps = state => ({
   ...state.acceptors.registration,
+  me: state.me,
 });
 export default connect(mapStateToProps)(Registration);

@@ -55,13 +55,16 @@ export const getMe = async () => {
 };
 
 export const getMyRoles = async () => {
+  let result;
   try {
     const res = await fetch('/api/wxe-auth/me/roles', {
       credentials: 'same-origin',
     });
-    return await res.json();
+    result = await res.json();
   } catch (e) {
     // 其他错误
     return { ret: 999, msg: e };
   }
+  if (result.ret === 0) return result.data;
+  throw result;
 };

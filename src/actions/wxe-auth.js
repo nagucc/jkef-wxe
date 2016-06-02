@@ -31,8 +31,8 @@ export const setUserRole = ({ signup, isSupervisor, isManager } = {
   isSupervisor: false,
   isManager: false,
 }) => {
-  if (!signup) return { type: USER_IS_GUEST };
   if (isManager) return { type: USER_IS_MANAGER };
   if (isSupervisor) return { type: USER_IS_SUPERVISOR };
-  return { type: USER_IS_MEMBER };
+  if (signup) return { type: USER_IS_MEMBER };
+  return { type: USER_IS_GUEST };
 };

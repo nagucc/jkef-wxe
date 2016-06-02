@@ -26,10 +26,8 @@ router.get('/me/roles',
       res.send({ ret: -1, msg: req.user.errmsg });
       return;
     }
-    const managerDept = parseInt(manageDpt, 10);
-    const supervisorDept = parseInt(supervisorDpt, 10);
-    const isSupervisor = department.some(dept => dept === supervisorDept);
-    const isManager = department.some(dept => dept === managerDept);
+    const isSupervisor = department.some(dept => dept === supervisorDpt);
+    const isManager = department.some(dept => dept === manageDpt);
     res.send({
       ret: 0,
       data: { isSupervisor, isManager },
