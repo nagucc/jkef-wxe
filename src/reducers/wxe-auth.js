@@ -30,7 +30,7 @@ const roles = (state = {
     case USER_IS_SUPERVISOR:
       return { ...state, isSupervisor: true };
     default:
-      return { ...state, isManager: false, isSupervisor: false };
+      return state;
   }
 };
 

@@ -11,12 +11,12 @@ import CheckRoles from '../../../components/CheckRoles';
  */
 class Registration extends React.Component {
   static propTypes = {
-    isManager: PropTypes.bool,
     dispatch: PropTypes.func,
     setIdCardTypeGroup: PropTypes.func,
     setIdCardTypePerson: PropTypes.func,
     showRegistration: PropTypes.func,
     setUserRole: PropTypes.func,
+    register: PropTypes.func.isRequired,
     ui: PropTypes.object,
     me: PropTypes.object,
   };
@@ -34,16 +34,23 @@ class Registration extends React.Component {
     }
   }
   submit() {
+    const { isManager } = this.props.me.roles;
+    const regPerson = this.props.ui.isMale.visiable;
+
     // 设置userid的值
-    const elemUserid = document.getElementById('userid');
     let userid = '';
-    if (elemUserid) userid = elemUserid.value;
+    if (isManager) userid = document.getElementById('userid').value;
+
+    // 设置isMale的值
+    let isMale = '';
+    if (regPerson) isMale = document.getElementById('isMale').value;
+
     // 准备好需要PUT的所有数据
     const data = {
       userid,
       name: document.getElementById('name').value,
       phone: document.getElementById('phone').value,
-      isMale: document.getElementById('isMale').value,
+      isMale,
       idCard: {
         type: document.getElementById('idCardType').value,
         number: document.getElementById('idCardNumber').value,
@@ -115,7 +122,7 @@ class Registration extends React.Component {
                     <FormCell select>
                       <CellBody>
                         <Select data={[{
-                          value: null,
+                          value: '',
                           label: '请选择性别',
                         }, {
                           value: true,

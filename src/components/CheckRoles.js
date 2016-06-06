@@ -1,4 +1,4 @@
-import React, { PropTypes } from 'react'
+import React, { PropTypes } from 'react';
 import { getMyRoles } from '../routes/fetch-data';
 import emptyFunction from 'fbjs/lib/emptyFunction';
 
