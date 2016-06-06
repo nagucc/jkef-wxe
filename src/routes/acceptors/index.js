@@ -3,7 +3,8 @@
  */
 
 import registration from './registration';
-
+import detail from './detail';
 export default [
   registration,
+  detail,
 ];

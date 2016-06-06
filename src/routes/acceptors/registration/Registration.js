@@ -36,6 +36,7 @@ class Registration extends React.Component {
   submit() {
     const { isManager } = this.props.me.roles;
     const regPerson = this.props.ui.isMale.visiable;
+    const { register } = this.props.register;
 
     // 设置userid的值
     let userid = '';
@@ -56,10 +57,14 @@ class Registration extends React.Component {
         number: document.getElementById('idCardNumber').value,
       },
     };
-    console.log(data)
+    register(data).then(acc => {
+      window.location = `/acceptors/detail/${acc._id}`;
+    }, result => {
+      alert(`操作失败：${result.msg}`); // eslint-disable-line no-alert
+    });
   }
   render() {
-    const { me, ui, dispatch, setUserRole } = this.props;
+    const { ui, dispatch, setUserRole } = this.props;
     return (
       <div className="progress">
         <NeedSignup success={() => dispatch(setUserRole({ signup: true }))} />

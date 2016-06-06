@@ -1,5 +1,6 @@
 import { Router } from 'express';
-import { findAcceptors, addAcceptor, findAcceptor } from '../models/data-access';
+import { findAcceptors, addAcceptor,
+  findAcceptor, findById } from '../models/data-access';
 import { wxentConfig as wxcfg,
   redisConfig as redis,
   manageDpt, supervisorDpt } from '../../config';
@@ -118,4 +119,23 @@ router.put('/add',
     }
   }
 );
+
+router.get('/detail/:id',
+  getUserId(),
+  // getUser({ wxapi }),
+  async(req, res) => {
+    // const accId = req.user.extattr.attrs['受赠者Id'];
+    const { id } = req.params;
+    try {
+      res.send({
+        ret: 0,
+        data: await findById(id),
+      });
+    } catch (e) {
+      res.send({
+        ret: -1,
+        msg: e,
+      });
+    }
+  });
 export default router;

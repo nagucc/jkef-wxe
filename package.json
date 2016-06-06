@@ -28,6 +28,7 @@
     "jsonwebtoken": "5.7.0",
     "markdown-it": "6.0.1",
     "mongo-use-collection": "0.0.2",
+    "mongodb": "^2.1.21",
     "node-fetch": "1.5.1",
     "normalize.css": "4.1.1",
     "passport": "0.3.2",

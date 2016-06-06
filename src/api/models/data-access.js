@@ -1,5 +1,6 @@
 import { useCollection } from 'mongo-use-collection';
 import { mongoUrl } from '../../config';
+import { ObjectId } from 'mongodb';
 
 export const ACCEPTORS_COLLECTION = 'acceptors';
 export const STAT_BY_PROJECT = 'stat_by_project';
@@ -11,7 +12,7 @@ export const useStatByYear = cb => useCollection(mongoUrl, STAT_BY_YEAR, cb);
 
 export const computeStatByProject = async () =>
   new Promise(resolve => useAcceptors(async col => {
-    const map = function () {
+    const map = function () { // eslint-disable-line
       if (this.records) {
         this.records.forEach(function (record) {
           if (record.isDeleted) return;
@@ -24,7 +25,7 @@ export const computeStatByProject = async () =>
       }
     };
     const reduce = function (key, values) {
-      var amount = 0, count = 0, lastUpdated = 0;
+      var amount = 0, count = 0, lastUpdated = 0; // eslint-disable-line
       values.forEach(val => {
         amount += val.amount;
         count += val.count;
@@ -47,9 +48,9 @@ export const computeStatByYear = async () => {
     useAcceptors(async col => {
       let map = function () {
         if (this.records) {
-          this.records.forEach(function (record) {
+          this.records.forEach(function (record) { // eslint-disable-line
             if (record.isDeleted) return;
-            emit(record.date.getYear() + 1900, {
+            emit(record.date.getYear() + 1900, { // eslint-disable-line
               amount: record.amount / 1000,
               count: 1,
               lastUpdated: record.date,
@@ -172,6 +173,21 @@ export const findAcceptorByIdCardNumber = async idCardNumber =>
       try {
         const doc = await col.findOne({ 'idCard.number': idCardNumber });
         resolve(doc);
+      } catch (e) {
+        reject(e);
+      }
+    });
+  });
+
+/*
+根据id查找相应的acceptor
+ */
+export const findById = async id =>
+  new Promise((resolve, reject) => {
+    useAcceptors(async col => {
+      try {
+        const acc = await col.findOne({ _id: new ObjectId(id) });
+        resolve(acc);
       } catch (e) {
         reject(e);
       }
