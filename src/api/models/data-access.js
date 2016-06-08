@@ -14,9 +14,9 @@ export const computeStatByProject = async () =>
   new Promise(resolve => useAcceptors(async col => {
     const map = function () { // eslint-disable-line
       if (this.records) {
-        this.records.forEach(function (record) {
+        this.records.forEach(function (record) { // eslint-disable-line
           if (record.isDeleted) return;
-          emit(record.project, {
+          emit(record.project, { // eslint-disable-line
             amount: record.amount / 1000,
             count: 1,
             lastUpdated: record.date,
@@ -24,7 +24,7 @@ export const computeStatByProject = async () =>
         });
       }
     };
-    const reduce = function (key, values) {
+    const reduce = function (key, values) { // eslint-disable-line
       var amount = 0, count = 0, lastUpdated = 0; // eslint-disable-line
       values.forEach(val => {
         amount += val.amount;
@@ -43,10 +43,10 @@ export const computeStatByProject = async () =>
   }));
 
 
-export const computeStatByYear = async () => {
-  return new Promise(function (resolve, reject) {
+export const computeStatByYear = async () =>
+  new Promise((resolve) => {
     useAcceptors(async col => {
-      let map = function () {
+      const map = function () { // eslint-disable-line
         if (this.records) {
           this.records.forEach(function (record) { // eslint-disable-line
             if (record.isDeleted) return;
@@ -58,8 +58,8 @@ export const computeStatByYear = async () => {
           });
         }
       };
-      let reduce = function (key, values) {
-        var amount = 0, count = 0, lastUpdated = 0;
+      const reduce = function (key, values) { // eslint-disable-line
+        var amount = 0, count = 0, lastUpdated = 0; // eslint-disable-line
         values.forEach((val) => {
           amount += val.amount;
           count += val.count;
@@ -75,7 +75,6 @@ export const computeStatByYear = async () => {
       resolve();
     });
   });
-};
 
 export const getStatByProject = () =>
   new Promise(resolve => {
@@ -146,7 +145,7 @@ const mustBeProvided = () => {
 /*
 idCard.number作为唯一标识字段，添加或更新acceptor
  */
-export const addAcceptor = async ({ name, isMale, phone, idCard } = {
+export const addAcceptor = async ({ name, isMale, phone, idCard, userid } = {
   name: mustBeProvided(),
   isMale: null,
   phone: null,
@@ -154,10 +153,11 @@ export const addAcceptor = async ({ name, isMale, phone, idCard } = {
 }) => new Promise((resolve, reject) => {
   useAcceptors(async col => {
     try {
-      const doc = await col.updateOne({ 'idCard.number': idCard.number }, {
-        $set: { name, phone, isMale, idCard },
-      }, { upsert: true });
-      resolve(doc);
+      const result = await col.insertOne({ name, phone, isMale, idCard, userid });
+      if (result.insertedCount === 1) {
+        const doc = await col.findOne({ _id: result.insertedId });
+        resolve(doc);
+      } else reject(result);
     } catch (e) {
       reject(e);
     }
@@ -193,3 +193,22 @@ export const findById = async id =>
       }
     });
   });
+
+export const update = async (_id, newData) =>
+  new Promise((resolve, reject) => useAcceptors(async col => {
+    try {
+      const { name, phone, idCard, isMale, userid } = newData;
+      let query;
+      if (name) query = { ...query, name };
+      if (phone) query = { ...query, phone };
+      if (isMale) query = { ...query, isMale };
+      if (idCard) query = { ...query, idCard };
+      if (userid) query = { ...query, userid };
+      const result = await col.updateOne({ _id }, {
+        $set: query,
+      });
+      resolve(result);
+    } catch (e) {
+      reject(e);
+    }
+  }));
