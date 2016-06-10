@@ -49,3 +49,22 @@ export const SET_IDCARD_TYPE_GROUP = 'SET_IDCARD_TYPE_GROUP';
 
 // 保存新的受赠者信息到服务器
 export const PUT_NEW_ACCEPTOR = 'PUT_NEW_ACCEPTOR';
+
+
+/*
+acceptors/detail:/:id 页面
+ */
+export const SHOW_ACCEPTOR_DETAIL = 'SHOW_ACCEPTOR_DETAIL';
+
+export const FETCH_ACCEPTOR_BY_ID = 'FETCH_ACCEPTOR_BY_ID';
+
+export const FETCHING_ACCEPTOR_BY_ID = 'FETCHING_ACCEPTOR_BY_ID';
+
+export const FETCHED_ACCEPTOR_BY_ID = 'FETCHED_ACCEPTOR_BY_ID';
+
+export const FETCH_ACCEPTOR_BY_ID_FAILED = 'FETCH_ACCEPTOR_BY_ID_FAILED';
+
+/*
+acceptors/edit/:id 页面
+ */
+export const UNAUTHORIZED = 'UNAUTHORIZED';

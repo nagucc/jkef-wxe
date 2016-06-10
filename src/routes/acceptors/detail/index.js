@@ -1,18 +1,13 @@
 import React from 'react';
 import Detail from './Detail';
-import fetch from '../../../core/fetch';
+import { fetchAcceptor } from '../../../actions/acceptors/detail';
 
 export default {
   path: '/acceptors/detail/:id',
-  async action({ params }) {
+  async action({ params, context }) { // eslint-disable-line react/prop-types
     const { id } = params;
-    const res = await fetch(`/api/acceptors/detail/${id}`, {
-      credentials: 'same-origin',
-    });
-    const result = await res.json();
-    if (result.ret === 0) {
-      return <Detail {...result.data} />;
-    }
-    return <Detail error={result} />;
+    const { dispatch } = context.store;
+    dispatch(fetchAcceptor(id));
+    return <Detail />;
   },
 };
