@@ -156,7 +156,7 @@ export const findAcceptors = ({ text, year, project, projections, skip = 0, limi
 /*
 idCard.number作为唯一标识字段，添加或更新acceptor
  */
-export const addAcceptor = async ({ name, isMale, phone, idCard, userid }) =>
+export const addAcceptor = async ({ name, isMale, idCard, phone = '', userid = '' } = {}) =>
   new Promise((resolve, reject) => {
     useAcceptors(async col => {
       if (!name) {
