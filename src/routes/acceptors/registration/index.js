@@ -10,12 +10,9 @@ export default {
 
   path: '/acceptors/registration',
 
-  async action({ context }) { // eslint-disable-line react/prop-types
-    const { dispatch } = context.store;
-    dispatch(showRegistration());
-
+  async action() {
     // 提交到服务器进行注册的方法
-    const register = async data => {
+    const action = async data => {
       let result;
       try {
         const res = await fetch('/api/acceptors/add', {
@@ -40,7 +37,7 @@ export default {
       setIdCardTypeGroup,
       showRegistration,
       setUserRole,
-      register,
+      action,
     };
     return <Registration {...props} />;
   },

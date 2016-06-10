@@ -4,7 +4,10 @@
 
 import registration from './registration';
 import detail from './detail';
+import edit from './edit';
+
 export default [
   registration,
   detail,
+  edit,
 ];
