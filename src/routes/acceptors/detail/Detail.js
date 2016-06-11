@@ -1,10 +1,12 @@
 import React, { PropTypes } from 'react';
 import { connect } from 'react-redux';
-import { Cell, CellBody, CellFooter, Toast, Msg, Icon,
-  Panel, PanelHeader, PanelBody, PanelFooter } from 'react-weui';
-// import NeedSignup from '../../../components/NeedSignup';
+import { Cell, CellBody, CellFooter,
+  Toast, Msg, Icon,
+  Panel, PanelHeader,
+  PanelBody, PanelFooter } from 'react-weui';
+import NeedSignup from '../../../components/NeedSignup';
 // import CheckRoles from '../../../components/CheckRoles';
-
+import EduHistory from './EduHistory'
 class Detail extends React.Component { // eslint-disable-line react/prefer-stateless-function
   static propTypes = {
     acceptor: React.PropTypes.object,
@@ -20,10 +22,11 @@ class Detail extends React.Component { // eslint-disable-line react/prefer-state
           <h1 className="page_title">{name}</h1>
         </div>
         <div className="bd">
+          <NeedSignup />
           {
             error ? <Msg type="warn" title="发生错误" description={error.msg} /> : (
               <div>
-                <Panel access>
+``                <Panel access>
                   <PanelHeader>基本信息</PanelHeader>
                   <PanelBody>
                     <Cell>
@@ -51,38 +54,13 @@ class Detail extends React.Component { // eslint-disable-line react/prefer-state
                     <a href={`/acceptors/edit/${_id}`}>修改基本资料</a>
                   </PanelFooter>
                 </Panel>
-                {/*<Panel access>
-                  <PanelHeader>教育经历</PanelHeader>
-                  <PanelBody>
-                    <Cell>
-                      <CellBody>玉溪一中</CellBody>
-                      <CellFooter>
-                        1998年入学
-                        <Icon value="clear" style={{ 'padding-left': '5px' }} />
-                      </CellFooter>
-                    </Cell>
-                    <Cell>
-                      <CellBody>云南大学</CellBody>
-                      <CellFooter>
-                        2001年入学
-                        <Icon value="clear" style={{ 'padding-left': '5px' }} />
-                      </CellFooter>
-                    </Cell>
-                    <Cell>
-                      <CellBody>云南大学</CellBody>
-                      <CellFooter>2005年入学</CellFooter>
-                    </Cell>
-                  </PanelBody>
-                  <PanelFooter>
-                    <a href="#">添加教育经历</a>
-                  </PanelFooter>
-                </Panel>
+                <EduHistory />
                 <Panel>
                   <PanelHeader>工作经历</PanelHeader>
                 </Panel>
                 <Panel>
                   <PanelHeader>受赠记录</PanelHeader>
-                </Panel>*/}
+                </Panel>
               </div>
             )
           }
