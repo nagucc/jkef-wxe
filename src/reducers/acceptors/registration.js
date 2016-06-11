@@ -51,7 +51,7 @@ const submitButton = (state = {
     case SET_IDCARD_TYPE_GROUP:
       return { ...state, visiable: true };
     default:
-      return { ...state, visiable: false };
+      return state;
   }
 };
 
