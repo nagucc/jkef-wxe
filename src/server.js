@@ -27,6 +27,8 @@ import { port, auth, analytics } from './config';
 
 import statModel from './api/controllers/stat';
 
+import regData from './api/RegistrationRest/RegistrationData';
+
 const app = express();
 
 //
@@ -48,6 +50,7 @@ app.use(bodyParser.json());
 注册API
  */
 app.use('/api/stat', statModel);
+app.use('/api/fundinfo', regData);
 require('./api/controllers/worker');
 
 //
