@@ -11,7 +11,7 @@ class StatByProject extends React.Component {
     stat: []
   };
   render () {
-    const {stat, totalAmount, totalCount, lastUpdated} = this.props;
+    const { stat, totalAmount, totalCount, lastUpdated, maxAmount } = this.props;
     let year = (new Date(lastUpdated)).getYear() + 1900;
     let month = (new Date(lastUpdated)).getMonth() + 1;
     return (
@@ -22,7 +22,7 @@ class StatByProject extends React.Component {
         <div className="bd spacing">
           {
             stat.map((item, i) => {
-              if(item.value) return (
+              if (item.value) return (
                 <div key={i}>
                   <CellsTitle>
                     <a href={`/acceptors/list/?project=${encodeURIComponent(item._id)}`} >
@@ -32,11 +32,11 @@ class StatByProject extends React.Component {
                   <CellsTitle>
                     {formatMoney(item.value.amount, '¥')}元 | {formatNumber(item.value.count)}人次
                   </CellsTitle>
-                  <Progress value={(item.value.amount / totalAmount) * 100} />
+                  <Progress value={(item.value.amount / maxAmount) * 100} />
 
                 </div>
               )
-              else return null;
+              return null;
             })
           }
         </div>

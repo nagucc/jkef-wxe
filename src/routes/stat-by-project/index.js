@@ -1,22 +1,26 @@
 import React from 'react';
 import StatByProject from './StatByProject';
-import {getStatByProject} from '../fetch-data';
+import { getStatByProject } from '../fetch-data';
 
 export default {
 
   path: '/stat-by-project',
 
   async action() {
-
-    let stat = await getStatByProject();
-    let totalAmount = 0, totalCount = 0, lastUpdated = 0;
+    const stat = await getStatByProject();
+    let totalAmount = 0;
+    let totalCount = 0;
+    let lastUpdated = 0;
+    let maxAmount = 0;
     stat.forEach(item => {
       totalAmount += item.value.amount;
       totalCount += item.value.count;
-      lastUpdated = Math.max(lastUpdated, isNaN(item.value.lastUpdated)?0:item.value.lastUpdated)
+      lastUpdated = Math.max(lastUpdated,
+        isNaN(item.value.lastUpdated) ? 0 : item.value.lastUpdated);
+      maxAmount = Math.max(maxAmount, item.value.amount);
     });
-    let props = {stat, totalAmount, totalCount, lastUpdated};
-    return <StatByProject {...props}/>;
+    const props = { stat, totalAmount, totalCount, lastUpdated, maxAmount };
+    return <StatByProject {...props} />;
   },
 
 };

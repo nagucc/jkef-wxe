@@ -1,4 +1,7 @@
-import { FETCHED_ME, ME_FETCHED_FAILED } from '../constants';
+import { FETCHED_ME, ME_FETCHED_FAILED,
+  USER_IS_GUEST, USER_IS_MEMBER,
+  USER_IS_SUPERVISOR, USER_IS_MANAGER,
+  UNAUTHORIZED } from '../constants';
 import fetch from '../core/fetch';
 
 const fetchedMe = me => ({
@@ -23,3 +26,17 @@ export const getMe = () => async dispatch => {
     dispatch(fetchFailed(e));
   }
 };
+
+export const setUserRole = ({ isSupervisor, isManager } = {
+  signup: false,
+  isSupervisor: false,
+  isManager: false,
+}) => {
+  if (isManager) return { type: USER_IS_MANAGER };
+  if (isSupervisor) return { type: USER_IS_SUPERVISOR };
+  return { type: USER_IS_MEMBER };
+};
+
+export const unauthorized = () => ({
+  type: UNAUTHORIZED,
+});

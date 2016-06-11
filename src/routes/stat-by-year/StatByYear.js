@@ -1,5 +1,5 @@
 import React, { PropTypes } from 'react'
-import {formatMoney, formatNumber} from 'accounting';
+import { formatMoney, formatNumber } from 'accounting';
 
 import {CellsTitle, Progress, MediaBox, MediaBoxDescription} from 'react-weui';
 
@@ -11,7 +11,7 @@ class StatByYear extends React.Component {
     stat: []
   };
   render () {
-    let {stat, totalAmount, totalCount, lastUpdated} = this.props;
+    let { stat, totalAmount, totalCount, lastUpdated, maxAmount } = this.props;
     let year = (new Date(lastUpdated)).getYear() + 1900;
     let month = (new Date(lastUpdated)).getMonth() + 1;
     return (
@@ -33,11 +33,11 @@ class StatByYear extends React.Component {
                   <CellsTitle>
                     {formatMoney(item.value.amount, '¥')}元 | {formatNumber(item.value.count)}人次
                   </CellsTitle>
-                  <Progress value={(item.value.amount/totalAmount)*100} />
+                  <Progress value={(item.value.amount / maxAmount) * 100} />
 
                 </div>
               )
-              else return null;
+              return null;
             })
           }
         </div>

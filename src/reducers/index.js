@@ -1,10 +1,12 @@
 import { combineReducers } from 'redux';
-import runtime from './runtime';
 import listAcceptors from './listAcceptors';
 import me from './wxe-auth';
+import acceptors from './acceptors';
+import {reducer as formReducer} from 'redux-form';
 
 export default combineReducers({
-  runtime,
   listAcceptors,
   me,
+  acceptors,
+  form: formReducer,
 });
