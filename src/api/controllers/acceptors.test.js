@@ -62,7 +62,7 @@ describe('Acceptors Middlewares', () => {
     await acceptors.postUpdate(req, res);
     const data = res._getData();
     expect(data.ret).eql(0);
-    expect(data.data.result.ok).eql(1);
+    expect(data.data._id).eql(doc._id);
   });
 
   it('postUpdate 非管理员不能修改别人的信息', async () => {
@@ -93,8 +93,6 @@ describe('Acceptors Middlewares', () => {
     await acceptors.postUpdate(req, res);
     const data = res._getData();
     expect(data.ret).eql(0);
-
-    expect(data.data.result.ok).eql(1);
   });
 
   it('getDetail 用户可查看自己的信息', async () => {

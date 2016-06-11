@@ -105,16 +105,18 @@ router.get('/detail/:id',
   getDetail);
 
 export const postUpdate = async (req, res) => {
+  const { id } = req.params;
   try {
-    const data = await findById(req.params.id);
+    const data = await findById(id);
     if (!isManager(req.user.department)
       && req.user.userid !== data.userid) {
       res.send({ ret: 401, msg: '无权操作' });
       return;
     }
+    await update(id, req.body);
     res.send({
       ret: 0,
-      data: await update(req.params.id, req.body),
+      data: { _id: id },
     });
   } catch (e) {
     res.send({ ret: -1, msg: e });
