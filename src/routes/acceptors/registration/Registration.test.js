@@ -18,8 +18,13 @@ describe('acceptors/registration', () => {
         baseInfoPanel: {},
         isMale: {},
         submitButton: {},
+        errorMsg: {},
       },
-      acceptor: {},
+      fields: {
+        idCard: {
+          type: ''
+        },
+      },
     }
     const wrapper = shallow(
       <Registration {...props} />

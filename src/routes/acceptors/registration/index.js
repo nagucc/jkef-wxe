@@ -1,9 +1,5 @@
 import React from 'react';
 import Registration from './Registration';
-import { showRegistration,
-  setIdCardTypeGroup,
-  setIdCardTypePerson } from '../../../actions/acceptors/registration';
-import { setUserRole } from '../../../actions/wxe-auth';
 import fetch from '../../../core/fetch';
 
 export default {
@@ -33,10 +29,6 @@ export default {
       }
     };
     const props = {
-      setIdCardTypePerson,
-      setIdCardTypeGroup,
-      showRegistration,
-      setUserRole,
       action,
     };
     return <Registration {...props} />;
