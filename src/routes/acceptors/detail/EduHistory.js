@@ -1,30 +1,30 @@
+/*
+eslint-disable react/prefer-stateless-function
+ */
 import React, { PropTypes } from 'react';
 import { Cell, CellBody, CellFooter,
   Panel, PanelHeader,
   PanelBody } from 'react-weui';
 
 class EduHistory extends React.Component {
+  static propTypes = {
+    history: PropTypes.array.isRequired,
+  };
   render() {
     return (
       <Panel access>
         <PanelHeader>教育经历</PanelHeader>
         <PanelBody>
-          <Cell>
-            <CellBody>玉溪一中</CellBody>
-            <CellFooter>
-              1998年入学
-            </CellFooter>
-          </Cell>
-          <Cell>
-            <CellBody>云南大学</CellBody>
-            <CellFooter>
-              2001年入学
-            </CellFooter>
-          </Cell>
-          <Cell>
-            <CellBody>云南大学</CellBody>
-            <CellFooter>2005年入学</CellFooter>
-          </Cell>
+          {
+            this.props.history.map((edu, i) => (
+              <Cell key={i} >
+                <CellBody>{edu.name}</CellBody>
+                <CellFooter>
+                  {edu.year}年入学
+                </CellFooter>
+              </Cell>
+            ))
+          }
         </PanelBody>
       </Panel>
     );
