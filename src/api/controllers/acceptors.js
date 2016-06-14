@@ -10,6 +10,7 @@ import { ensureAcceptorCanBeAdded,
   isManager, isSupervisor,
   ensureUserSignedIn } from './middlewares';
 import emptyFunction from 'fbjs/lib/emptyFunction';
+import { ObjectId } from 'mongodb';
 
 const wxapi = api(wxcfg.corpId, wxcfg.secret, wxcfg.agentId, redis.host, redis.port);
 const router = new Router();
@@ -85,7 +86,7 @@ router.put('/add',
 
 export const getDetail = async (req, res) => {
   try {
-    const data = await findById(req.params.id);
+    const data = await findById(new ObjectId(req.params.id));
     if (!data) {
       res.send({ ret: -1, msg: '给定的Id不存在' });
     }
@@ -132,7 +133,7 @@ export const putEdu = async (req, res) => {
     return;
   }
   try {
-    await addEdu(req.params.id, {
+    await addEdu(new ObjectId(req.params.id), {
       name,
       year: parseInt(year, 10),
     });
@@ -145,7 +146,7 @@ router.put('/edu/:id',
   getUserId(),
   getUser({ wxapi }),
   ensureUserSignedIn,
-  onlyManagerAndOwnerCanDoNext(req => req.params.id),
+  onlyManagerAndOwnerCanDoNext(req => new ObjectId(req.params.id)),
   putEdu,
 );
 
@@ -159,7 +160,7 @@ export const deleteEdu = async (req, res) => {
     return;
   }
   try {
-    await deleteEdu(req.params.id, {
+    await removeEdu(new ObjectId(req.params.id), {
       name,
       year: parseInt(year, 10),
     });
@@ -173,7 +174,7 @@ router.delete('/edu/:id',
   getUserId(),
   getUser({ wxapi }),
   ensureUserSignedIn,
-  onlyManagerAndOwnerCanDoNext(req => req.params.id),
+  onlyManagerAndOwnerCanDoNext(req => new ObjectId(req.params.id)),
   deleteEdu,
 );
 

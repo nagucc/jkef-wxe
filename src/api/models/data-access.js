@@ -1,6 +1,5 @@
 import { useCollection } from 'mongo-use-collection';
 import { mongoUrl } from '../../config';
-import { ObjectId } from 'mongodb';
 
 export const ACCEPTORS_COLLECTION = 'acceptors';
 export const STAT_BY_PROJECT = 'stat_by_project';
@@ -204,11 +203,11 @@ export const addAcceptor = async ({ name, isMale, idCard, phone = '', userid = '
 /*
 根据id查找相应的acceptor
  */
-export const findById = async id =>
+export const findById = async _id =>
   new Promise((resolve, reject) => {
     useAcceptors(async col => {
       try {
-        const acc = await col.findOne({ _id: new ObjectId(id) });
+        const acc = await col.findOne({ _id });
         resolve(acc);
       } catch (e) {
         reject(e);
@@ -238,7 +237,7 @@ export const update = async (_id, newData) =>
         }
       }
       if (userid) query = { ...query, userid };
-      const result = await col.updateOne({ _id: new ObjectId(_id) }, {
+      const result = await col.updateOne({ _id }, {
         $set: query,
       });
       resolve(result);
@@ -250,10 +249,10 @@ export const update = async (_id, newData) =>
 /*
 将数据标记为已删除（isDeleted)
  */
-export const trash = id => new Promise((resolve, reject) =>
+export const trash = _id => new Promise((resolve, reject) =>
   useAcceptors(async col => {
     try {
-      const result = await col.updateOne({ _id: new ObjectId(id) }, {
+      const result = await col.updateOne({ _id }, {
         $set: { isDeleted: true },
       });
       resolve(result);
@@ -265,7 +264,7 @@ export const trash = id => new Promise((resolve, reject) =>
 export const remove = async _id =>
   new Promise((resolve, reject) => useAcceptors(async col => {
     try {
-      resolve(await col.remove({ _id: new ObjectId(_id) }));
+      resolve(await col.remove({ _id }));
     } catch (e) {
       reject(e);
     }
