@@ -154,32 +154,6 @@ export const findAcceptors = ({ text, year, project, projections, skip = 0, limi
 
 
 /*
-idCard.number作为唯一标识字段，添加或更新acceptor
- */
-export const addAcceptor = async ({ name, isMale, idCard, phone = '', userid = '' } = {}) =>
-  new Promise((resolve, reject) => {
-    useAcceptors(async col => {
-      if (!name) {
-        reject('姓名不能为空');
-        return;
-      }
-      if (!idCard || !idCard.type || !idCard.number) {
-        reject('证件类型和号码不能为空');
-        return;
-      }
-      try {
-        const result = await col.updateOne({ 'idCard.number': idCard.number },
-          { name, phone, isMale, idCard, userid },
-          { upsert: true });
-        if (result.result.ok === 1) resolve(result.result.upserted[0]._id);
-        else reject(result.result);
-      } catch (e) {
-        reject(e);
-      }
-    });
-  });
-
-/*
 通过idCard.number找到相应的acceptor
  */
 export const findByIdCardNumber = async idCardNumber =>
@@ -193,6 +167,39 @@ export const findByIdCardNumber = async idCardNumber =>
       }
     });
   });
+
+/*
+idCard.number作为唯一标识字段，添加或更新acceptor
+当idCard.number重复时，reject
+ */
+export const addAcceptor = async ({ name, isMale, idCard, phone = '', userid = '' } = {}) =>
+  new Promise((resolve, reject) => {
+    useAcceptors(async col => {
+      if (!name) {
+        reject('姓名不能为空');
+        return;
+      }
+      if (!idCard || !idCard.type || !idCard.number) {
+        reject('证件类型和号码不能为空');
+        return;
+      }
+      try {
+        const doc = await findByIdCardNumber(idCard.number);
+        if (doc) {
+          reject(`idCard.number为${idCard.number}的数据已存在`);
+          return;
+        }
+        const result = await col.updateOne({ 'idCard.number': idCard.number },
+          { name, phone, isMale, idCard, userid },
+          { upsert: true });
+        if (result.result.ok === 1) resolve(result.upsertedId._id);
+        else reject(result.result);
+      } catch (e) {
+        reject(e);
+      }
+    });
+  });
+
 
 /*
 根据id查找相应的acceptor
@@ -240,7 +247,10 @@ export const update = async (_id, newData) =>
     }
   }));
 
-export const deleteAcceptor = id => new Promise((resolve, reject) =>
+/*
+将数据标记为已删除（isDeleted)
+ */
+export const trash = id => new Promise((resolve, reject) =>
   useAcceptors(async col => {
     try {
       const result = await col.updateOne({ _id: new ObjectId(id) }, {
@@ -260,3 +270,45 @@ export const remove = async _id =>
       reject(e);
     }
   }));
+
+/*
+为_id添加教育经历
+ */
+export const addEdu = async (_id, eduHistory) =>
+  new Promise((resolve, reject) => {
+    if (!eduHistory
+        || !eduHistory.name
+        || !eduHistory.year
+        || isNaN(parseInt(eduHistory.year, 10))) {
+      Promise.reject('name和year必须存在，且year必须是整数');
+      return;
+    }
+    useAcceptors(async col => {
+      try {
+        await col.updateOne({ _id }, {
+          $addToSet: { eduHistory },
+        });
+        resolve();
+      } catch (e) {
+        reject(e);
+      }
+    });
+  });
+
+export const removeEdu = async (_id, eduHistory) =>
+  new Promise((resolve, reject) =>
+    useAcceptors(async col => {
+      try {
+        const oldDoc = await findById(_id);
+        oldDoc.eduHistory = oldDoc.eduHistory.filter(edu =>
+          edu.name !== eduHistory.name && edu.year !== eduHistory);
+        await col.updateOne({ _id }, {
+          $set: {
+            eduHistory: oldDoc.eduHistory,
+          },
+        });
+        resolve();
+      } catch (e) {
+        reject(e);
+      }
+    }));

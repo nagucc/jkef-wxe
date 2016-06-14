@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { findAcceptors, addAcceptor,
-  findByIdCardNumber, findById, update } from '../models/data-access';
+  findByIdCardNumber, findById, update,
+  addEdu, removeEdu } from '../models/data-access';
 import { wxentConfig as wxcfg,
   redisConfig as redis } from '../../config';
 import api from 'wxent-api-redis';
@@ -8,6 +9,7 @@ import { getUser, getUserId } from 'wxe-auth-express';
 import { ensureAcceptorCanBeAdded,
   isManager, isSupervisor,
   ensureUserSignedIn } from './middlewares';
+import emptyFunction from 'fbjs/lib/emptyFunction';
 
 const wxapi = api(wxcfg.corpId, wxcfg.secret, wxcfg.agentId, redis.host, redis.port);
 const router = new Router();
@@ -103,6 +105,77 @@ router.get('/detail/:id',
   getUser({ wxapi }),
   ensureUserSignedIn,
   getDetail);
+
+export const onlyManagerAndOwnerCanDoNext = idGetter =>
+  async (req, res, next = emptyFunction) => {
+    const id = idGetter(req, res);
+    try {
+      const data = await findById(id);
+      if (!isManager(req.user.department)
+        && req.user.userid !== data.userid) {
+        res.send({ ret: 401, msg: '无权操作' });
+        return;
+      }
+      next();
+    } catch (e) {
+      res.send({ ret: -1, msg: e });
+    }
+  };
+
+
+export const putEdu = async (req, res) => {
+  const { name, year } = req.body;
+  if (!name
+    || !year
+    || isNaN(parseInt(year, 10))) {
+    res.send({ ret: -1, msg: '必须提供学校名称和入学年份，入学年份必须是数字' });
+    return;
+  }
+  try {
+    await addEdu(req.params.id, {
+      name,
+      year: parseInt(year, 10),
+    });
+    res.send({ ret: 0 });
+  } catch (e) {
+    res.send({ ret: -1, msg: e });
+  }
+};
+router.put('/edu/:id',
+  getUserId(),
+  getUser({ wxapi }),
+  ensureUserSignedIn,
+  onlyManagerAndOwnerCanDoNext(req => req.params.id),
+  putEdu,
+);
+
+
+export const deleteEdu = async (req, res) => {
+  const { name, year } = req.body;
+  if (!name
+    || !year
+    || isNaN(parseInt(year, 10))) {
+    res.send({ ret: -1, msg: '必须提供学校名称和入学年份，入学年份必须是数字' });
+    return;
+  }
+  try {
+    await deleteEdu(req.params.id, {
+      name,
+      year: parseInt(year, 10),
+    });
+    res.send({ ret: 0 });
+  } catch (e) {
+    res.send({ ret: -1, msg: e });
+  }
+};
+
+router.delete('/edu/:id',
+  getUserId(),
+  getUser({ wxapi }),
+  ensureUserSignedIn,
+  onlyManagerAndOwnerCanDoNext(req => req.params.id),
+  deleteEdu,
+);
 
 export const postUpdate = async (req, res) => {
   const { id } = req.params;
