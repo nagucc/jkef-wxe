@@ -6,27 +6,26 @@ import { expect } from 'chai';
 import { createRequest, createResponse } from 'node-mocks-http';
 import { manageDpt, supervisorDpt } from '../../config';
 import * as acceptors from './acceptors';
-// import { findAcceptors, addAcceptor,
-//   findAcceptorByIdCardNumber, findById, remove } from '../models/data-access';
-//
-// const dataGenerator = function* () {
-//   // const id = await addAcceptor({
-//   //   name: 'test',
-//   //   idCard: {
-//   //     type: 'test',
-//   //     number: Math.random(),
-//   //   },
-//   //   isMale: false,
-//   //   userid: 'test',
-//   //   phone: '666',
-//   // });
-//   // const doc = await findById(id);
-//   // yield doc;
-//   // await remove(id);
-// };
+
 const myUserid = 88;
 const otherUserid = 89;
 const supervisorUserid = 90;
+const normalUser = {
+  userid: 88,
+  department: [88888888],
+};
+const otherUser = {
+  userid: 89,
+  department: [99999999],
+};
+const supervisor = {
+  userid: 90,
+  department: [supervisorDpt],
+};
+const manager = {
+  user: 91,
+  department: [manageDpt],
+};
 let doc;
 describe('Acceptors Middlewares', () => {
   it('add 非管理员添加数据时将userid修改为自己', async () => {
@@ -63,6 +62,40 @@ describe('Acceptors Middlewares', () => {
     const data = res._getData();
     expect(data.ret).eql(0);
     expect(data.data._id).eql(doc._id);
+  });
+
+  it('onlyManagerAndOwnerCanDoNext 只有管理员或拥有者才可以next', async () => {
+    const idGetter = req => req.params.id;
+
+    // Owner
+    const reqOwner = createRequest({
+      user: normalUser,
+      params: { id: doc._id },
+    });
+    const resOwner = createResponse();
+    await acceptors.onlyManagerAndOwnerCanDoNext(idGetter)(reqOwner, resOwner);
+    let data = resOwner._getData();
+    expect(data).to.be.not.ok;
+
+    // Other
+    const reqOther = createRequest({
+      user: otherUser,
+      params: { id: doc._id },
+    });
+    const resOther = createResponse();
+    await acceptors.onlyManagerAndOwnerCanDoNext(idGetter)(reqOther, resOther);
+    data = resOther._getData();
+    expect(data.ret).to.eql(401);
+
+    // Manager
+    const reqManager = createRequest({
+      user: manager,
+      params: { id: doc._id },
+    });
+    const resManager = createResponse();
+    await acceptors.onlyManagerAndOwnerCanDoNext(idGetter)(reqManager, resManager);
+    data = resManager._getData();
+    expect(data).to.be.not.ok;
   });
 
   it('postUpdate 非管理员不能修改别人的信息', async () => {
@@ -190,4 +223,86 @@ describe('Acceptors Middlewares', () => {
     const result = res._getData();
     expect(result.ret).eql(401);
   });
+
+  it('putEdu body中必须提供name和year参数', async () => {
+    const req = createRequest({
+      body: {},
+      params: doc._id,
+      user: normalUser,
+    });
+    const res = createResponse();
+    await acceptors.putEdu(req, res);
+    const data = res._getData(res);
+    expect(data.ret).eql(-1);
+  });
+
+  const rawEdu = {
+    name: '云南大学',
+    year: '2001',
+  };
+
+  it('putEdu 用户可添加教育经历', async () => {
+    const req = createRequest({
+      params: doc._id,
+      // user: normalUser,
+      body: rawEdu,
+    });
+    const res = createResponse();
+    await acceptors.putEdu(req, res);
+    const data = res._getData();
+    expect(data.ret).eql(0);
+  });
+
+  it('deleteEdu body中必须提供name和year参数', async () => {
+    const req = createRequest({
+      body: {},
+      params: doc._id,
+      user: normalUser,
+    });
+    const res = createResponse();
+    await acceptors.deleteEdu(req, res);
+    const data = res._getData(res);
+    expect(data.ret).eql(-1);
+  });
+
+  it('deleteEdu 用户可删除教育经历', async () => {
+    const req = createRequest({
+      params: doc._id,
+      body: rawEdu,
+    });
+    const res = createResponse();
+    await acceptors.putEdu(req, res);
+    const data = res._getData();
+    expect(data.ret).eql(0);
+  });
+
+  // it('putEdu 普通用户或监管员不能为别人添加教育经历', async () => {
+  //   const req = createRequest({
+  //     params: doc._id,
+  //     user: supervisor,
+  //     body: {
+  //       ... rawEdu,
+  //       year: '3001',
+  //     },
+  //   });
+  //   const res = createResponse();
+  //   await acceptors.putEdu(req, res);
+  //   const data = res._getData();
+  //   expect(data.ret).eql(401);
+  // });
+  //
+  // it('putEdu 管理员可以为任何人添加教育经历', async () => {
+  //   const req = createRequest({
+  //     params: doc._id,
+  //     user: manager,
+  //     body: {
+  //       ... rawEdu,
+  //       year: '3001',
+  //     },
+  //   });
+  //   const res = createResponse();
+  //   await acceptors.putEdu(req, res);
+  //   const data = res._getData();
+  //   expect(data.ret).eql(0);
+  // });
 });

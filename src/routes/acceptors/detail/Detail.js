@@ -1,9 +1,12 @@
 import React, { PropTypes } from 'react';
 import { connect } from 'react-redux';
-import { Cell, CellBody, CellFooter, Toast, Msg, Icon,
-  Panel, PanelHeader, PanelBody, PanelFooter } from 'react-weui';
-// import NeedSignup from '../../../components/NeedSignup';
+import { Cell, CellBody, CellFooter,
+  Toast, Msg, ActionSheet, Button,
+  Panel, PanelHeader,
+  PanelBody, PanelFooter } from 'react-weui';
+import NeedSignup from '../../../components/NeedSignup';
 // import CheckRoles from '../../../components/CheckRoles';
+import EduHistory from './EduHistory';
 
 class Detail extends React.Component { // eslint-disable-line react/prefer-stateless-function
   static propTypes = {
@@ -11,15 +14,51 @@ class Detail extends React.Component { // eslint-disable-line react/prefer-state
     showToast: PropTypes.bool,
     error: PropTypes.object,
   };
+  constructor(props) {
+    super(props);
+    this.state = { showActionSheet: false };
+  }
+  showActionSheet() {
+    this.setState({
+      showActionSheet: true,
+    });
+  }
+  hideActionSheet() {
+    this.setState({
+      showActionSheet: false,
+    });
+  }
   render() {
     const { acceptor, error, showToast } = this.props;
     const { name, phone, idCard, userid, _id } = acceptor;
+
+    const actionSheetParams = {
+      show: this.state.showActionSheet,
+      menus: [{
+        label: '基本资料',
+        onClick: () => (window.location = `/acceptors/edit/${_id}`),
+      }, {
+        label: '教育经历',
+        onClick: () => (window.location = `/acceptors/edit-edu/${_id}`),
+      }, {
+        label: '工作经历',
+        onClick: () => {
+        },
+      }],
+      actions: [{
+        label: '取消',
+        onClick: this.hideActionSheet.bind(this),
+      }],
+      onRequestClose: this.hideActionSheet.bind(this),
+    };
+
     return (
       <div className="progress">
         <div className="hd">
           <h1 className="page_title">{name}</h1>
         </div>
         <div className="bd">
+          <NeedSignup />
           {
             error ? <Msg type="warn" title="发生错误" description={error.msg} /> : (
               <div>
@@ -40,49 +79,23 @@ class Detail extends React.Component { // eslint-disable-line react/prefer-state
                     </Cell>
                     <Cell>
                       <CellBody>证件号</CellBody>
-                      <CellFooter>{idCard ? idCard.number: null}</CellFooter>
+                      <CellFooter>{idCard ? idCard.number : null}</CellFooter>
                     </Cell>
                     <Cell>
                       <CellBody>企业号帐号</CellBody>
                       <CellFooter>{userid}</CellFooter>
                     </Cell>
                   </PanelBody>
-                  <PanelFooter>
-                    <a href={`/acceptors/edit/${_id}`}>修改基本资料</a>
-                  </PanelFooter>
                 </Panel>
-                {/*<Panel access>
-                  <PanelHeader>教育经历</PanelHeader>
-                  <PanelBody>
-                    <Cell>
-                      <CellBody>玉溪一中</CellBody>
-                      <CellFooter>
-                        1998年入学
-                        <Icon value="clear" style={{ 'padding-left': '5px' }} />
-                      </CellFooter>
-                    </Cell>
-                    <Cell>
-                      <CellBody>云南大学</CellBody>
-                      <CellFooter>
-                        2001年入学
-                        <Icon value="clear" style={{ 'padding-left': '5px' }} />
-                      </CellFooter>
-                    </Cell>
-                    <Cell>
-                      <CellBody>云南大学</CellBody>
-                      <CellFooter>2005年入学</CellFooter>
-                    </Cell>
-                  </PanelBody>
-                  <PanelFooter>
-                    <a href="#">添加教育经历</a>
-                  </PanelFooter>
-                </Panel>
+                <EduHistory />
                 <Panel>
                   <PanelHeader>工作经历</PanelHeader>
                 </Panel>
                 <Panel>
                   <PanelHeader>受赠记录</PanelHeader>
-                </Panel>*/}
+                </Panel>
+                <ActionSheet {...actionSheetParams} />
+              <Button onClick={this.showActionSheet.bind(this)} >修改资料</Button>
               </div>
             )
           }

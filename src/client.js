@@ -86,7 +86,10 @@ function run() {
   );
 
   // Make taps on links and buttons work fast on mobiles
-  FastClick.attach(document.body);
+  // 仅在移动设备上使用FastClick
+  if ('ontouchstart' in window) {
+    FastClick.attach(document.body);
+  }
 
   context.store = configureStore(initialState);
 
