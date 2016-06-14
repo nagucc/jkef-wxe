@@ -25,12 +25,6 @@ class CareerHistory extends React.Component {
               </Cell>
             ))
           }
-          <Cell>
-            <CellBody>xx公司</CellBody>
-            <CellFooter>
-              2001年入职
-            </CellFooter>
-          </Cell>
         </PanelBody>
       </Panel>
     );

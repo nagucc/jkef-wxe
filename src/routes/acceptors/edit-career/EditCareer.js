@@ -93,5 +93,5 @@ const mapStateToProps = state => ({
 });
 export default reduxForm({
   form: 'careerHistory',
-  fields: ['name', 'year', 'eduNeedDelete'],
+  fields: ['name', 'year', 'needRemove'],
 }, mapStateToProps)(EditCareerComponent);

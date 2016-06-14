@@ -6,7 +6,6 @@ import React from 'react';
 import EditEdu from './EditEdu';
 import { addEdu, deleteEdu,
   initEduHistory } from '../../../actions/acceptors/edu';
-import { timeout, reset } from '../../../actions/common';
 
 export default {
   path: '/acceptors/edit-edu/:id',

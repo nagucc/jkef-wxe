@@ -1,18 +1,25 @@
+/*
+eslint-disable react/jsx-no-bind
+ */
+
 import React, { PropTypes } from 'react';
 import { connect } from 'react-redux';
 import { Cell, CellBody, CellFooter,
   Toast, Msg, ActionSheet, Button,
   Panel, PanelHeader,
-  PanelBody, PanelFooter } from 'react-weui';
+  PanelBody } from 'react-weui';
 import NeedSignup from '../../../components/NeedSignup';
 // import CheckRoles from '../../../components/CheckRoles';
 import EduHistory from './EduHistory';
+import CareerHistory from './CareerHistory';
+import AcceptHistory from './AcceptHistory';
 
 class Detail extends React.Component { // eslint-disable-line react/prefer-stateless-function
   static propTypes = {
     acceptor: React.PropTypes.object,
     showToast: PropTypes.bool,
     error: PropTypes.object,
+    isManager: PropTypes.bool,
   };
   constructor(props) {
     super(props);
@@ -29,7 +36,7 @@ class Detail extends React.Component { // eslint-disable-line react/prefer-state
     });
   }
   render() {
-    const { acceptor, error, showToast } = this.props;
+    const { acceptor, error, showToast, isManager } = this.props;
     const { name, phone, idCard, userid, _id } = acceptor;
 
     const actionSheetParams = {
@@ -42,9 +49,12 @@ class Detail extends React.Component { // eslint-disable-line react/prefer-state
         onClick: () => (window.location = `/acceptors/edit-edu/${_id}`),
       }, {
         label: '工作经历',
-        onClick: () => {
-        },
-      }],
+        onClick: () => (window.location = `/acceptors/edit-career/${_id}`),
+      }, ...(isManager ? [{
+        label: '受赠记录',
+        onClick: () => (window.location = `/acceptors/edit-accept-record/${_id}`),
+      }] : []),
+      ],
       actions: [{
         label: '取消',
         onClick: this.hideActionSheet.bind(this),
@@ -87,13 +97,17 @@ class Detail extends React.Component { // eslint-disable-line react/prefer-state
                     </Cell>
                   </PanelBody>
                 </Panel>
-                <EduHistory />
-                <Panel>
-                  <PanelHeader>工作经历</PanelHeader>
-                </Panel>
-                <Panel>
-                  <PanelHeader>受赠记录</PanelHeader>
-                </Panel>
+                {
+                  acceptor.eduHistory && acceptor.eduHistory.length > 0 ? (
+                    <EduHistory history={acceptor.eduHistory} />
+                  ) : null
+                }
+                {
+                  acceptor.careerHistory && acceptor.careerHistory.length > 0 ? (
+                    <CareerHistory history={acceptor.careerHistory} />
+                  ) : null
+                }
+                <AcceptHistory history={[]} />
                 <ActionSheet {...actionSheetParams} />
               <Button onClick={this.showActionSheet.bind(this)} >修改资料</Button>
               </div>
@@ -112,6 +126,7 @@ const mapStateToProps = state => {
     showToast: acceptor === null && error === null,
     acceptor: acceptor || { idCard: {} },
     error,
+    isManager: state.me.roles.isManager,
   };
 };
 

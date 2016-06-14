@@ -16,12 +16,12 @@ const error = (state = null, action) => {
 const data = (state = [], action) => {
   switch (action.type) {
     case INIT_ACCEPTOR_CAREER_HISTORY:
-      return action.eduHistory;
+      return action.careerHistory;
     case ADDED_ACCEPTOR_CAREER:
-      return [...state, action.edu];
+      return [...state, action.career];
     case DELETED_ACCEPTOR_CAREER:
       return state.filter(({ name, year }) =>
-        name !== action.edu.name || year !== action.edu.year);
+        name !== action.career.name || year !== action.career.year);
     default:
       return state;
   }

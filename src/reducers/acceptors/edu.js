@@ -17,11 +17,8 @@ const data = (state = [], action) => {
   switch (action.type) {
     case INIT_ACCEPTOR_EDU_HISTORY:
       return action.eduHistory;
-    case ADDED_ACCEPTOR_EDU: {
-      const result = [...state, action.edu];
-      result.sort((a, b) => a.year - b.year);
-      return result;
-    }
+    case ADDED_ACCEPTOR_EDU:
+      return [...state, action.edu];
     case DELETED_ACCEPTOR_EDU:
       return state.filter(({ name, year }) =>
         name !== action.edu.name || year !== action.edu.year);
