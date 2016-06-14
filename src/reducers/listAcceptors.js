@@ -1,5 +1,5 @@
 import { combineReducers } from 'redux';
-import {FETCHED_ACCEPTORS_LIST,
+import { FETCHED_ACCEPTORS_LIST,
   CLEAN_ACCEPTORS_LIST,
   FETCH_FAILED } from '../constants';
 
@@ -12,25 +12,25 @@ const data = (state = [], action) => {
     default:
       return state;
   }
-}
+};
 
-const totalCount = (state = 0, action) =>{
+const totalCount = (state = 0, action) => {
   switch (action.type) {
     case FETCHED_ACCEPTORS_LIST:
       return action.totalCount;
     default:
       return 0;
   }
-}
+};
 
 const error = (state = null, action) => {
   switch (action.type) {
     case FETCH_FAILED:
-      return action.err;
+      return action.error;
     default:
       return state;
   }
-}
+};
 
 export default combineReducers({
   data,
