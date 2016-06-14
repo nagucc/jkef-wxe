@@ -300,10 +300,53 @@ export const removeEdu = async (_id, eduHistory) =>
       try {
         const oldDoc = await findById(_id);
         oldDoc.eduHistory = oldDoc.eduHistory.filter(edu =>
-          edu.name !== eduHistory.name && edu.year !== eduHistory);
+          edu.name !== eduHistory.name || edu.year !== eduHistory);
         await col.updateOne({ _id }, {
           $set: {
             eduHistory: oldDoc.eduHistory,
+          },
+        });
+        resolve();
+      } catch (e) {
+        reject(e);
+      }
+    }));
+
+
+/*
+为_id添加工作经历
+ */
+export const addCareer = async (_id, careerHistory) =>
+  new Promise((resolve, reject) => {
+    if (!careerHistory
+        || !careerHistory.name
+        || !careerHistory.year
+        || isNaN(parseInt(careerHistory.year, 10))) {
+      Promise.reject('name和year必须存在，且year必须是整数');
+      return;
+    }
+    useAcceptors(async col => {
+      try {
+        await col.updateOne({ _id }, {
+          $addToSet: { careerHistory },
+        });
+        resolve();
+      } catch (e) {
+        reject(e);
+      }
+    });
+  });
+
+export const removeCareer = async (_id, careerHistory) =>
+  new Promise((resolve, reject) =>
+    useAcceptors(async col => {
+      try {
+        const oldDoc = await findById(_id);
+        oldDoc.careerHistory = oldDoc.careerHistory.filter(career =>
+          career.name !== careerHistory.name || career.year !== careerHistory);
+        await col.updateOne({ _id }, {
+          $set: {
+            careerHistory: oldDoc.careerHistory,
           },
         });
         resolve();

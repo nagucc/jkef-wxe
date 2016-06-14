@@ -1,7 +1,8 @@
 import { Router } from 'express';
 import { findAcceptors, addAcceptor,
   findByIdCardNumber, findById, update,
-  addEdu, removeEdu } from '../models/data-access';
+  addEdu, removeEdu,
+  addCareer, removeCareer } from '../models/data-access';
 import { wxentConfig as wxcfg,
   redisConfig as redis } from '../../config';
 import api from 'wxent-api-redis';
@@ -176,6 +177,60 @@ router.delete('/edu/:id',
   ensureUserSignedIn,
   onlyManagerAndOwnerCanDoNext(req => new ObjectId(req.params.id)),
   deleteEdu,
+);
+
+export const putCareer = async (req, res) => {
+  const { name, year } = req.body;
+  if (!name
+    || !year
+    || isNaN(parseInt(year, 10))) {
+    res.send({ ret: -1, msg: '必须提供公司名称和入职年份，入职年份必须是数字' });
+    return;
+  }
+  try {
+    await addCareer(new ObjectId(req.params.id), {
+      name,
+      year: parseInt(year, 10),
+    });
+    res.send({ ret: 0 });
+  } catch (e) {
+    res.send({ ret: -1, msg: e });
+  }
+};
+
+router.put('/career/:id',
+getUserId(),
+getUser({ wxapi }),
+ensureUserSignedIn,
+onlyManagerAndOwnerCanDoNext(req => new ObjectId(req.params.id)),
+putCareer,
+);
+
+export const deleteCareer = async (req, res) => {
+  const { name, year } = req.body;
+  if (!name
+    || !year
+    || isNaN(parseInt(year, 10))) {
+    res.send({ ret: -1, msg: '必须提供公司名称和入职年份，入职年份必须是数字' });
+    return;
+  }
+  try {
+    await removeCareer(new ObjectId(req.params.id), {
+      name,
+      year: parseInt(year, 10),
+    });
+    res.send({ ret: 0 });
+  } catch (e) {
+    res.send({ ret: -1, msg: e });
+  }
+};
+
+router.delete('/career/:id',
+  getUserId(),
+  getUser({ wxapi }),
+  ensureUserSignedIn,
+  onlyManagerAndOwnerCanDoNext(req => new ObjectId(req.params.id)),
+  deleteCareer,
 );
 
 export const postUpdate = async (req, res) => {

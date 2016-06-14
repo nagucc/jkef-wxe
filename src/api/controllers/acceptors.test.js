@@ -18,10 +18,10 @@ const otherUser = {
   userid: 89,
   department: [99999999],
 };
-const supervisor = {
-  userid: 90,
-  department: [supervisorDpt],
-};
+// const supervisor = {
+//   userid: 90,
+//   department: [supervisorDpt],
+// };
 const manager = {
   user: 91,
   department: [manageDpt],
@@ -271,38 +271,58 @@ describe('Acceptors Middlewares', () => {
       body: rawEdu,
     });
     const res = createResponse();
-    await acceptors.putEdu(req, res);
+    await acceptors.deleteEdu(req, res);
     const data = res._getData();
     expect(data.ret).eql(0);
   });
 
-  // it('putEdu 普通用户或监管员不能为别人添加教育经历', async () => {
-  //   const req = createRequest({
-  //     params: doc._id,
-  //     user: supervisor,
-  //     body: {
-  //       ... rawEdu,
-  //       year: '3001',
-  //     },
-  //   });
-  //   const res = createResponse();
-  //   await acceptors.putEdu(req, res);
-  //   const data = res._getData();
-  //   expect(data.ret).eql(401);
-  // });
-  //
-  // it('putEdu 管理员可以为任何人添加教育经历', async () => {
-  //   const req = createRequest({
-  //     params: doc._id,
-  //     user: manager,
-  //     body: {
-  //       ... rawEdu,
-  //       year: '3001',
-  //     },
-  //   });
-  //   const res = createResponse();
-  //   await acceptors.putEdu(req, res);
-  //   const data = res._getData();
-  //   expect(data.ret).eql(0);
-  // });
+  it('putCareer body中必须提供name和year参数', async () => {
+    const req = createRequest({
+      body: {},
+      params: doc._id,
+      user: normalUser,
+    });
+    const res = createResponse();
+    await acceptors.putCareer(req, res);
+    const data = res._getData(res);
+    expect(data.ret).eql(-1);
+  });
+
+  const rawCareer = rawEdu;
+
+  it('putCareer 用户可添加工作经历', async () => {
+    const req = createRequest({
+      params: doc._id,
+      // user: normalUser,
+      body: rawCareer,
+    });
+    const res = createResponse();
+    await acceptors.putCareer(req, res);
+    const data = res._getData();
+    expect(data.ret).eql(0);
+  });
+
+  it('deleteCareer body中必须提供name和year参数', async () => {
+    const req = createRequest({
+      body: {},
+      params: doc._id,
+      user: normalUser,
+    });
+    const res = createResponse();
+    await acceptors.deleteCareer(req, res);
+    const data = res._getData(res);
+    expect(data.ret).eql(-1);
+  });
+
+  it('deleteCareer 用户可删除教育经历', async () => {
+    const req = createRequest({
+      params: doc._id,
+      body: rawEdu,
+    });
+    const res = createResponse();
+    await acceptors.deleteCareer(req, res);
+    const data = res._getData();
+    expect(data.ret).eql(0);
+  });
+
 });

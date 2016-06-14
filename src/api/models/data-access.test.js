@@ -11,7 +11,8 @@ import { computeStatByProject, getStatByProject,
   findAcceptors, addAcceptor,
   findByIdCardNumber, findById,
   update, remove, trash,
-  addEdu, removeEdu } from './data-access';
+  addEdu, removeEdu,
+  addCareer, removeCareer } from './data-access';
 
 describe('Data Access Functions', () => {
   const rawDoc = {
@@ -93,11 +94,40 @@ describe('Data Access Functions', () => {
     expect(gettedDoc.eduHistory[0]).eql(edu);
   });
 
+  it('addCareer 添加教育经历，name和year不能为空, year必须可转变为Number类型', async () => {
+    try {
+      await Promise.all([
+        addCareer(docId),
+        addCareer(docId, {}),
+        addCareer(docId, { name: 'test' }),
+        addCareer(docId, { year: 2001 }),
+        addCareer(docId, { year: '2001.4' }),
+        Promise.reject('success'),
+      ]);
+    } catch (e) {
+      expect(e).to.eql('success');
+    }
+  });
+
+  const career = {
+    name: '云南大学',
+    year: 2001,
+  };
+
+  it('addEdu 可正常添加教育经历，同一个_id的eduHistory只能包含一组相同的name和year', async () => {
+    await addCareer(docId, edu);
+    await addCareer(docId, edu);
+    const gettedDoc = await findById(docId);
+    expect(gettedDoc.careerHistory).to.have.lengthOf(1);
+    expect(gettedDoc.careerHistory[0]).eql(career);
+  });
+
   it('findByIdCardNumber 可根据idCard.number找到数据', async () => {
     const gettedDoc = await findByIdCardNumber(rawDoc.idCard.number);
-    const { _id, eduHistory, ...data } = gettedDoc;
+    const { _id, eduHistory, careerHistory, ...data } = gettedDoc;
     expect(_id).eql(docId);
-    expect(eduHistory[0]).eql(edu);
+    expect(eduHistory).eql([edu]);
+    expect(careerHistory).eql([career]);
     expect(data).to.eql(rawDoc);
   });
 
@@ -116,7 +146,7 @@ describe('Data Access Functions', () => {
 
   it('update 可根据_id更新数据，但不会更新_id字段', async () => {
     await update(docId, { _id: docId, ...updatedDoc });
-    const { eduHistory, ...gettedDoc } = // eslint-disable-line no-unused-vars
+    const { eduHistory, careerHistory, ...gettedDoc } = // eslint-disable-line no-unused-vars
       await findByIdCardNumber(updatedDoc.idCard.number);
     expect(gettedDoc).to.eql({ _id: docId, ...updatedDoc });
   });
@@ -194,7 +224,8 @@ describe('Data Access Functions', () => {
   it('trash 将数据标识为删除状态，但暂不从数据库中删除', async () => {
     await trash(docId);
     const gettedDoc = await findById(docId);
-    const { isDeleted, eduHistory, ...data } = gettedDoc; // eslint-disable-line no-unused-vars
+    const { isDeleted, eduHistory, careerHistory, ...data } // eslint-disable-line no-unused-vars
+      = gettedDoc;
     expect(isDeleted).to.be.true;
     expect(data).eql({ _id: docId, ...updatedDoc });
   });
@@ -204,6 +235,13 @@ describe('Data Access Functions', () => {
     const gettedDoc = findById(docId);
     expect(gettedDoc.eduHistory).to.be.undefined;
     await removeEdu(docId, edu);
+  });
+
+  it('removeCareer 正常删除教育经历', async () => {
+    await removeCareer(docId, career);
+    const gettedDoc = findById(docId);
+    expect(gettedDoc.careerHistory).to.be.undefined;
+    await removeCareer(docId, edu);
   });
 
   it('remove 彻底删除数据', async () => {
