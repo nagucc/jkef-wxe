@@ -7,6 +7,7 @@ import detail from './detail';
 import edit from './edit';
 import editEdu from './edit-edu';
 import editCareer from './edit-career';
+import list from './list';
 
 export default [
   registration,
@@ -14,4 +15,5 @@ export default [
   edit,
   editEdu,
   editCareer,
+  list,
 ];

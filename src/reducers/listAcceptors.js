@@ -1,13 +1,13 @@
 import { combineReducers } from 'redux';
 import { FETCHED_ACCEPTORS_LIST,
-  CLEAN_ACCEPTORS_LIST,
+  RESET,
   FETCH_FAILED } from '../constants';
 
 const data = (state = [], action) => {
   switch (action.type) {
     case FETCHED_ACCEPTORS_LIST:
       return state.concat(action.data);
-    case CLEAN_ACCEPTORS_LIST:
+    case RESET:
       return [];
     default:
       return state;
