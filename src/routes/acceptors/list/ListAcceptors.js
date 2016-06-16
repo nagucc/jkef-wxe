@@ -16,10 +16,9 @@ class ListAcceptors extends React.Component {
     cleanAcceptors: PropTypes.func.isRequired,
     query: PropTypes.object,
   };
-  // componentWillReceiveProps(nextProps) {
-  //   const { error } = nextProps;
-  //   if ( error && error.ret !== 0) alert(`错误：${error.msg}`);
-  // }
+  componentDidMount() {
+    this.props.dispatch(this.props.fetchAcceptors());
+  }
   nextPage() {
     const { dispatch, fetchAcceptors, query } = this.props;
     query.pageIndex++;
@@ -31,9 +30,6 @@ class ListAcceptors extends React.Component {
     query.pageIndex = 0;
     dispatch(cleanAcceptors());
     dispatch(fetchAcceptors(query));
-  }
-  componentDidMount() {
-    this.props.dispatch(this.props.fetchAcceptors());
   }
   render() {
     const { data, totalCount } = this.props;

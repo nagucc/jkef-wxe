@@ -9,15 +9,11 @@ export default {
 
   path: '/acceptors/list',
 
-  async action({ query, context }) { // eslint-disable-line react/prop-types
-    const { dispatch } = context.store;
+  async action({ query }) { // eslint-disable-line react/prop-types
     const qs = Object.assign({ text: '' }, {
       pageIndex: 0,
       pageSize: 20,
     }, query);
-    // dispatch(reset());
-    // dispatch(fetchAcceptors(query));
-
     const props = {
       fetchAcceptors,
       cleanAcceptors: reset,
