@@ -5,13 +5,12 @@
  eslint-disable react/prefer-stateless-function
   */
 import React, { PropTypes } from 'react';
-import { Form, FormCell, Icon,
-  CellHeader, CellBody, CellFooter,
-  CellsTitle, CellsTips, Input, Select,
-  Button, Msg, Toast } from 'react-weui';
+import { Form, FormCell,
+  CellHeader, Select,
+  CellsTitle,
+  Button } from 'react-weui';
 import { reduxForm } from 'redux-form';
-import { required, range } from '../../../validates';
-import { REQUIRED } from '../../../err-codes';
+import { required } from '../../../validates';
 
 const validate = values => {
   const errors = {
