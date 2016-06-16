@@ -8,7 +8,7 @@ const router = new Router();
 const wxapi = api(wxcfg.corpId, wxcfg.secret, wxcfg.agentId, redis.host, redis.port);
 const DEBUG = process.env.NODE_ENV === 'development';
 
-if (DEBUG) console.log('目前处于测试状态');
+if (DEBUG) console.log('目前处于测试状态'); // eslint-disable-line no-console
 router.get('/', signin({
   wxapi,
   callbackUrl: `http://${DEBUG ? 'wx.nagu.cc:3001' : host}/api/wxe-auth/`,

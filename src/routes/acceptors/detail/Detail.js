@@ -12,7 +12,7 @@ import NeedSignup from '../../../components/NeedSignup';
 // import CheckRoles from '../../../components/CheckRoles';
 import EduHistory from './EduHistory';
 import CareerHistory from './CareerHistory';
-import AcceptHistory from './AcceptHistory';
+import RecordHistory from './RecordHistory';
 
 class Detail extends React.Component { // eslint-disable-line react/prefer-stateless-function
   static propTypes = {
@@ -107,7 +107,7 @@ class Detail extends React.Component { // eslint-disable-line react/prefer-state
                     <CareerHistory history={acceptor.careerHistory} />
                   ) : null
                 }
-                <AcceptHistory history={[]} />
+                <RecordHistory history={[]} />
                 <ActionSheet {...actionSheetParams} />
               <Button onClick={this.showActionSheet.bind(this)} >修改资料</Button>
               </div>

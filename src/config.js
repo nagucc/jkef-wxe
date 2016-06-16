@@ -63,3 +63,5 @@ export const wxentConfig = {
 
 export const manageDpt = parseInt(process.env.MANAGER_DEPT || '13', 10);
 export const supervisorDpt = parseInt(process.env.SUPERVISOR_DEPT || '13', 10);
+
+export const showLog = Boolean(process.env.SHOW_LOG) || true;
