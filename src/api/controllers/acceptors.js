@@ -12,9 +12,16 @@ import { ensureAcceptorCanBeAdded,
   ensureUserSignedIn } from './middlewares';
 import emptyFunction from 'fbjs/lib/emptyFunction';
 import { ObjectId } from 'mongodb';
+import profileDao from '../models/wxe-profile';
 
 const wxapi = api(wxcfg.corpId, wxcfg.secret, wxcfg.agentId, redis.host, redis.port);
 const router = new Router();
+
+const getUser2 = async (req, res, next) => {
+  const profile = await profileDao.getByUserId(req.user.userid);
+  req.user.department = profile.roles;
+  next();
+};
 
 export const list = async (req, res) => {
   const { pageIndex } = req.params;
@@ -45,8 +52,9 @@ export const list = async (req, res) => {
 };
 router.get('/list/:pageIndex',
   getUserId(),
-  getUser({ wxapi }),
-  ensureUserSignedIn,
+  // getUser({ wxapi }),
+  getUser2,
+  // ensureUserSignedIn,
   list);
 
 /*

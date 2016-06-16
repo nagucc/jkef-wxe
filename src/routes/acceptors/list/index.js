@@ -15,8 +15,8 @@ export default {
       pageIndex: 0,
       pageSize: 20,
     }, query);
-    dispatch(reset());
-    dispatch(fetchAcceptors(query));
+    // dispatch(reset());
+    // dispatch(fetchAcceptors(query));
 
     const props = {
       fetchAcceptors,
