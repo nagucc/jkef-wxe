@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { findAcceptors, addAcceptor,
-  findByIdCardNumber, findById, update } from '../models/data-access';
+  findByIdCardNumber, findById, update,
+  addEdu, removeEdu,
+  addCareer, removeCareer } from '../models/data-access';
 import { wxentConfig as wxcfg,
   redisConfig as redis } from '../../config';
 import api from 'wxent-api-redis';
@@ -8,6 +10,8 @@ import { getUser, getUserId } from 'wxe-auth-express';
 import { ensureAcceptorCanBeAdded,
   isManager, isSupervisor,
   ensureUserSignedIn } from './middlewares';
+import emptyFunction from 'fbjs/lib/emptyFunction';
+import { ObjectId } from 'mongodb';
 
 const wxapi = api(wxcfg.corpId, wxcfg.secret, wxcfg.agentId, redis.host, redis.port);
 const router = new Router();
@@ -83,7 +87,7 @@ router.put('/add',
 
 export const getDetail = async (req, res) => {
   try {
-    const data = await findById(req.params.id);
+    const data = await findById(new ObjectId(req.params.id));
     if (!data) {
       res.send({ ret: -1, msg: '给定的Id不存在' });
     }
@@ -103,6 +107,131 @@ router.get('/detail/:id',
   getUser({ wxapi }),
   ensureUserSignedIn,
   getDetail);
+
+export const onlyManagerAndOwnerCanDoNext = idGetter =>
+  async (req, res, next = emptyFunction) => {
+    const id = idGetter(req, res);
+    try {
+      const data = await findById(id);
+      if (!isManager(req.user.department)
+        && req.user.userid !== data.userid) {
+        res.send({ ret: 401, msg: '无权操作' });
+        return;
+      }
+      next();
+    } catch (e) {
+      res.send({ ret: -1, msg: e });
+    }
+  };
+
+
+export const putEdu = async (req, res) => {
+  const { name, year } = req.body;
+  if (!name
+    || !year
+    || isNaN(parseInt(year, 10))) {
+    res.send({ ret: -1, msg: '必须提供学校名称和入学年份，入学年份必须是数字' });
+    return;
+  }
+  try {
+    await addEdu(new ObjectId(req.params.id), {
+      name,
+      year: parseInt(year, 10),
+    });
+    res.send({ ret: 0 });
+  } catch (e) {
+    res.send({ ret: -1, msg: e });
+  }
+};
+router.put('/edu/:id',
+  getUserId(),
+  getUser({ wxapi }),
+  ensureUserSignedIn,
+  onlyManagerAndOwnerCanDoNext(req => new ObjectId(req.params.id)),
+  putEdu,
+);
+
+
+export const deleteEdu = async (req, res) => {
+  const { name, year } = req.body;
+  if (!name
+    || !year
+    || isNaN(parseInt(year, 10))) {
+    res.send({ ret: -1, msg: '必须提供学校名称和入学年份，入学年份必须是数字' });
+    return;
+  }
+  try {
+    await removeEdu(new ObjectId(req.params.id), {
+      name,
+      year: parseInt(year, 10),
+    });
+    res.send({ ret: 0 });
+  } catch (e) {
+    res.send({ ret: -1, msg: e });
+  }
+};
+
+router.delete('/edu/:id',
+  getUserId(),
+  getUser({ wxapi }),
+  ensureUserSignedIn,
+  onlyManagerAndOwnerCanDoNext(req => new ObjectId(req.params.id)),
+  deleteEdu,
+);
+
+export const putCareer = async (req, res) => {
+  const { name, year } = req.body;
+  if (!name
+    || !year
+    || isNaN(parseInt(year, 10))) {
+    res.send({ ret: -1, msg: '必须提供公司名称和入职年份，入职年份必须是数字' });
+    return;
+  }
+  try {
+    await addCareer(new ObjectId(req.params.id), {
+      name,
+      year: parseInt(year, 10),
+    });
+    res.send({ ret: 0 });
+  } catch (e) {
+    res.send({ ret: -1, msg: e });
+  }
+};
+
+router.put('/career/:id',
+getUserId(),
+getUser({ wxapi }),
+ensureUserSignedIn,
+onlyManagerAndOwnerCanDoNext(req => new ObjectId(req.params.id)),
+putCareer,
+);
+
+export const deleteCareer = async (req, res) => {
+  const { name, year } = req.body;
+  if (!name
+    || !year
+    || isNaN(parseInt(year, 10))) {
+    res.send({ ret: -1, msg: '必须提供公司名称和入职年份，入职年份必须是数字' });
+    return;
+  }
+  try {
+    await removeCareer(new ObjectId(req.params.id), {
+      name,
+      year: parseInt(year, 10),
+    });
+    res.send({ ret: 0 });
+  } catch (e) {
+    res.send({ ret: -1, msg: e });
+  }
+};
+
+router.delete('/career/:id',
+  getUserId(),
+  getUser({ wxapi }),
+  ensureUserSignedIn,
+  onlyManagerAndOwnerCanDoNext(req => new ObjectId(req.params.id)),
+  deleteCareer,
+);
 
 export const postUpdate = async (req, res) => {
   const { id } = req.params;

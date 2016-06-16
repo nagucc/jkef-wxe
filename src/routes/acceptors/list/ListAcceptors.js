@@ -4,7 +4,7 @@ import { Cells, Cell, CellFooter, CellBody,
   Panel, PanelHeader, PanelBody,
   MediaBox,
   Button, SearchBar } from 'react-weui';
-import NeedSignup from '../../components/NeedSignup';
+import NeedSignup from '../../../components/NeedSignup';
 
 class ListAcceptors extends React.Component {
   static propTypes = {
@@ -26,7 +26,7 @@ class ListAcceptors extends React.Component {
     dispatch(fetchAcceptors(query));
   }
   search(text) {
-    const { dispatch, fetchAcceptors, cleanAcceptors, query } = this.props;
+    const { dispatch, fetchAcceptors, query } = this.props;
     query.text = text;
     query.pageIndex = 0;
     dispatch(cleanAcceptors());

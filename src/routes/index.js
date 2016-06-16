@@ -20,7 +20,6 @@ import error from './error';
 
 import statByProject from './stat-by-project';
 import statByYear from './stat-by-year';
-import listAcceptors from './list-acceptors';
 import acceptors from './acceptors';
 
 export default {
@@ -30,7 +29,6 @@ export default {
   children: [
     statByProject,
     statByYear,
-    listAcceptors,
     home,
     ...acceptors,
     contact,

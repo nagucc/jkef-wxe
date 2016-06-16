@@ -23,14 +23,13 @@ import models from './data/models';
 import schema from './data/schema';
 import routes from './routes';
 import assets from './assets';
-import { port, auth, analytics } from './config';
+import { port, auth, analytics, showLog } from './config';
 import configureStore from './store/configureStore';
 import { setRuntimeVariable } from './actions/runtime';
 
 import statCtrl from './api/controllers/stat';
 import acceptorsCtrl from './api/controllers/acceptors';
 import wxeAuthCtrl from './api/controllers/wxe-auth';
-
 const app = express();
 
 //
@@ -47,7 +46,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(cookieParser('jkef.nagu.cc cookie key'));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-
+if (showLog) {
+  const morgan = require('morgan');
+  app.use(morgan('dev'));
+}
 /*
 注册API
  */

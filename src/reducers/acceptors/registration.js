@@ -90,7 +90,7 @@ const errorMsg = (state = {
   }
 };
 
-const data = (state ={
+const data = (state = {
   idCard: {},
 }, action) => {
   switch (action.type) {
@@ -99,7 +99,7 @@ const data = (state ={
     default:
       return state;
   }
-}
+};
 
 export default combineReducers({
   ui: combineReducers({
