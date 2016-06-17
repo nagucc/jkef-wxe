@@ -93,3 +93,5 @@ export const DELETED_ACCEPTOR_CAREER = 'DELETED_ACCEPTOR_CAREER';
  */
 
 export const STAT_BY_YEAR = 'STAT_BY_YEAR';
+
+export const STAT_BY_PROJECT = 'STAT_BY_PROJECT';
