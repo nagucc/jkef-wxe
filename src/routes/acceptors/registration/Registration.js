@@ -24,7 +24,12 @@ export class RegistrationComponent extends React.Component {
     ui: PropTypes.object.isRequired,
     me: PropTypes.object,
   };
+  static contextTypes = {
+    setTitle: PropTypes.func.isRequired,
+  };
   async componentDidMount() {
+    // 设置标题
+    this.context.setTitle('成员注册');
     const { error, fetchById, showRegistration, unauthorized } = this.props;
 
     if (this.props.fetchById) showRegistration(await fetchById());

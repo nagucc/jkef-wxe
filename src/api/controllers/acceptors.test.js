@@ -187,10 +187,7 @@ describe('Acceptors Middlewares', () => {
 
   it('list 普通用户可查看列表，但不包含仅有助学金记录的信息', async () => {
     const req = createRequest({
-      user: {
-        department: [supervisorDpt + 999999],
-        userid: 88,
-      },
+      user: normalUser,
       query: {
         pageSize: 500,
       },

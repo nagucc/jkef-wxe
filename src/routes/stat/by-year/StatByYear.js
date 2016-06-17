@@ -1,17 +1,27 @@
-import React, { PropTypes } from 'react'
+import React, { PropTypes } from 'react';
 import { formatMoney, formatNumber } from 'accounting';
-
-import {CellsTitle, Progress, MediaBox, MediaBoxDescription} from 'react-weui';
+import { connect } from 'react-redux';
+import { CellsTitle, Progress, MediaBox, MediaBoxDescription } from 'react-weui';
+import getStatByYear from '../../../actions/stat/by-year';
 
 class StatByYear extends React.Component {
   static propTypes = {
-    stat: React.PropTypes.array
+    stat: PropTypes.array,
+    getStatByYear: PropTypes.func.isRequired,
+    totalAmount: PropTypes.number,
+    totalCount: PropTypes.number,
+    lastUpdated: PropTypes.number,
+    maxAmount: PropTypes.number,
   };
-  static defaultProps = {
-    stat: []
+  static contextTypes = {
+    setTitle: PropTypes.func.isRequired,
   };
-  render () {
-    let { stat, totalAmount, totalCount, lastUpdated, maxAmount } = this.props;
+  componentDidMount() {
+    this.context.setTitle('按年度统计')
+    this.props.getStatByYear();
+  }
+  render() {
+    const { stat, totalAmount, totalCount, lastUpdated, maxAmount } = this.props;
     let year = (new Date(lastUpdated)).getYear() + 1900;
     let month = (new Date(lastUpdated)).getMonth() + 1;
     return (
@@ -23,7 +33,7 @@ class StatByYear extends React.Component {
 
           {
             stat.map((item, i) => {
-              if(item.value) return (
+              if (item.value) return (
                 <div key={i}>
                   <CellsTitle>
                     <a href={`/acceptors/list/?year=${item._id}`}>
@@ -51,4 +61,20 @@ class StatByYear extends React.Component {
   }
 }
 
-export default StatByYear;
+const mapStateToProps = state => {
+  const stat = state.stat.byYear.data;
+  let totalAmount = 0;
+  let totalCount = 0;
+  let lastUpdated = 0;
+  let maxAmount = 0;
+  stat.forEach(item => {
+    totalAmount += item.value.amount;
+    totalCount += item.value.count;
+    lastUpdated = Math.max(lastUpdated,
+      isNaN(item.value.lastUpdated) ? 0 : item.value.lastUpdated);
+    maxAmount = Math.max(maxAmount, item.value.amount);
+  });
+  return { stat, totalAmount, totalCount, lastUpdated, maxAmount };
+};
+
+export default connect(mapStateToProps, { getStatByYear })(StatByYear);

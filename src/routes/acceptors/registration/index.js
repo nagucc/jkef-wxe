@@ -4,7 +4,7 @@ import fetch from '../../../core/fetch';
 
 export default {
 
-  path: '/acceptors/registration',
+  path: '/registration',
 
   async action() {
     // 提交到服务器进行注册的方法

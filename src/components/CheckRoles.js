@@ -15,7 +15,7 @@ class CheckRoles extends React.Component {
     isManager: false,
     success: emptyFunction,
     fail: emptyFunction,
-    error: result => alert(`服务器异常：${result.msg}`), // eslint-disable-line no-alert,
+    error: emptyFunction,
   };
   componentDidMount() {
     const { success, error, fail, isSupervisor, isManager } = this.props;
