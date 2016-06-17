@@ -5,18 +5,6 @@ export const getJson = async(url, options) => {
   return await res.json();
 };
 
-export const getStatByProject = async () => {
-  const result = await getJson('/api/stat/by-project');
-  if (result.ret === 0) return result.data;
-  throw new Error('getStatByProject failed');
-};
-
-export const getStatByYear = async () => {
-  const result = await getJson('/api/stat/by-year');
-  if (result.ret === 0) return result.data;
-  throw new Error('getStatByYear failed');
-};
-
 export const findAcceptorsByProject = async (project, pageIndex = 0) => {
   const result = await getJson(`/api/acceptors/list/${pageIndex}?project=${encodeURIComponent(project)}`);
   if (result.ret === 0) return result.data;
