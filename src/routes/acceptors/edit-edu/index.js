@@ -8,7 +8,7 @@ import { addEdu, deleteEdu,
   initEduHistory } from '../../../actions/acceptors/edu';
 
 export default {
-  path: '/acceptors/edit-edu/:id',
+  path: '/edit-edu/:id',
   async action({ params, context }) {
     const { id } = params;
     const { dispatch } = context.store;

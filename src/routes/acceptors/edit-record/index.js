@@ -8,7 +8,7 @@ import { addCareer, deleteCareer,
   initCareerHistory } from '../../../actions/acceptors/career';
 
 export default {
-  path: '/acceptors/edit-record/:id',
+  path: '/edit-record/:id',
   async action({ params, context }) {
     const { id } = params;
     const { dispatch } = context.store;

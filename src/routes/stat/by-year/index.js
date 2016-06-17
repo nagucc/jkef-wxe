@@ -3,7 +3,7 @@ import StatByYear from './StatByYear';
 
 export default {
 
-  path: '/stat-by-year',
+  path: '/by-year',
 
   async action() {
     return <StatByYear />;

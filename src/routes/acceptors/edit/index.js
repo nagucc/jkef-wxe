@@ -4,7 +4,7 @@ import fetch from '../../../core/fetch';
 
 export default {
 
-  path: '/acceptors/edit/:id',
+  path: '/edit/:id',
 
   async action({ params }) { // eslint-disable-line react/prop-types
     const { id } = params;

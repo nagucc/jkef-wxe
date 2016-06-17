@@ -9,11 +9,18 @@ import editEdu from './edit-edu';
 import editCareer from './edit-career';
 import list from './list';
 
-export default [
-  registration,
-  detail,
-  edit,
-  editEdu,
-  editCareer,
-  list,
-];
+export default {
+  path: '/acceptors',
+  children: [
+    registration,
+    detail,
+    edit,
+    editEdu,
+    editCareer,
+    list,
+  ],
+  async action({ next }) {
+    const component = await next();
+    return component;
+  },
+};

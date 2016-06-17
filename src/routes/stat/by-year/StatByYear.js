@@ -2,18 +2,26 @@ import React, { PropTypes } from 'react';
 import { formatMoney, formatNumber } from 'accounting';
 import { connect } from 'react-redux';
 import { CellsTitle, Progress, MediaBox, MediaBoxDescription } from 'react-weui';
-import getStatByYear from '../../actions/stat/by-year';
+import getStatByYear from '../../../actions/stat/by-year';
 
 class StatByYear extends React.Component {
   static propTypes = {
     stat: PropTypes.array,
     getStatByYear: PropTypes.func.isRequired,
+    totalAmount: PropTypes.number,
+    totalCount: PropTypes.number,
+    lastUpdated: PropTypes.number,
+    maxAmount: PropTypes.number,
+  };
+  static contextTypes = {
+    setTitle: PropTypes.func.isRequired,
   };
   componentDidMount() {
+    this.context.setTitle('按年度统计')
     this.props.getStatByYear();
   }
   render() {
-    let { stat, totalAmount, totalCount, lastUpdated, maxAmount } = this.props;
+    const { stat, totalAmount, totalCount, lastUpdated, maxAmount } = this.props;
     let year = (new Date(lastUpdated)).getYear() + 1900;
     let month = (new Date(lastUpdated)).getMonth() + 1;
     return (
