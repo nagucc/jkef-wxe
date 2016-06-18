@@ -100,10 +100,10 @@ class Detail extends React.Component {
 }
 
 const mapStateToProps = state => {
-  const { acceptor, error } = state.acceptors.detail;
+  const { acceptor, error, toast } = state.acceptors.detail;
   return {
-    showToast: acceptor === null && error === null,
-    acceptor: acceptor || { idCard: {} },
+    showToast: toast.show,
+    acceptor,
     error,
     isManager: state.me.roles.isManager,
   };
