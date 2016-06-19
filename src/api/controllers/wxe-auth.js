@@ -3,6 +3,7 @@ import api from 'wxent-api-redis';
 import { signin, getme, getUserId, getUser } from 'wxe-auth-express';
 import { wxentConfig as wxcfg, redisConfig as redis,
   host, manageDpt, supervisorDpt } from '../../config';
+import { getUser as getUser2, isManager, isSupervisor } from './middlewares';
 
 const router = new Router();
 const wxapi = api(wxcfg.corpId, wxcfg.secret, wxcfg.agentId, redis.host, redis.port);
@@ -19,18 +20,22 @@ router.get('/me', getme());
 
 router.get('/me/roles',
   getUserId(),
-  getUser({ wxapi }),
+  // getUser({ wxapi }),
+  getUser2,
   (req, res) => {
     const { department } = req.user;
     if (!department) {
       res.send({ ret: -1, msg: req.user.errmsg });
       return;
     }
-    const isSupervisor = department.some(dept => dept === supervisorDpt);
-    const isManager = department.some(dept => dept === manageDpt);
+    // const isSupervisor = department.some(dept => dept === supervisorDpt);
+    // const isManager = department.some(dept => dept === manageDpt);
     res.send({
       ret: 0,
-      data: { isSupervisor, isManager },
+      data: {
+        isSupervisor: isSupervisor(req.user.department),
+        isManager: isManager(req.user.department),
+      },
     });
   });
 

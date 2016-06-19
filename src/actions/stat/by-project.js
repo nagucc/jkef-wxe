@@ -1,19 +1,17 @@
-import { FETCHED_ACCEPTOR_BY_ID } from '../../constants';
+import { STAT_BY_PROJECT } from '../../constants';
 import fetch from '../../core/fetch';
 import { fetchFailed, fetching } from '../common';
 import { SERVER_FAILED } from '../../err-codes';
 
-const fetched = acceptor => ({
-  type: FETCHED_ACCEPTOR_BY_ID,
-  acceptor,
+const fetched = data => ({
+  type: STAT_BY_PROJECT,
+  data,
 });
 
-export const fetchAcceptor = id => async dispatch => {
+export default () => async dispatch => {
   dispatch(fetching());
   try {
-    const res = await fetch(`/api/acceptors/detail/${id}`, {
-      credentials: 'same-origin',
-    });
+    const res = await fetch('/api/stat/by-project');
     const result = await res.json();
     if (result.ret === 0) dispatch(fetched(result.data));
     else dispatch(fetchFailed(result));

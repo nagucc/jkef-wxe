@@ -23,8 +23,14 @@ export class RegistrationComponent extends React.Component {
     action: PropTypes.func.isRequired,
     ui: PropTypes.object.isRequired,
     me: PropTypes.object,
+    handleSubmit: PropTypes.func.isRequired,
+  };
+  static contextTypes = {
+    setTitle: PropTypes.func.isRequired,
   };
   async componentDidMount() {
+    // 设置标题
+    this.context.setTitle('填写成员信息');
     const { error, fetchById, showRegistration, unauthorized } = this.props;
 
     if (this.props.fetchById) showRegistration(await fetchById());
@@ -40,7 +46,7 @@ export class RegistrationComponent extends React.Component {
     document.getElementById('idCardType').dispatchEvent(event);
   }
   render() {
-    const { ui, setUserRole, fields } = this.props;
+    const { ui, setUserRole, fields, action } = this.props;
 
     // 处理证件类型改变时的事件
     const typeChanged = e => {
@@ -57,23 +63,11 @@ export class RegistrationComponent extends React.Component {
       }
     };
     // 处理提交按钮的点击事件
-    const submit = () => {
-      const data = {
-        name: fields.name.value,
-        idCard: {
-          type: fields.idCard.type.value,
-          number: fields.idCard.number.value,
-        },
-        userid: fields.userid.value,
-        isMale: fields.isMale.value,
-        phone: fields.phone.value,
-      };
-      this.props.action(data).then(acc => {
-        window.location = `/acceptors/detail/${acc._id}`;
-      }, result => {
-        alert(`操作失败：${JSON.stringify(result.msg)}`); // eslint-disable-line no-alert
-      });
-    };
+    const submit = values => action(values).then(acc => {
+      window.location = `/acceptors/detail/${acc._id}`;
+    }, result => {
+      alert(`操作失败：${JSON.stringify(result)}`); // eslint-disable-line no-alert
+    });
     // 返回组件
     return (
       <div className="progress">
@@ -173,7 +167,7 @@ export class RegistrationComponent extends React.Component {
           }
           {
             fields.idCard.type.value ? (
-              <Button onClick={submit} >确定</Button>
+              <Button onClick={this.props.handleSubmit(submit)} >确定</Button>
             ) : null
           }
         </div>

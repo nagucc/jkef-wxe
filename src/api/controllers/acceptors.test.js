@@ -98,27 +98,8 @@ describe('Acceptors Middlewares', () => {
     expect(data).to.be.not.ok;
   });
 
-  it('postUpdate 非管理员不能修改别人的信息', async () => {
+  it('postUpdate 更新信息', async () => {
     const req = createRequest({
-      user: {
-        department: [manageDpt + 99999],
-        userid: otherUserid,
-      },
-      body: { ...doc, name: 'updated2' },
-      params: { id: doc._id },
-    });
-    const res = createResponse();
-    await acceptors.postUpdate(req, res);
-    const data = res._getData();
-    expect(data.ret).eql(401);
-  });
-
-  it('postUpdate 管理员能更新其他人的信息', async () => {
-    const req = createRequest({
-      user: {
-        department: [manageDpt],
-        userid: otherUserid,
-      },
       body: { ...doc, name: 'updated3' },
       params: { id: doc._id },
     });

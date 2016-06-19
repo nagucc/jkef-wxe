@@ -3,10 +3,12 @@ import registration from './registration';
 import detail from './detail';
 import eduHistory from './edu';
 import careerHistory from './career';
+import records from './record';
 
 export default combineReducers({
   registration,
   detail,
   eduHistory,
   careerHistory,
+  records,
 });

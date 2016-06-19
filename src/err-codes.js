@@ -38,5 +38,8 @@ export const TOO_SMALL_NUMBER = 1007;
 // 数值太大
 export const TOO_LARGE_NUMBER = 1008;
 
+// 对象没找到
+export const OBJECT_IS_NOT_FOUND = 1009;
+
 // 未知错误
 export const UNKNOWN_ERROR = -1;
