@@ -85,6 +85,7 @@
     "mkdirp": "^0.5.1",
     "mocha": "^2.4.5",
     "ncp": "^2.0.0",
+    "node-mocks-http": "^1.5.2",
     "postcss": "^5.0.19",
     "postcss-import": "^8.1.0",
     "postcss-loader": "^0.8.2",

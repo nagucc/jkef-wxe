@@ -5,6 +5,20 @@ import {
 } from 'react-weui';
 import fetch from '../../core/fetch';
 
+function checkStatus(response) {
+  if (response.status >= 200 && response.status < 300) {
+    return response;
+  } else {
+    const error = new Error(response.statusText);
+    error.response = response;
+    throw error;
+  }
+}
+
+function parseJSON(response) {
+  return response.text();
+}
+
 class RegistrationForm extends React.Component {
   static propTypes = {
     data: React.PropTypes.array,
@@ -12,38 +26,42 @@ class RegistrationForm extends React.Component {
   static defaultProps = {
     data: [],
   };
-  state = {};
+  state = { sex: '男', type: '理科' };
+  // trace change about sex type;
+  handleChangeSex(e) {
+    this.setState({ sex: e.target.value });
+  }
+  handleChangeType(e) {
+    this.setState({ type: e.target.value });
+  }
   // fetch handle
   handleSubmit(e) {
     e.preventDefault();
     this.setState({
-      name: this.refs.name.value.trim(),
-      id: this.refs.id.value.trim(),
-      sex: this.refs.sex.selected,
-      type: this.refs.type.selected,
-      graduation: this.refs.graduation.value.trim(),
-      grade: this.refs.grade.value.trim(),
-      university: this.refs.university.value.trim(),
-      major: this.refs.major.value.trim(),
-      degree: this.refs.degree.value.trim(),
-    });
-    fetch('/api/fundinfo', {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ name: 'bai', id: '1' }),
-      // body: JSON.stringify(this.state),
-    }).then((data) => {
-      const res = JSON.stringify(data);
-      if (res.ok) {
-        console.log('Request succeeded with JSON response', res);
-      } else if (res.status === 401) {
-        console.log('Request succeeded with JSON response', res);
-      }
-    }, (error) => {
-      console.log('Request failed', error);
+      name: document.getElementById('name').value,
+      id: document.getElementById('id').value,
+      graduation: document.getElementById('graduation').value,
+      grade: document.getElementById('grade').value,
+      university: document.getElementById('university').value,
+      major: document.getElementById('major').value,
+      degree: document.getElementById('degree').value,
+    }, () => {
+      fetch('/api/fundinfo', {
+        credentials: 'include',
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(this.state),
+      })
+        .then(checkStatus)
+        .then(parseJSON)
+        .then((data) => {
+          console.log('request succeeded with JSON response', data);
+        }).catch((error) => {
+          console.log('request failed', error);
+        });
     });
   }
   render() {
@@ -63,7 +81,7 @@ class RegistrationForm extends React.Component {
                   <Label>{this.props.data[0].content}</Label>
                 </CellHeader>
                 <CellBody>
-                  <Input type="text" ref={this.props.data[0].name}
+                  <Input required type="text" id={this.props.data[0].name}
                     placeholder={`请输入${this.props.data[0].content}`}
                   />
                 </CellBody>
@@ -73,7 +91,7 @@ class RegistrationForm extends React.Component {
                   <Label>{this.props.data[1].content}</Label>
                 </CellHeader>
                 <CellBody>
-                  <Input type="text" ref={this.props.data[1].name}
+                  <Input required type="text" id={this.props.data[1].name}
                     placeholder={`请输入${this.props.data[1].content}`}
                   />
                 </CellBody>
@@ -81,7 +99,7 @@ class RegistrationForm extends React.Component {
               <FormCell select selectPos="after">
                 <Label>性别</Label>
                 <CellBody>
-                  <Select ref="sex">
+                  <Select onChange={this.handleChangeSex.bind(this)}>
                     <option value="男">男</option>
                     <option value="女">女</option>
                   </Select>
@@ -90,7 +108,7 @@ class RegistrationForm extends React.Component {
               <FormCell select selectPos="after">
                 <Label>类别</Label>
                 <CellBody>
-                  <Select ref="type">
+                  <Select onChange={this.handleChangeType.bind(this)}>
                     <option value="文科">文科</option>
                     <option value="理科">理科</option>
                     <option value="艺体">艺体</option>
@@ -106,7 +124,7 @@ class RegistrationForm extends React.Component {
                           <Label>{item.content}</Label>
                         </CellHeader>
                         <CellBody>
-                          <Input type="text" ref={item.name}
+                          <Input required id={item.name} type="text"
                             placeholder={`请输入${item.content}`}
                           />
                         </CellBody>
@@ -117,8 +135,8 @@ class RegistrationForm extends React.Component {
                 })
               }
               <ButtonArea direction="vertical">
-                <button type="submit" className="weui_btn weui_btn_primary">确定</button>
-                <Button href="#" type="default">返回</Button>
+                <Button type="primary">确定</Button>
+                <Button type="default">返回</Button>
               </ButtonArea>
             </Form>
           </form>
