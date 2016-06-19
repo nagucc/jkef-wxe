@@ -8,6 +8,7 @@ import edit from './edit';
 import editEdu from './edit-edu';
 import editCareer from './edit-career';
 import list from './list';
+import editRecord from './edit-record';
 
 export default {
   path: '/acceptors',
@@ -18,6 +19,7 @@ export default {
     editEdu,
     editCareer,
     list,
+    editRecord,
   ],
   async action({ next }) {
     const component = await next();

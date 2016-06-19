@@ -354,3 +354,42 @@ export const removeCareer = async (_id, careerHistory) =>
         reject(e);
       }
     }));
+
+/*
+为_id添加受赠记录
+ */
+export const addRecord = async (_id, record) =>
+  new Promise((resolve, reject) => {
+    if (!record
+        || !record.project
+        || isNaN(parseFloat(record.amount, 10))) {
+      Promise.reject('所给数据不完整');
+      return;
+    }
+    useAcceptors(async col => {
+      try {
+        await col.updateOne({ _id }, {
+          $addToSet: { records: record },
+        });
+        resolve();
+      } catch (e) {
+        reject(e);
+      }
+    });
+  });
+
+export const removeRecord = async (_id, recordId) =>
+  new Promise((resolve, reject) =>
+    useAcceptors(async col => {
+      try {
+        const oldDoc = await findById(_id);
+        const records = oldDoc.records.filter(record =>
+          record._id !== recordId);
+        await col.updateOne({ _id }, {
+          $set: { records },
+        });
+        resolve();
+      } catch (e) {
+        reject(e);
+      }
+    }));

@@ -2,13 +2,14 @@ import { Router } from 'express';
 import { findAcceptors, addAcceptor,
   findByIdCardNumber, findById, update,
   addEdu, removeEdu,
-  addCareer, removeCareer } from '../models/data-access';
+  addCareer, removeCareer,
+  addRecord, removeRecord } from '../models/data-access';
 import { wxentConfig as wxcfg,
   redisConfig as redis } from '../../config';
 import api from 'wxent-api-redis';
 import { getUser, getUserId } from 'wxe-auth-express';
 import { ensureAcceptorCanBeAdded,
-  isManager, isSupervisor,
+  isManager, isSupervisor, isUndefined,
   ensureUserSignedIn, getUser as getUser2 } from './middlewares';
 import emptyFunction from 'fbjs/lib/emptyFunction';
 import { ObjectId } from 'mongodb';
@@ -98,8 +99,16 @@ router.put('/add',
 );
 
 export const getDetail = async (req, res) => {
+  const id = req.params.id;
+  if (!id || id === 'undefined') {
+    res.send({
+      ret: OBJECT_IS_NOT_FOUND,
+      msg: '所给Id不正确',
+    });
+    return;
+  }
   try {
-    const data = await findById(new ObjectId(req.params.id));
+    const data = await findById(new ObjectId(id));
     if (!data) {
       res.send({ ret: -1, msg: '给定的Id不存在' });
     }
@@ -137,6 +146,10 @@ export const onlyManagerAndOwnerCanDoNext = idGetter =>
     }
   };
 
+// export onlySupervisorOrOwnerCanDoNext = idGetter =>
+//   async (req, res, next = emptyFunction) => {
+//     const id = idGetter(req, res);
+//   }
 
 export const putEdu = async (req, res) => {
   const { name, year } = req.body;
@@ -250,6 +263,81 @@ router.delete('/career/:id',
   deleteCareer,
 );
 
+export const onlyManagerCanDoNext = (req, res, next) => {
+  if (isManager(req.user.department)) next();
+};
+
+export const putRecord = async (req, res) => {
+  const id = req.params.id;
+  if (isUndefined(id)) {
+    res.send({
+      ret: OBJECT_IS_NOT_FOUND,
+      msg: '所给的Id不正确',
+    });
+    return;
+  }
+  const { project, amount, recommander, remark } = req.body;
+  let { date } = req.body;
+  if (isUndefined(date)) date = Date.now();
+  else date = Date.parse(date);
+  const _id = new ObjectId();
+  try {
+    await addRecord(new ObjectId(id), {
+      project, date, amount, recommander, remark,
+      _id,
+    });
+    res.send({
+      ret: SUCCESS,
+      data: {
+        _id,
+        project,
+        date,
+        amount,
+        recommander,
+        remark,
+      },
+    });
+  } catch (e) {
+    res.send({
+      ret: UNKNOWN_ERROR,
+      msg: e,
+    });
+  }
+};
+
+router.put('/record/:id',
+  getUserId(),
+  getUser2,
+  onlyManagerCanDoNext,
+  putRecord,
+);
+
+export const deleteRecord = async (req, res) => {
+  const { id, recordId } = req.params;
+  if (isUndefined(id) || isUndefined(recordId)) {
+    res.send({
+      ret: OBJECT_IS_NOT_FOUND,
+      msg: '所给的Id不正确',
+    });
+    return;
+  }
+  let result = { ret: SUCCESS };
+  try {
+    await removeRecord(new ObjectId(id), new ObjectId(recordId));
+  } catch (e) {
+    result = {
+      ret: UNKNOWN_ERROR,
+      msg: e,
+    };
+  }
+  res.send(result);
+};
+router.delete('/record/:id/:recordId',
+  getUserId(),
+  getUser2,
+  onlyManagerCanDoNext,
+  deleteRecord
+);
 export const postUpdate = async (req, res) => {
   const { id } = req.params;
   try {
