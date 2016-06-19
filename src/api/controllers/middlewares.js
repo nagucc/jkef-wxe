@@ -52,3 +52,7 @@ export const ensureUserSignedIn = (req, res, next) => {
     res.send({ ret: req.user.errcode, msg: req.user.errmsg });
   } else next();
 };
+
+export const isUndefined = param => (
+  param === undefined || param === 'undefined'
+);
