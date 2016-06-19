@@ -2,26 +2,12 @@
 /* eslint-disable padded-blocks, no-unused-expressions */
 
 import 'babel-polyfill';
-import React from 'react';
 import { expect } from 'chai';
 import { createRequest, createResponse } from 'node-mocks-http';
 import { ensureAcceptorCanBeAdded } from './middlewares';
 
 describe('Express Middlewares', () => {
 
-  it('用户未使用微信登录时返回错误代码及信息', async () => {
-    const req = createRequest({
-      user: {
-        errcode: 11,
-        errmsg: 'test error',
-      },
-    });
-    const res = createResponse();
-    await ensureAcceptorCanBeAdded(req, res);
-    const data = res._getData();
-    expect(data.ret).eql(11);
-    expect(data.msg).eql('test error');
-  });
   it('姓名、证件信息为任一为空时返回错误信息', async () => {
     const req = createRequest({
       user: {
