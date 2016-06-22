@@ -4,7 +4,7 @@ const Registration = Mongoose.Schema({
   name: String,
   sex: String,
   id: String,
-  type: String,
+  style: String,
   graduation: String,
   grade: Number,
   university: String,

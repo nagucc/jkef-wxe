@@ -54,18 +54,18 @@ export const postAdd = async (req, res) => {
         name: req.body.name,
         id: req.body.id,
         sex: req.body.sex,
-        type: req.body.type,
+        style: req.body.style,
         graduation: req.body.graduation,
         grade: req.body.grade,
         university: req.body.university,
         major: req.body.major,
         degree: req.body.degree,
       });
-      const data1 = await saveData(info);
-      res.json(data1);
-    } else res.send({ ret: 0, info: 'Error occurred:database has existed.' });
+      await saveData(info);
+      res.json({ ret: 1, info: '信息录入成功' });
+    } else res.json({ ret: 0, info: '请勿重复提交' });
   } catch (e) {
-    res.send({ ret: -1, info: 'Error occurred:database error.' });
+    res.json({ ret: -1, info: 'Error occurred:database error.' });
   }
 };
 

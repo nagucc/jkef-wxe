@@ -1,78 +1,41 @@
-import React from 'react';
+import React, { Component, PropTypes } from 'react';
+import { connect } from 'react-redux';
+import { sexChange, styleChange, submitForm } from './actions';
 import {
-  Button, ButtonArea, Form, FormCell, Select,
+  Button, ButtonArea, Form, FormCell, Select, Toast,
   CellHeader, CellBody, Label, CellsTitle, Input,
 } from 'react-weui';
-import fetch from '../../core/fetch';
 
-function checkStatus(response) {
-  if (response.status >= 200 && response.status < 300) {
-    return response;
-  } else {
-    const error = new Error(response.statusText);
-    error.response = response;
-    throw error;
+class RegistrationForm extends Component {
+  constructor(props) {
+    super(props);
+    this.handleChangeSex = this.handleChangeSex.bind(this);
+    this.handleChangeStyle = this.handleChangeStyle.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
   }
-}
-
-function parseJSON(response) {
-  return response.text();
-}
-
-class RegistrationForm extends React.Component {
-  static propTypes = {
-    data: React.PropTypes.array,
-  };
-  static defaultProps = {
-    data: [],
-  };
-  state = { sex: '男', type: '理科' };
-  // trace change about sex type;
   handleChangeSex(e) {
-    this.setState({ sex: e.target.value });
+    this.props.dispatch(sexChange(e.target.value));
   }
-  handleChangeType(e) {
-    this.setState({ type: e.target.value });
+  handleChangeStyle(e) {
+    this.props.dispatch(styleChange(e.target.value));
   }
   // fetch handle
   handleSubmit(e) {
     e.preventDefault();
-    this.setState({
-      name: document.getElementById('name').value,
-      id: document.getElementById('id').value,
-      graduation: document.getElementById('graduation').value,
-      grade: document.getElementById('grade').value,
-      university: document.getElementById('university').value,
-      major: document.getElementById('major').value,
-      degree: document.getElementById('degree').value,
-    }, () => {
-      fetch('/api/fundinfo', {
-        credentials: 'include',
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(this.state),
-      })
-        .then(checkStatus)
-        .then(parseJSON)
-        .then((data) => {
-          console.log('request succeeded with JSON response', data);
-        }).catch((error) => {
-          console.log('request failed', error);
-        });
-    });
+    this.props.dispatch(submitForm());
   }
   render() {
     return (
       <div>
+        <Toast icon="loading"
+          show={this.props.toastState.show}
+        >{this.props.toastState.info}</Toast>
         <div className="hd">
           <h1 className="page_title">学生信息</h1>
         </div>
         <div className="bd">
           <form className="infoForm" role="form"
-            onSubmit={this.handleSubmit.bind(this)}
+            onSubmit={this.handleSubmit}
           >
             <CellsTitle>请认真填写你的信息资料</CellsTitle>
             <Form>
@@ -99,7 +62,7 @@ class RegistrationForm extends React.Component {
               <FormCell select selectPos="after">
                 <Label>性别</Label>
                 <CellBody>
-                  <Select onChange={this.handleChangeSex.bind(this)}>
+                  <Select onChange={this.handleChangeSex}>
                     <option value="男">男</option>
                     <option value="女">女</option>
                   </Select>
@@ -108,7 +71,7 @@ class RegistrationForm extends React.Component {
               <FormCell select selectPos="after">
                 <Label>类别</Label>
                 <CellBody>
-                  <Select onChange={this.handleChangeType.bind(this)}>
+                  <Select onChange={this.handleChangeStyle}>
                     <option value="文科">文科</option>
                     <option value="理科">理科</option>
                     <option value="艺体">艺体</option>
@@ -145,4 +108,54 @@ class RegistrationForm extends React.Component {
     );
   }
 }
-export default RegistrationForm;
+
+RegistrationForm.propTypes = {
+  doneForm: PropTypes.object.isRequired,
+  toastState: PropTypes.object,
+  data: PropTypes.array.isRequired,
+  dispatch: PropTypes.func.isRequired,
+};
+
+function selectState(state) {
+  const { doneForm, toastState } = state;
+  const data = [
+    {
+      content: '姓名',
+      name: 'name',
+    },
+    {
+      content: '身份证',
+      name: 'id',
+    },
+    {
+      content: '联系方式',
+      name: 'tel',
+    },
+    {
+      content: '毕业学校',
+      name: 'graduation',
+    },
+    {
+      content: '高考分数',
+      name: 'grade',
+    },
+    {
+      content: '录取学校',
+      name: 'university',
+    },
+    {
+      content: '录取专业',
+      name: 'major',
+    },
+    {
+      content: '录取层次',
+      name: 'degree',
+    },
+  ];
+  return {
+    doneForm,
+    toastState,
+    data,
+  };
+}
+export default connect(selectState)(RegistrationForm);
