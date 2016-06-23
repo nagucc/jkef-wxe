@@ -30,6 +30,7 @@ import { setRuntimeVariable } from './actions/runtime';
 import statCtrl from './api/controllers/stat';
 import acceptorsCtrl from './api/controllers/acceptors';
 import wxeAuthCtrl from './api/controllers/wxe-auth';
+import regData from './api/RegistrationRest/RegistrationData';
 const app = express();
 
 //
@@ -55,6 +56,7 @@ if (showLog) {
  */
 app.use('/api/stat', statCtrl);
 app.use('/api/acceptors', acceptorsCtrl);
+app.use('/api/fundinfo', regData);
 require('./api/controllers/worker');
 app.use('/api/wxe-auth', wxeAuthCtrl);
 
