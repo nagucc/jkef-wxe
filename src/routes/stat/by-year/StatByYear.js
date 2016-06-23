@@ -17,7 +17,7 @@ class StatByYear extends React.Component {
     setTitle: PropTypes.func.isRequired,
   };
   componentDidMount() {
-    this.context.setTitle('按年度统计')
+    this.context.setTitle('按年度统计');
     this.props.getStatByYear();
   }
   render() {
@@ -26,38 +26,40 @@ class StatByYear extends React.Component {
     let month = (new Date(lastUpdated)).getMonth() + 1;
     return (
       <div className="progress">
-        <div className="hd">
-          <h1 className="page_title">年度统计</h1>
-        </div>
         <div className="bd spacing">
-
           {
             stat.map((item, i) => {
-              if (item.value) return (
-                <div key={i}>
-                  <CellsTitle>
-                    <a href={`/acceptors/list/?year=${item._id}`}>
-                      {item._id}年
-                    </a>
-                  </CellsTitle>
-                  <CellsTitle>
-                    {formatMoney(item.value.amount, '¥')}元 | {formatNumber(item.value.count)}人次
-                  </CellsTitle>
-                  <Progress value={(item.value.amount / maxAmount) * 100} />
+              if (item.value) {
+                return (
+                  <div key={i}>
+                    <CellsTitle>
+                      <a href={`/acceptors/list/?year=${item._id}`}>
+                        {item._id}年
+                      </a>
+                    </CellsTitle>
+                    <CellsTitle>
+                      {formatMoney(item.value.amount, '¥')}元 | {formatNumber(item.value.count)}人次
+                    </CellsTitle>
+                    <Progress value={(item.value.amount / maxAmount) * 100} />
 
-                </div>
-              )
+                  </div>
+                );
+              }
               return null;
             })
           }
         </div>
         <MediaBox>
           <MediaBoxDescription>
-            <b>截止至{year}年{month}月，一共捐赠{formatMoney(totalAmount, '￥')}元，共计{formatNumber(totalCount)}人次</b>
+            <b>
+              截止至{year}年{month}月
+              一共捐赠{formatMoney(totalAmount, '￥')}元
+              共计{formatNumber(totalCount)}人次
+            </b>
           </MediaBoxDescription>
         </MediaBox>
       </div>
-    )
+    );
   }
 }
 
