@@ -20,7 +20,7 @@ import error from './error';
 
 import acceptors from './acceptors';
 import stat from './stat';
-
+import ceeResultRegistration from './cee-result-registration';
 export default {
 
   path: '/',
@@ -29,6 +29,7 @@ export default {
     home,
     acceptors,
     stat,
+    ceeResultRegistration,
     contact,
     login,
     register,
