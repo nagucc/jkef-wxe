@@ -5,31 +5,36 @@ import { Cells, Cell, CellFooter, CellBody,
   MediaBox,
   Button, SearchBar } from 'react-weui';
 import NeedSignup from '../../../components/NeedSignup';
+import * as actions from '../../../actions/acceptors/list';
+import * as commonActions from '../../../actions/common';
 
 class ListAcceptors extends React.Component {
   static propTypes = {
     data: React.PropTypes.array,
     totalCount: PropTypes.number,
     error: PropTypes.object,
-    dispatch: PropTypes.func,
     fetchAcceptors: PropTypes.func.isRequired,
-    cleanAcceptors: PropTypes.func.isRequired,
+    reset: PropTypes.func.isRequired,
     query: PropTypes.object,
   };
+  static contextTypes = {
+    setTitle: PropTypes.func.isRequired,
+  };
   componentDidMount() {
-    this.props.dispatch(this.props.fetchAcceptors());
+    this.context.setTitle('成员列表');
+    this.props.fetchAcceptors(this.props.query);
   }
   nextPage() {
-    const { dispatch, fetchAcceptors, query } = this.props;
+    const { fetchAcceptors, query } = this.props;
     query.pageIndex++;
-    dispatch(fetchAcceptors(query));
+    fetchAcceptors(query);
   }
   search(text) {
-    const { dispatch, fetchAcceptors, query, cleanAcceptors } = this.props;
+    const { fetchAcceptors, query, reset } = this.props;
     query.text = text;
     query.pageIndex = 0;
-    dispatch(cleanAcceptors());
-    dispatch(fetchAcceptors(query));
+    reset();
+    fetchAcceptors(query);
   }
   render() {
     const { data, totalCount } = this.props;
@@ -77,7 +82,7 @@ class ListAcceptors extends React.Component {
 }
 
 const mapStateToProps = (state) => ({
-  ...state.listAcceptors,
+  ...state.acceptors.list,
 });
 
-export default connect(mapStateToProps)(ListAcceptors);
+export default connect(mapStateToProps, { ...actions, ...commonActions })(ListAcceptors);

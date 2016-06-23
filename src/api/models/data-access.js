@@ -109,7 +109,6 @@ export const getStatByYear = () =>
   });
 
 export const findAcceptors = ({ text, year, project, projections, skip = 0, limit = 20 } = {}) => {
-  showLog && console.log('start to findAcceptors');
   let condition = { isDeleted: { $ne: true } };
   if (text) {
     var reg = new RegExp(text); // eslint-disable-line vars-on-top, no-var
@@ -139,14 +138,13 @@ export const findAcceptors = ({ text, year, project, projections, skip = 0, limi
   return new Promise((resolve, reject) => {
     useAcceptors(async col => {
       try {
-        showLog && console.log('condition:::', condition);
+        showLog && console.log('condition:::', JSON.stringify(condition));
         const totalCount = await col.count(condition);
         showLog && console.log('totalCount:::::', totalCount);
         const data = await col.find(condition, projections)
           .sort({ name: 1 })
           .skip(skip)
           .limit(limit).toArray();
-        showLog && console.log('end findAcceptors::');
         resolve({ totalCount, data });
       } catch (e) {
         reject(e);

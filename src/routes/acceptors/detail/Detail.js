@@ -23,11 +23,15 @@ class Detail extends React.Component {
     acceptorId: PropTypes.string,
     fetchAcceptor: PropTypes.func,
   };
+  static contextTypes = {
+    setTitle: PropTypes.func.isRequired,
+  };
   constructor(props) {
     super(props);
     this.state = { showActionSheet: false };
   }
   componentDidMount() {
+    this.context.setTitle('成员详细信息');
     const { acceptorId, fetchAcceptor } = this.props;
     fetchAcceptor(acceptorId);
   }
@@ -90,7 +94,7 @@ class Detail extends React.Component {
                     <CareerHistory history={acceptor.careerHistory} />
                   ) : null
                 }
-                <RecordHistory data={[]} />
+                <RecordHistory data={acceptor.records} />
                 <ActionSheet {...actionSheetParams} />
               <Button onClick={this.showActionSheet.bind(this)} >修改资料</Button>
               </div>

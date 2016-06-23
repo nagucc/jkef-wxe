@@ -1,9 +1,5 @@
 import React from 'react';
 import ListAcceptors from './ListAcceptors';
-import { fetchAcceptors } from '../../../actions/acceptors/list';
-import { reset } from '../../../actions/common';
-
-// import fetch from '../../../core/fetch';
 
 export default {
 
@@ -15,8 +11,6 @@ export default {
       pageSize: 20,
     }, query);
     const props = {
-      fetchAcceptors,
-      cleanAcceptors: reset,
       query: qs,
     };
     return <ListAcceptors {...props} />;
