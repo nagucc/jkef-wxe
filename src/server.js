@@ -23,12 +23,14 @@ import models from './data/models';
 import schema from './data/schema';
 import routes from './routes';
 import assets from './assets';
-import { port, auth, analytics } from './config';
-
-import statModel from './api/controllers/stat';
+import { port, auth, analytics, showLog } from './config';
+import configureStore from './store/configureStore';
+import { setRuntimeVariable } from './actions/runtime';
 
 import regData from './api/RegistrationRest/RegistrationData';
-
+import statCtrl from './api/controllers/stat';
+import acceptorsCtrl from './api/controllers/acceptors';
+import wxeAuthCtrl from './api/controllers/wxe-auth';
 const app = express();
 
 //
@@ -42,16 +44,21 @@ global.navigator.userAgent = global.navigator.userAgent || 'all';
 // Register Node.js middleware
 // -----------------------------------------------------------------------------
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(cookieParser());
+app.use(cookieParser('jkef.nagu.cc cookie key'));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-
+if (showLog) {
+  const morgan = require('morgan');
+  app.use(morgan('dev'));
+}
 /*
 注册API
  */
-app.use('/api/stat', statModel);
 app.use('/api/fundinfo', regData);
+app.use('/api/stat', statCtrl);
+app.use('/api/acceptors', acceptorsCtrl);
 require('./api/controllers/worker');
+app.use('/api/wxe-auth', wxeAuthCtrl);
 
 //
 // Authentication
@@ -102,10 +109,18 @@ app.get('*', async (req, res, next) => {
       data.trackingId = analytics.google.trackingId;
     }
 
+    const store = configureStore({});
+
+    store.dispatch(setRuntimeVariable({
+      name: 'initialNow',
+      value: Date.now(),
+    }));
+
     await match(routes, {
       path: req.path,
       query: req.query,
       context: {
+        store,
         insertCss: styles => css.push(styles._getCss()),
         setTitle: value => (data.title = value),
         setMeta: (key, value) => (data[key] = value),
@@ -113,6 +128,7 @@ app.get('*', async (req, res, next) => {
       render(component, status = 200) {
         css = [];
         statusCode = status;
+        data.state = JSON.stringify(store.getState());
         data.body = ReactDOM.renderToString(component);
         data.css = css.join('');
         return true;
