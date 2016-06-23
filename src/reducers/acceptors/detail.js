@@ -3,13 +3,14 @@ import { FETCHED_ACCEPTOR_BY_ID,
   FETCHING,
   FETCH_FAILED } from '../../constants';
 
-const acceptor = (state = { idCard: {} }, action) => {
+const emptyAcceptor = {
+  idCard: {},
+  records: [],
+};
+const acceptor = (state = emptyAcceptor, action) => {
   switch (action.type) {
     case FETCHED_ACCEPTOR_BY_ID:
       return action.acceptor;
-    // case FETCHING:
-    // case FETCH_FAILED:
-    //   return null;
     default:
       return state;
   }
