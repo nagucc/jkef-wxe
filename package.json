@@ -51,7 +51,7 @@
     "universal-router": "1.1.0-beta.3",
     "weui": "^0.4.2",
     "whatwg-fetch": "0.11.0",
-    "wxe-auth-express": "0.1.0",
+    "wxe-auth-express": "^0.2.3",
     "wxent-api-redis": "0.0.4"
   },
   "devDependencies": {
