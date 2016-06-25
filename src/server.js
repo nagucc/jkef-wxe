@@ -27,7 +27,7 @@ import { port, auth, analytics, showLog } from './config';
 import configureStore from './store/configureStore';
 import { setRuntimeVariable } from './actions/runtime';
 
-import regData from './api/RegistrationRest/RegistrationData';
+import regData from './api/controllers/RegistrationData';
 import statCtrl from './api/controllers/stat';
 import acceptorsCtrl from './api/controllers/acceptors';
 import wxeAuthCtrl from './api/controllers/wxe-auth';

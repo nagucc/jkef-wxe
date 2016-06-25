@@ -1,6 +1,7 @@
 import FundInfo from '../../data/models/RegistrationSchema';
 import Mongoose from 'mongoose';
 import Router from 'express';
+import { mongoUrl } from '../../config';
 
 const router = new Router();
 
@@ -9,8 +10,9 @@ const opts = {
     socketOptions: { keepAlive: 1 },
   },
 };
-Mongoose.connect('mongodb://localhost/jkef', opts);
+Mongoose.connect(mongoUrl, opts);
 
+// mongoose find函数的promise对象
 const findData = function (item) {
   return new Promise((resolve, reject) => {
     FundInfo.find(item, (err, data) => {
@@ -19,6 +21,7 @@ const findData = function (item) {
     });
   });
 };
+// mongoose save函数的promise对象
 const saveData = function (schema) {
   return new Promise((resolve, reject) => {
     schema.save((err, data) => {
@@ -27,10 +30,11 @@ const saveData = function (schema) {
     });
   });
 };
-// rest api
+// 通过id查询数据库信息
 export const getDetail = async (req, res) => {
   try {
     const data = await findData({ id: req.params.id });
+    // 这里promise返回的data是个数组，所以用长度0来判断。不存在即为0
     if (data.length === 0) {
       res.send({ ret: 0, info: '给定的id不存在' });
     } else res.json(data);
@@ -39,13 +43,8 @@ export const getDetail = async (req, res) => {
   }
 };
 router.get('/:id', getDetail);
-// router.get('/api/fundinfo/:id', (req, res) => {
-//   FundInfo.find({ id: req.params.id }, (err, info) => {
-//     if (err) return res.send(500, 'Error occurred:database error.');
-//     res.json(info);
-//   });
-// });
 
+// 添加表单信息到数据库。如果id存在返回错误。
 export const postAdd = async (req, res) => {
   try {
     const data = await findData({ id: req.body.id });
@@ -70,36 +69,5 @@ export const postAdd = async (req, res) => {
 };
 
 router.post('/', postAdd);
-
-/*
-router.post('/', (req, res) => {
-  // if(req.xhr || req.accepts('json') ==='json'){
-  console.log(req.body);
-  FundInfo.findOne({ id: req.body.id }, (err, a) => {
-    if (err) {
-      return res.status(500).send('Error occurred:database error.');
-    } else if (a === null || a.id !== req.body.id) {
-      const info = new FundInfo({
-        name: req.body.name,
-        id: req.body.id,
-        sex: req.body.sex,
-        type: req.body.type,
-        graduation: req.body.graduation,
-        grade: req.body.grade,
-        university: req.body.university,
-        major: req.body.major,
-        degree: req.body.degree,
-      });
-      info.save((err2, info2) => {
-        if (err2) return res.status(500).send('Error occurred:database error.');
-        console.log(info2);
-        res.json(info2);
-      });
-    } else {
-      return res.send('Error occurred:database has existed.');
-    }
-  });
-});
-*/
 
 export default router;
