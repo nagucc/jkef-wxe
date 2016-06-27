@@ -1,5 +1,6 @@
 import Mongoose from 'mongoose';
 
+// 创建fundInfos集合的model
 const Registration = Mongoose.Schema({
   name: String,
   sex: String,

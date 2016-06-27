@@ -17,20 +17,19 @@ import login from './login';
 import register from './register';
 import content from './content';
 import error from './error';
-
-import statByProject from './stat-by-project';
-import statByYear from './stat-by-year';
 import ceeResultRegistration from './cee-result-registration';
+import acceptors from './acceptors';
+import stat from './stat';
 
 export default {
 
   path: '/',
 
   children: [
-    statByProject,
-    statByYear,
-    ceeResultRegistration,
     home,
+    acceptors,
+    ceeResultRegistration,
+    stat,
     contact,
     login,
     register,
