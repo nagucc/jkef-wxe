@@ -41,9 +41,7 @@ export default {
 
   async action() {
     return (
-      <Provider store={store} >
-        <RegistrationForm />
-      </Provider>
+      <RegistrationForm />
       );
   },
 };

@@ -1,33 +1,58 @@
 import React, { Component, PropTypes } from 'react';
-import { connect } from 'react-redux';
-import { sexChange, styleChange, submitForm } from './actions';
+import { reduxForm } from 'redux-form';
+import { submitForm } from '../../actions/ceeRegistration/ceeRegistration';
 import {
   Button, ButtonArea, Form, FormCell, Select, Toast,
-  CellHeader, CellBody, Label, CellsTitle, Input,
+  CellHeader, CellBody, Label, CellsTitle, Input, Icon,
 } from 'react-weui';
 
+// 定义表单各个字段key
+export const fields = ['name', 'id', 'sex', 'style',
+  'tel', 'graduation', 'grade', 'university', 'major', 'degree'];
+
+// 表单字段的校验
+const validate = values => {
+  const errors = {};
+  if (!values.name) {
+    errors.name = '必填项';
+  }
+  if (!values.id) {
+    errors.id = '必填项';
+  } else if (!/(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/.test(values.id)) {
+    errors.id = '格式有误';
+  }
+  if (!values.tel) {
+    errors.tel = '必填项';
+  } else if (!isNaN(Number(values.age))) {
+    errors.tel = '输入数字';
+  }
+  if (!values.university) {
+    errors.university = '必填项';
+  }
+  return errors;
+};
+
+/*
+毕业生录取信息表
+姓名，身份证，联系方式，录取学校等一些基本信息
+*/
 class RegistrationForm extends Component {
-  constructor(props) {
-    super(props);
-    this.handleChangeSex = this.handleChangeSex.bind(this);
-    this.handleChangeStyle = this.handleChangeStyle.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
-  }
-  handleChangeSex(e) {
-    this.props.dispatch(sexChange(e.target.value));
-  }
-  handleChangeStyle(e) {
-    this.props.dispatch(styleChange(e.target.value));
-  }
-  // fetch handle
-  handleSubmit(e) {
-    e.preventDefault();
-    this.props.dispatch(submitForm());
+  componentDidMount() {
+    // 修改标题
+    this.context.setTitle('毕业生录取信息');
   }
   render() {
+    const {
+      fields: { name, id, sex, style, tel, graduation, grade, university, major, degree },
+      handleSubmit,
+    } = this.props;
+
+    // onSubmit的处理函数，发起一个submitForm action。
+    const submit = value => this.props.dispatch(submitForm(value));
+
     return (
       <div>
-        <Toast icon="loading"
+        <Toast icon={this.props.toastState.icon}
           show={this.props.toastState.show}
         >{this.props.toastState.info}</Toast>
         <div className="hd">
@@ -35,34 +60,32 @@ class RegistrationForm extends Component {
         </div>
         <div className="bd">
           <form className="infoForm" role="form"
-            onSubmit={this.handleSubmit}
+            onSubmit={handleSubmit(submit)}
           >
             <CellsTitle>请认真填写你的信息资料</CellsTitle>
             <Form>
               <FormCell>
                 <CellHeader>
-                  <Label>{this.props.data[0].content}</Label>
+                  <Label>姓名</Label>
                 </CellHeader>
                 <CellBody>
-                  <Input required type="text" id={this.props.data[0].name}
-                    placeholder={`请输入${this.props.data[0].content}`}
-                  />
+                  <Input required type="text" placeholder="请输入姓名" {...name} />
                 </CellBody>
+                {name.touched && name.error && <div>{name.error}</div>}
               </FormCell>
               <FormCell>
                 <CellHeader>
-                  <Label>{this.props.data[1].content}</Label>
+                  <Label>身份证</Label>
                 </CellHeader>
                 <CellBody>
-                  <Input required type="text" id={this.props.data[1].name}
-                    placeholder={`请输入${this.props.data[1].content}`}
-                  />
+                  <Input required type="text" placeholder="请输入身份证" {...id} />
                 </CellBody>
+                {id.touched && id.error && <div>{id.error}</div>}
               </FormCell>
               <FormCell select selectPos="after">
                 <Label>性别</Label>
                 <CellBody>
-                  <Select onChange={this.handleChangeSex}>
+                  <Select {...sex} value={sex.value || '男'}>
                     <option value="男">男</option>
                     <option value="女">女</option>
                   </Select>
@@ -71,35 +94,68 @@ class RegistrationForm extends Component {
               <FormCell select selectPos="after">
                 <Label>类别</Label>
                 <CellBody>
-                  <Select onChange={this.handleChangeStyle}>
+                  <Select {...style} value={style.value || '文科'}>
                     <option value="文科">文科</option>
                     <option value="理科">理科</option>
                     <option value="艺体">艺体</option>
                   </Select>
                 </CellBody>
               </FormCell>
-              {
-                this.props.data.map((item, i) => {
-                  if (i !== 0 && i !== 1) {
-                    return (
-                      <FormCell key={i}>
-                        <CellHeader>
-                          <Label>{item.content}</Label>
-                        </CellHeader>
-                        <CellBody>
-                          <Input required id={item.name} type="text"
-                            placeholder={`请输入${item.content}`}
-                          />
-                        </CellBody>
-                      </FormCell>
-                    );
-                  }
-                  return null;
-                })
-              }
+              <FormCell>
+                <CellHeader>
+                  <Label>联系方式</Label>
+                </CellHeader>
+                <CellBody>
+                  <Input required type="number" placeholder="请输入联系方式" {...tel} />
+                </CellBody>
+                {tel.touched && tel.error && <div>{tel.error}</div>}
+              </FormCell>
+              <FormCell>
+                <CellHeader>
+                  <Label>毕业学校</Label>
+                </CellHeader>
+                <CellBody>
+                  <Input type="text" placeholder="请输入毕业学校" {...graduation} />
+                </CellBody>
+              </FormCell>
+              <FormCell>
+                <CellHeader>
+                  <Label>高考分数</Label>
+                </CellHeader>
+                <CellBody>
+                  <Input type="text" placeholder="请输入高考分数" {...grade} />
+                </CellBody>
+              </FormCell>
+              <FormCell>
+                <CellHeader>
+                  <Label>录取学校</Label>
+                </CellHeader>
+                <CellBody>
+                  <Input required type="text" placeholder="请输入录取学校" {...university} />
+                </CellBody>
+                {university.touched && university.error && <div>{university.error}</div>}
+              </FormCell>
+              <FormCell>
+                <CellHeader>
+                  <Label>录取专业</Label>
+                </CellHeader>
+                <CellBody>
+                  <Input type="text" placeholder="请输入录取专业" {...major} />
+                </CellBody>
+              </FormCell>
+              <FormCell select selectPos="after">
+                <Label>录取层次</Label>
+                <CellBody>
+                  <Select {...degree} value={degree.value || '本科'}>
+                    <option value="高中">高中</option>
+                    <option value="本科">本科</option>
+                    <option value="硕士研究生">硕士研究生</option>
+                    <option value="博士研究生">博士研究生</option>
+                  </Select>
+                </CellBody>
+              </FormCell>
               <ButtonArea direction="vertical">
                 <Button type="primary">确定</Button>
-                <Button type="default">返回</Button>
               </ButtonArea>
             </Form>
           </form>
@@ -110,52 +166,26 @@ class RegistrationForm extends Component {
 }
 
 RegistrationForm.propTypes = {
+  fields: PropTypes.object.isRequired,
   doneForm: PropTypes.object.isRequired,
   toastState: PropTypes.object,
-  data: PropTypes.array.isRequired,
   dispatch: PropTypes.func.isRequired,
+  handleSubmit: PropTypes.func.isRequired,
+};
+RegistrationForm.contextTypes = {
+  setTitle: PropTypes.func.isRequired,
 };
 
+// 对state的值筛选，规范。
 function selectState(state) {
   const { doneForm, toastState } = state;
-  const data = [
-    {
-      content: '姓名',
-      name: 'name',
-    },
-    {
-      content: '身份证',
-      name: 'id',
-    },
-    {
-      content: '联系方式',
-      name: 'tel',
-    },
-    {
-      content: '毕业学校',
-      name: 'graduation',
-    },
-    {
-      content: '高考分数',
-      name: 'grade',
-    },
-    {
-      content: '录取学校',
-      name: 'university',
-    },
-    {
-      content: '录取专业',
-      name: 'major',
-    },
-    {
-      content: '录取层次',
-      name: 'degree',
-    },
-  ];
   return {
     doneForm,
     toastState,
-    data,
   };
 }
-export default connect(selectState)(RegistrationForm);
+export default reduxForm({
+  form: 'information',
+  fields,
+  validate,
+}, selectState)(RegistrationForm);

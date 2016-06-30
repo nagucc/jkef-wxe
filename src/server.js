@@ -27,10 +27,10 @@ import { port, auth, analytics, showLog } from './config';
 import configureStore from './store/configureStore';
 import { setRuntimeVariable } from './actions/runtime';
 
+import regData from './api/controllers/RegistrationData';
 import statCtrl from './api/controllers/stat';
 import acceptorsCtrl from './api/controllers/acceptors';
 import wxeAuthCtrl from './api/controllers/wxe-auth';
-import regData from './api/RegistrationRest/RegistrationData';
 const app = express();
 
 //
@@ -54,6 +54,7 @@ if (showLog) {
 /*
 注册API
  */
+app.use('/api/fundinfo', regData);
 app.use('/api/stat', statCtrl);
 app.use('/api/acceptors', acceptorsCtrl);
 app.use('/api/fundinfo', regData);
