@@ -1,24 +1,11 @@
-import { FETCHING_ACCEPTORS_LIST,
-  FETCHED_ACCEPTORS_LIST,
-  FETCH_FAILED,
-  CLEAN_ACCEPTORS_LIST } from '../../constants';
+import { FETCHED_ACCEPTORS_LIST } from '../../constants';
 import { findAcceptors } from '../../routes/fetch-data';
-import { fetching, fetchFailed, reset } from '../common';
-
-// const fetchingAcceptors = () => ({
-//   type: FETCHING_ACCEPTORS_LIST,
-// });
+import { fetching, fetchFailed } from '../common';
 
 const fetchedAcceptors = results => ({
   type: FETCHED_ACCEPTORS_LIST,
   ...results,
 });
-
-// const fetchFailed = err => ({
-//   type: FETCH_FAILED,
-//   err,
-// });
-
 export const fetchAcceptors = (params) => async dispatch => {
   dispatch(fetching());
   try {
@@ -28,6 +15,3 @@ export const fetchAcceptors = (params) => async dispatch => {
     dispatch(fetchFailed(e));
   }
 };
-// export const cleanAcceptors = () => ({
-//   type: CLEAN_ACCEPTORS_LIST,
-// });

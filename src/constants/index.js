@@ -100,3 +100,8 @@ export const DELETED_ACCEPTOR_RECORD = 'DELETED_ACCEPTOR_RECORD';
 export const STAT_BY_YEAR = 'STAT_BY_YEAR';
 
 export const STAT_BY_PROJECT = 'STAT_BY_PROJECT';
+
+/*
+毕业录取信息*/
+export const SUBMIT_FORM = 'SUBMIT_FORM';
+export const TOAST_SHOW = 'TOAST_SHOW';

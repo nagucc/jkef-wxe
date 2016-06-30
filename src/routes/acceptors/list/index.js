@@ -6,13 +6,12 @@ export default {
   path: '/list',
 
   async action({ query }) { // eslint-disable-line react/prop-types
-    const qs = Object.assign({ text: '' }, {
+    return <ListAcceptors query={{
+      text: '',
       pageIndex: 0,
       pageSize: 20,
-    }, query);
-    const props = {
-      query: qs,
-    };
-    return <ListAcceptors {...props} />;
+      ...query,
+    }}
+    />;
   },
 };

@@ -17,10 +17,9 @@ import login from './login';
 import register from './register';
 import content from './content';
 import error from './error';
-
+import ceeResultRegistration from './cee-result-registration';
 import acceptors from './acceptors';
 import stat from './stat';
-
 export default {
 
   path: '/',
@@ -28,7 +27,9 @@ export default {
   children: [
     home,
     acceptors,
+    ceeResultRegistration,
     stat,
+    ceeResultRegistration,
     contact,
     login,
     register,
