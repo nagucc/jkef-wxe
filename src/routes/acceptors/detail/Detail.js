@@ -22,6 +22,7 @@ class Detail extends React.Component {
     isManager: PropTypes.bool,
     acceptorId: PropTypes.string,
     fetchAcceptor: PropTypes.func,
+    setUserRole: PropTypes.func,
   };
   static contextTypes = {
     setTitle: PropTypes.func.isRequired,
@@ -31,7 +32,7 @@ class Detail extends React.Component {
     this.state = { showActionSheet: false };
   }
   componentDidMount() {
-    this.context.setTitle('成员详细信息');
+    this.context.setTitle('详细信息');
     const { acceptorId, fetchAcceptor } = this.props;
     fetchAcceptor(acceptorId);
   }

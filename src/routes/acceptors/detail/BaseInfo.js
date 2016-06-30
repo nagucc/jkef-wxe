@@ -18,10 +18,6 @@ class BaseInfo extends React.Component {
         <PanelHeader>基本信息</PanelHeader>
         <PanelBody>
           <Cell>
-            <CellBody>姓名</CellBody>
-            <CellFooter>{name}</CellFooter>
-          </Cell>
-          <Cell>
             <CellBody>手机号</CellBody>
             <CellFooter>{phone}</CellFooter>
           </Cell>
