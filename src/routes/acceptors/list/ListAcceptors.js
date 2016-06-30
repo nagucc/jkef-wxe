@@ -7,6 +7,7 @@ import { Cells, Cell, CellFooter, CellBody,
 import NeedSignup from '../../../components/NeedSignup';
 import * as actions from '../../../actions/acceptors/list';
 import * as commonActions from '../../../actions/common';
+import LoadingToast from '../../../components/LoadingToast';
 
 class ListAcceptors extends React.Component {
   static propTypes = {
@@ -16,6 +17,7 @@ class ListAcceptors extends React.Component {
     fetchAcceptors: PropTypes.func.isRequired,
     reset: PropTypes.func.isRequired,
     query: PropTypes.object,
+    showToast: PropTypes.bool,
   };
   static contextTypes = {
     setTitle: PropTypes.func.isRequired,
@@ -37,13 +39,10 @@ class ListAcceptors extends React.Component {
     fetchAcceptors(query);
   }
   render() {
-    const { data, totalCount } = this.props;
+    const { data, totalCount, showToast } = this.props;
     return (
       <div className="progress">
         <NeedSignup />
-        <div className="hd">
-          <h1 className="page_title">受赠者列表</h1>
-        </div>
         <div className="bd">
           <SearchBar placeholder="搜索姓名" onChange={this.search.bind(this)} />
           <Panel>
@@ -74,8 +73,8 @@ class ListAcceptors extends React.Component {
               </Button>
           : null
           }
-
         </div>
+        <LoadingToast show={showToast} />
       </div>
     );
   }

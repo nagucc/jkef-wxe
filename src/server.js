@@ -57,6 +57,7 @@ if (showLog) {
 app.use('/api/fundinfo', regData);
 app.use('/api/stat', statCtrl);
 app.use('/api/acceptors', acceptorsCtrl);
+app.use('/api/fundinfo', regData);
 require('./api/controllers/worker');
 app.use('/api/wxe-auth', wxeAuthCtrl);
 

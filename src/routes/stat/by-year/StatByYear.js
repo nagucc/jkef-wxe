@@ -3,6 +3,7 @@ import { formatMoney, formatNumber } from 'accounting';
 import { connect } from 'react-redux';
 import { CellsTitle, Progress, MediaBox, MediaBoxDescription } from 'react-weui';
 import getStatByYear from '../../../actions/stat/by-year';
+import LoadingToast from '../../../components/LoadingToast';
 
 class StatByYear extends React.Component {
   static propTypes = {
@@ -12,6 +13,7 @@ class StatByYear extends React.Component {
     totalCount: PropTypes.number,
     lastUpdated: PropTypes.number,
     maxAmount: PropTypes.number,
+    showToast: PropTypes.bool,
   };
   static contextTypes = {
     setTitle: PropTypes.func.isRequired,
@@ -21,7 +23,8 @@ class StatByYear extends React.Component {
     this.props.getStatByYear();
   }
   render() {
-    const { stat, totalAmount, totalCount, lastUpdated, maxAmount } = this.props;
+    const { stat, totalAmount, totalCount, lastUpdated, maxAmount,
+      showToast } = this.props;
     let year = (new Date(lastUpdated)).getYear() + 1900;
     let month = (new Date(lastUpdated)).getMonth() + 1;
     return (
@@ -41,7 +44,6 @@ class StatByYear extends React.Component {
                       {formatMoney(item.value.amount, '¥')}元 | {formatNumber(item.value.count)}人次
                     </CellsTitle>
                     <Progress value={(item.value.amount / maxAmount) * 100} />
-
                   </div>
                 );
               }
@@ -58,6 +60,7 @@ class StatByYear extends React.Component {
             </b>
           </MediaBoxDescription>
         </MediaBox>
+        <LoadingToast show={showToast} />
       </div>
     );
   }
@@ -76,7 +79,8 @@ const mapStateToProps = state => {
       isNaN(item.value.lastUpdated) ? 0 : item.value.lastUpdated);
     maxAmount = Math.max(maxAmount, item.value.amount);
   });
-  return { stat, totalAmount, totalCount, lastUpdated, maxAmount };
+  const { showToast } = state.stat.byYear;
+  return { stat, totalAmount, totalCount, lastUpdated, maxAmount, showToast };
 };
 
 export default connect(mapStateToProps, { getStatByYear })(StatByYear);

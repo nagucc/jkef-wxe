@@ -1,7 +1,7 @@
 import { combineReducers } from 'redux';
 import { FETCHED_ACCEPTORS_LIST,
   RESET,
-  FETCH_FAILED } from '../../constants';
+  FETCH_FAILED, FETCHING } from '../../constants';
 
 const data = (state = [], action) => {
   switch (action.type) {
@@ -32,8 +32,20 @@ const error = (state = null, action) => {
   }
 };
 
+const showToast = (state = false, action) => {
+  switch (action.type) {
+    case FETCHING:
+      return true;
+    case FETCHED_ACCEPTORS_LIST:
+      return false;
+    default:
+      return state;
+  }
+};
+
 export default combineReducers({
   data,
   totalCount,
   error,
+  showToast,
 });

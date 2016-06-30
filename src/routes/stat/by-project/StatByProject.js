@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import getStatByProject from '../../../actions/stat/by-project';
 
 import { CellsTitle, Progress, MediaBoxDescription, MediaBox } from 'react-weui';
+import LoadingToast from '../../../components/LoadingToast';
 
 class StatByProject extends React.Component {
   static propTypes = {
@@ -13,6 +14,7 @@ class StatByProject extends React.Component {
     totalCount: PropTypes.number,
     maxAmount: PropTypes.number,
     getStatByProject: PropTypes.func.isRequired,
+    showToast: PropTypes.bool,
   };
   static contextTypes = {
     setTitle: PropTypes.func.isRequired,
@@ -22,14 +24,12 @@ class StatByProject extends React.Component {
     this.props.getStatByProject();
   }
   render() {
-    const { stat, totalAmount, totalCount, lastUpdated, maxAmount } = this.props;
+    const { stat, totalAmount, totalCount, lastUpdated, maxAmount,
+      showToast } = this.props;
     let year = (new Date(lastUpdated)).getYear() + 1900;
     let month = (new Date(lastUpdated)).getMonth() + 1;
     return (
       <div className="progress">
-        <div className="hd">
-          <h1 className="page_title">按项目统计</h1>
-        </div>
         <div className="bd spacing">
           {
             stat.map((item, i) => {
@@ -45,7 +45,6 @@ class StatByProject extends React.Component {
                       {formatMoney(item.value.amount, '¥')}元 | {formatNumber(item.value.count)}人次
                     </CellsTitle>
                     <Progress value={(item.value.amount / maxAmount) * 100} />
-
                   </div>
                 );
               }
@@ -55,11 +54,14 @@ class StatByProject extends React.Component {
         </div>
         <MediaBox>
           <MediaBoxDescription>
-            <b>截止至{year}年{month}月，
+            <b>
+              截止至{year}年{month}月，
               一共捐赠{formatMoney(totalAmount, '￥')}元，
-              共计{formatNumber(totalCount)}人次</b>
+              共计{formatNumber(totalCount)}人次
+            </b>
           </MediaBoxDescription>
         </MediaBox>
+        <LoadingToast show={showToast} />
       </div>
     );
   }
@@ -78,7 +80,8 @@ const mapStateToProps = state => {
       isNaN(item.value.lastUpdated) ? 0 : item.value.lastUpdated);
     maxAmount = Math.max(maxAmount, item.value.amount);
   });
-  return { stat, totalAmount, totalCount, lastUpdated, maxAmount };
+  const { showToast } = state.stat.byProject;
+  return { stat, totalAmount, totalCount, lastUpdated, maxAmount, showToast };
 };
 
 export default connect(mapStateToProps, { getStatByProject })(StatByProject);
