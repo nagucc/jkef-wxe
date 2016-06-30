@@ -22,7 +22,11 @@ export class EditCareerComponent extends React.Component {
   static defaultProps = {
     history: [],
   };
+  static contextTypes = {
+    setTitle: PropTypes.func.isRequired,
+  };
   componentDidMount() {
+    this.context.setTitle('按年度统计');
     this.props.init();
   }
   render() {
