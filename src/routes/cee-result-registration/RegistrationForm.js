@@ -98,6 +98,7 @@ class RegistrationForm extends Component {
                     <option value="文科">文科</option>
                     <option value="理科">理科</option>
                     <option value="艺体">艺体</option>
+                    <option value="其他">其他</option>
                   </Select>
                 </CellBody>
               </FormCell>
@@ -120,7 +121,7 @@ class RegistrationForm extends Component {
               </FormCell>
               <FormCell>
                 <CellHeader>
-                  <Label>高考分数</Label>
+                  <Label>中/高考分数</Label>
                 </CellHeader>
                 <CellBody>
                   <Input type="text" placeholder="请输入高考分数" {...grade} />
