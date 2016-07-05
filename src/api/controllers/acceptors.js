@@ -17,15 +17,7 @@ import profileDao from '../models/wxe-profile';
 import { SUCCESS, UNAUTHORIZED, UNKNOWN_ERROR,
   OBJECT_IS_NOT_FOUND, SERVER_FAILED } from '../../err-codes';
 
-const wxapi = api(wxcfg.corpId, wxcfg.secret, wxcfg.agentId, redis.host, redis.port);
 const router = new Router();
-
-// // 用于替换微信端获取身份信息，提高速度
-// const getUser2 = async (req, res, next) => {
-//   const profile = await profileDao.getByUserId(req.user.userid);
-//   req.user.department = profile.roles;
-//   next();
-// };
 
 export const list = async (req, res) => {
   const { pageIndex } = req.params;
@@ -56,9 +48,7 @@ export const list = async (req, res) => {
 };
 router.get('/list/:pageIndex',
   getUserId(),
-  // getUser({ wxapi }),
   getUser2,
-  // ensureUserSignedIn,
   list);
 
 /*
@@ -92,7 +82,6 @@ export const add = async (req, res) => {
 };
 router.put('/add',
   getUserId(),
-  // getUser({ wxapi }),
   getUser2,
   ensureAcceptorCanBeAdded,
   add,
@@ -125,9 +114,7 @@ export const getDetail = async (req, res) => {
 };
 router.get('/detail/:id',
   getUserId(),
-  // getUser({ wxapi }),
   getUser2,
-  // ensureUserSignedIn,
   getDetail);
 
 export const onlyManagerAndOwnerCanDoNext = idGetter =>
@@ -145,11 +132,6 @@ export const onlyManagerAndOwnerCanDoNext = idGetter =>
       res.send({ ret: -1, msg: e });
     }
   };
-
-// export onlySupervisorOrOwnerCanDoNext = idGetter =>
-//   async (req, res, next = emptyFunction) => {
-//     const id = idGetter(req, res);
-//   }
 
 export const putEdu = async (req, res) => {
   const { name, year } = req.body;
@@ -172,8 +154,6 @@ export const putEdu = async (req, res) => {
 router.put('/edu/:id',
   getUserId(),
   getUser2,
-  // getUser({ wxapi }),
-  // ensureUserSignedIn,
   onlyManagerAndOwnerCanDoNext(req => new ObjectId(req.params.id)),
   putEdu,
 );
@@ -200,8 +180,6 @@ export const deleteEdu = async (req, res) => {
 
 router.delete('/edu/:id',
   getUserId(),
-  // getUser({ wxapi }),
-  // ensureUserSignedIn,
   getUser2,
   onlyManagerAndOwnerCanDoNext(req => new ObjectId(req.params.id)),
   deleteEdu,
@@ -228,8 +206,6 @@ export const putCareer = async (req, res) => {
 
 router.put('/career/:id',
 getUserId(),
-// getUser({ wxapi }),
-// ensureUserSignedIn,
 getUser2,
 onlyManagerAndOwnerCanDoNext(req => new ObjectId(req.params.id)),
 putCareer,
@@ -256,8 +232,6 @@ export const deleteCareer = async (req, res) => {
 
 router.delete('/career/:id',
   getUserId(),
-  // getUser({ wxapi }),
-  // ensureUserSignedIn,
   getUser2,
   onlyManagerAndOwnerCanDoNext(req => new ObjectId(req.params.id)),
   deleteCareer,
@@ -360,8 +334,6 @@ export const postUpdate = async (req, res) => {
 
 router.post('/:id',
   getUserId(),
-  // getUser({ wxapi }),
-  // ensureUserSignedIn,
   getUser2,
   ensureAcceptorCanBeAdded,
   onlyManagerAndOwnerCanDoNext(req => new ObjectId(req.params.id)),
