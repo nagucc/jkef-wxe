@@ -1,21 +1,24 @@
+/*
+eslint-disable no-param-reassign
+ */
+
 import { Router } from 'express';
 import { findAcceptors, addAcceptor,
   findByIdCardNumber, findById, update,
   addEdu, removeEdu,
   addCareer, removeCareer,
   addRecord, removeRecord } from '../models/data-access';
-import { wxentConfig as wxcfg,
-  redisConfig as redis } from '../../config';
-import api from 'wxent-api-redis';
-import { getUser, getUserId } from 'wxe-auth-express';
+
+import { getUserId } from 'wxe-auth-express';
 import { ensureAcceptorCanBeAdded,
   isManager, isSupervisor, isUndefined,
-  ensureUserSignedIn, getUser as getUser2 } from './middlewares';
+  getUser as getUser2 } from './middlewares';
 import emptyFunction from 'fbjs/lib/emptyFunction';
 import { ObjectId } from 'mongodb';
 import profileDao from '../models/wxe-profile';
 import { SUCCESS, UNAUTHORIZED, UNKNOWN_ERROR,
-  OBJECT_IS_NOT_FOUND, SERVER_FAILED } from '../../err-codes';
+  OBJECT_IS_NOT_FOUND, SERVER_FAILED,
+  OBJECT_IS_UNDEFINED_OR_NULL } from '../../err-codes';
 
 const router = new Router();
 
@@ -52,11 +55,36 @@ router.get('/list/:pageIndex',
   list);
 
 /*
+添加Profile
+ */
+export const addProfile = composeProfile =>
+  async (req, res, next) => {
+    try {
+      const profile = composeProfile(req, res);
+      if (!profile.name) {
+        res.send({
+          ret: OBJECT_IS_UNDEFINED_OR_NULL,
+          msg: '姓名不能为空',
+        });
+        return;
+      }
+      const result = await profileDao.add(profile);
+      req.body._id = result.insertedId;
+      next();
+    } catch (e) {
+      res.send({
+        ret: SERVER_FAILED,
+        msg: e,
+      });
+    }
+  };
+
+/*
 添加受赠者。
 任何用户可自助申请成为受赠者，管理员则可以任意添加受赠者，并指定关联企业号账户。
  */
 export const add = async (req, res) => {
-  const { name, isMale, phone, idCard } = req.body;
+  const { _id, name, isMale, phone, idCard } = req.body;
   try {
     // 3.0 检查是否有相同的idCard.number存在
     const doc = await findByIdCardNumber(idCard.number);
@@ -71,19 +99,26 @@ export const add = async (req, res) => {
       userid = req.user.userid;
     }
     // 3.1. 保存数据到数据库中
-    const _id = await addAcceptor({ name, isMale, phone, idCard, userid });
+    await addAcceptor({ _id, name, isMale, phone, idCard, userid });
     // 3.2 返回结果
-    res.send({ ret: 0, data: {
+    res.send({ ret: SUCCESS, data: {
       name, isMale, phone, idCard, userid, _id,
     } });
   } catch (e) {
-    res.send({ ret: -1, msg: e });
+    res.send({ ret: SERVER_FAILED, msg: e });
   }
 };
 router.put('/add',
   getUserId(),
   getUser2,
   ensureAcceptorCanBeAdded,
+  addProfile(req => {
+    const { name, isMale, phone } = req.body;
+    return {
+      name, phone,
+      isMale: isMale === 'true',
+    };
+  }),
   add,
 );
 
