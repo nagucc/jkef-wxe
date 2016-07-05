@@ -1,5 +1,6 @@
 /*
 根据微信企业号的userid记录用户的相关信息
+字段包括：_id, userid, roles, name, isMale, phone
  */
 
 import { useCollection } from 'mongo-use-collection';
@@ -11,14 +12,15 @@ class WxeProfle {
   constructor(url, collection = 'wxe_profles') {
     this.useProfiles = cb => useCollection(url, collection, cb);
   }
+
+  /*
+  添加profile
+   */
   add(profile = {}) {
-    if (!profile.userid) return Promise.reject('必须有userid');
     return new Promise((resolve, reject) =>
       this.useProfiles(async col => {
         try {
-          const result = await col.updateOne({ userid: profile.userid }, {
-            $set: profile,
-          }, { upsert: true });
+          const result = await col.insertOne(profile);
           resolve(result);
         } catch (e) {
           reject(e);
