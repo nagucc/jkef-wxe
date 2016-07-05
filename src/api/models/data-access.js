@@ -172,14 +172,11 @@ export const findByIdCardNumber = async idCardNumber =>
 /*
 idCard.number作为唯一标识字段，添加或更新acceptor
 当idCard.number重复时，reject
+至存储核心数据，其他数据移到profile中
  */
-export const addAcceptor = async ({ name, isMale, idCard, phone = '', userid = '' } = {}) =>
+export const addAcceptor = async ({ _id, idCard, userid = '' } = {}) =>
   new Promise((resolve, reject) => {
     useAcceptors(async col => {
-      if (!name) {
-        reject('姓名不能为空');
-        return;
-      }
       if (!idCard || !idCard.type || !idCard.number) {
         reject('证件类型和号码不能为空');
         return;
@@ -191,7 +188,7 @@ export const addAcceptor = async ({ name, isMale, idCard, phone = '', userid = '
           return;
         }
         const result = await col.updateOne({ 'idCard.number': idCard.number },
-          { name, phone, isMale, idCard, userid },
+          { _id, idCard, userid },
           { upsert: true });
         if (result.result.ok === 1) resolve(result.upsertedId._id);
         else reject(result.result);
