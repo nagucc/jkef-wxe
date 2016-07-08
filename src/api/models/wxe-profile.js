@@ -38,17 +38,27 @@ class WxeProfle {
         }
       }));
   }
-  update(profile = {}) {
-    const { userid, ...rest } = profile;
+  get(_id) {
     return new Promise((resolve, reject) =>
       this.useProfiles(async col => {
         try {
-          const oldDoc = await this.getByUserId(userid);
+          const doc = await col.findOne({ _id });
+          resolve(doc);
+        } catch (e) {
+          reject(e);
+        }
+      }));
+  }
+  update(_id, profile = {}) {
+    return new Promise((resolve, reject) =>
+      this.useProfiles(async col => {
+        try {
+          const oldDoc = await this.get(_id);
           const doc = {
             ...oldDoc,
-            ...rest,
+            ...profile,
           };
-          await col.updateOne({ userid }, { $set: doc });
+          await col.updateOne({ _id }, { $set: doc });
           resolve(doc);
         } catch (e) {
           reject(e);
