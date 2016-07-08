@@ -122,24 +122,49 @@ router.put('/add',
   add,
 );
 
-export const getDetail = async (req, res) => {
+export const getProfile = getId =>
+  async (req, res, next) => {
+    try {
+      const _id = getId(req, res);
+      const doc = await profileDao.get(_id);
+      res.profile = doc;
+      next();
+    } catch (e) {
+      res.send({
+        ret: SERVER_FAILED,
+        msg: e,
+      });
+    }
+  };
+
+export const ensureIdIsCorrect = (req, res, next) => {
   const id = req.params.id;
   if (!id || id === 'undefined') {
     res.send({
       ret: OBJECT_IS_NOT_FOUND,
       msg: '所给Id不正确',
     });
-    return;
-  }
+  } else next();
+};
+
+export const getDetail = async (req, res) => {
   try {
+    const id = req.params.id;
     const data = await findById(new ObjectId(id));
     if (!data) {
       res.send({ ret: -1, msg: '给定的Id不存在' });
     }
     // 普通成员只能看自己的数据
     if (isSupervisor(req.user.department)
-      || data.userid === req.user.userid) res.send({ ret: 0, data });
-    else res.send({ ret: 401, msg: '无权查看' });
+      || data.userid === req.user.userid) {
+      res.send({
+        ret: SUCCESS,
+        data: {
+          ...data,
+          ...res.profile,
+        },
+      });
+    } else res.send({ ret: 401, msg: '无权查看' });
   } catch (e) {
     res.send({
       ret: -1,
@@ -150,6 +175,7 @@ export const getDetail = async (req, res) => {
 router.get('/detail/:id',
   getUserId(),
   getUser2,
+  getProfile(req => (new ObjectId(req.params.id))),
   getDetail);
 
 export const onlyManagerAndOwnerCanDoNext = idGetter =>
@@ -347,6 +373,22 @@ router.delete('/record/:id/:recordId',
   onlyManagerCanDoNext,
   deleteRecord
 );
+
+export const updateProfile = (getId, composeProfile) =>
+  async (req, res, next) => {
+    const _id = getId(req, res);
+    const profile = composeProfile(req, res);
+    try {
+      await profileDao.update(_id, profile);
+      next();
+    } catch (e) {
+      res.send({
+        ret: SERVER_FAILED,
+        msg: e,
+      });
+    }
+  };
+
 export const postUpdate = async (req, res) => {
   const { id } = req.params;
   try {
@@ -363,7 +405,7 @@ export const postUpdate = async (req, res) => {
       });
     }
   } catch (e) {
-    res.send({ ret: -1, msg: e });
+    res.send({ ret: SERVER_FAILED, msg: e });
   }
 };
 
@@ -372,5 +414,12 @@ router.post('/:id',
   getUser2,
   ensureAcceptorCanBeAdded,
   onlyManagerAndOwnerCanDoNext(req => new ObjectId(req.params.id)),
+  ensureIdIsCorrect,
+  updateProfile(req => (new ObjectId(req.params.id)), req => {
+    const { name, isMale, phone } = req.body;
+    let userid = req.body.userid;
+    if (!isManager(req.user.department)) userid = req.user.userid;
+    return { name, isMale, phone, userid };
+  }),
   postUpdate);
 export default router;
