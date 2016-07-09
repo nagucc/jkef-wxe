@@ -6,6 +6,9 @@ import { expect } from 'chai';
 import { createRequest, createResponse } from 'node-mocks-http';
 import { manageDpt, supervisorDpt } from '../../config';
 import * as acceptors from './acceptors';
+import { SUCCESS, UNAUTHORIZED, UNKNOWN_ERROR,
+  OBJECT_IS_NOT_FOUND, SERVER_FAILED,
+  OBJECT_IS_UNDEFINED_OR_NULL } from '../../err-codes';
 
 const myUserid = 88;
 const otherUserid = 89;
@@ -56,7 +59,7 @@ describe('Acceptors Middlewares', () => {
     const res = createResponse();
     await acceptors.postUpdate(() => (doc._id))(req, res);
     const data = res._getData();
-    expect(data.ret).eql(0);
+    expect(data.ret).eql(SUCCESS);
     expect(data.data._id).eql(doc._id);
   });
 
@@ -81,7 +84,7 @@ describe('Acceptors Middlewares', () => {
     const resOther = createResponse();
     await acceptors.onlyManagerAndOwnerCanDoNext(idGetter)(reqOther, resOther);
     data = resOther._getData();
-    expect(data.ret).to.eql(401);
+    expect(data.ret).to.eql(UNAUTHORIZED);
 
     // Manager
     const reqManager = createRequest({
@@ -101,7 +104,7 @@ describe('Acceptors Middlewares', () => {
     const res = createResponse();
     await acceptors.postUpdate(() => doc._id)(req, res);
     const data = res._getData();
-    expect(data.ret).eql(0);
+    expect(data.ret).eql(SUCCESS);
   });
 
   it('getDetail 用户可查看自己的信息', async () => {
@@ -114,7 +117,7 @@ describe('Acceptors Middlewares', () => {
     const res = createResponse();
     await acceptors.getDetail(() => doc._id)(req, res);
     const data = res._getData();
-    expect(data.ret).eql(0);
+    expect(data.ret).eql(SUCCESS);
   });
 
   it('getDetail 监督员能查看他人信息', async () => {
@@ -127,37 +130,35 @@ describe('Acceptors Middlewares', () => {
     const res = createResponse();
     await acceptors.getDetail(() => doc._id)(req, res);
     const data = res._getData();
-    expect(data.ret).eql(0);
+    expect(data.ret).eql(SUCCESS);
   });
-  //
-  // it('getDetail 非管理员或监督员不能查看他人信息', async () => {
-  //   const req = createRequest({
-  //     user: {
-  //       department: [supervisorDpt + 999999],
-  //       userid: otherUserid,
-  //     },
-  //     params: { id: doc._id },
-  //   });
-  //   const res = createResponse();
-  //   await acceptors.getDetail(req, res);
-  //   const data = res._getData();
-  //   expect(data.ret).eql(401);
-  // });
-  //
-  // it('getDetail 给定Id不存在时返回错误', async () => {
-  //   const req = createRequest({
-  //     user: {
-  //       department: [supervisorDpt + 999999],
-  //       userid: 88,
-  //     },
-  //     params: { id: 'ffddd' },
-  //   });
-  //   const res = createResponse();
-  //   await acceptors.getDetail(req, res);
-  //   const data = res._getData();
-  //   expect(data.ret).eql(-1);
-  // });
-  //
+
+  it('getDetail 非管理员或监督员不能查看他人信息', async () => {
+    const req = createRequest({
+      user: {
+        department: [supervisorDpt + 999999],
+        userid: otherUserid,
+      },
+    });
+    const res = createResponse();
+    await acceptors.getDetail(() => doc._id)(req, res);
+    const data = res._getData();
+    expect(data.ret).eql(UNAUTHORIZED);
+  });
+
+  it('getDetail 给定Id不存在时返回错误', async () => {
+    const req = createRequest({
+      user: {
+        department: [supervisorDpt + 999999],
+        userid: 88,
+      },
+    });
+    const res = createResponse();
+    await acceptors.getDetail(() => 'wrong id')(req, res);
+    const data = res._getData();
+    expect(data.ret).eql(OBJECT_IS_NOT_FOUND);
+  });
+
   // it('list 普通用户可查看列表，但不包含仅有助学金记录的信息', async () => {
   //   const req = createRequest({
   //     user: normalUser,
