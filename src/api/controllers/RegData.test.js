@@ -1,3 +1,4 @@
+/* eslint-env mocha */
 import { expect } from 'chai';
 import { createRequest, createResponse } from 'node-mocks-http';
 import * as regRest from './RegistrationData';
