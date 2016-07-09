@@ -222,7 +222,6 @@ export const update = async (_id, newData) =>
       if (name) query = { ...query, name };
       if (phone) query = { ...query, phone };
       if (isMale !== undefined) query = { ...query, isMale };
-      // if (idCard) query = { ...query, idCard };
       if (idCard) {
         if (idCard.type) {
           Object.assign(query, {
