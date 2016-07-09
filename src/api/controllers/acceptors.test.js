@@ -159,141 +159,131 @@ describe('Acceptors Middlewares', () => {
     expect(data.ret).eql(OBJECT_IS_NOT_FOUND);
   });
 
-  // it('list 普通用户可查看列表，但不包含仅有助学金记录的信息', async () => {
-  //   const req = createRequest({
-  //     user: normalUser,
-  //     query: {
-  //       pageSize: 500,
-  //     },
-  //   });
-  //   const res = createResponse();
-  //   await acceptors.list(req, res);
-  //   const result = res._getData();
-  //   expect(result.ret).eql(0);
-  //   if (result.data.totalCount >= 500) expect(result.data.data).have.length(500);
-  //   result.data.data.forEach(item => {
-  //     if (item.records) {
-  //       expect(item.records.some.bind(item.records, rec => rec.project === '奖学金'));
-  //     }
-  //   });
-  //   expect(result.ret).eql(0);
-  // });
-  //
-  // it('list 普通用户不可查看助学金信息', async () => {
-  //   const req = createRequest({
-  //     user: {
-  //       department: [supervisorDpt + 999999],
-  //       userid: 88,
-  //     },
-  //     query: {
-  //       project: '助学金',
-  //     },
-  //   });
-  //   const res = createResponse();
-  //   await acceptors.list(req, res);
-  //   const result = res._getData();
-  //   expect(result.ret).eql(401);
-  // });
-  //
-  // it('putEdu body中必须提供name和year参数', async () => {
-  //   const req = createRequest({
-  //     body: {},
-  //     params: doc._id,
-  //     user: normalUser,
-  //   });
-  //   const res = createResponse();
-  //   await acceptors.putEdu(req, res);
-  //   const data = res._getData(res);
-  //   expect(data.ret).eql(-1);
-  // });
-  //
-  // const rawEdu = {
-  //   name: '云南大学',
-  //   year: '2001',
-  // };
-  //
-  // it('putEdu 用户可添加教育经历', async () => {
-  //   const req = createRequest({
-  //     params: doc._id,
-  //     // user: normalUser,
-  //     body: rawEdu,
-  //   });
-  //   const res = createResponse();
-  //   await acceptors.putEdu(req, res);
-  //   const data = res._getData();
-  //   expect(data.ret).eql(0);
-  // });
-  //
-  // it('deleteEdu body中必须提供name和year参数', async () => {
-  //   const req = createRequest({
-  //     body: {},
-  //     params: doc._id,
-  //     user: normalUser,
-  //   });
-  //   const res = createResponse();
-  //   await acceptors.deleteEdu(req, res);
-  //   const data = res._getData(res);
-  //   expect(data.ret).eql(-1);
-  // });
-  //
-  // it('deleteEdu 用户可删除教育经历', async () => {
-  //   const req = createRequest({
-  //     params: doc._id,
-  //     body: rawEdu,
-  //   });
-  //   const res = createResponse();
-  //   await acceptors.deleteEdu(req, res);
-  //   const data = res._getData();
-  //   expect(data.ret).eql(0);
-  // });
-  //
-  // it('putCareer body中必须提供name和year参数', async () => {
-  //   const req = createRequest({
-  //     body: {},
-  //     params: doc._id,
-  //     user: normalUser,
-  //   });
-  //   const res = createResponse();
-  //   await acceptors.putCareer(req, res);
-  //   const data = res._getData(res);
-  //   expect(data.ret).eql(-1);
-  // });
-  //
-  // const rawCareer = rawEdu;
-  //
-  // it('putCareer 用户可添加工作经历', async () => {
-  //   const req = createRequest({
-  //     params: doc._id,
-  //     // user: normalUser,
-  //     body: rawCareer,
-  //   });
-  //   const res = createResponse();
-  //   await acceptors.putCareer(req, res);
-  //   const data = res._getData();
-  //   expect(data.ret).eql(0);
-  // });
-  //
-  // it('deleteCareer body中必须提供name和year参数', async () => {
-  //   const req = createRequest({
-  //     body: {},
-  //     params: doc._id,
-  //     user: normalUser,
-  //   });
-  //   const res = createResponse();
-  //   await acceptors.deleteCareer(req, res);
-  //   const data = res._getData(res);
-  //   expect(data.ret).eql(-1);
-  // });
-  //
-  // it('deleteCareer 用户可删除教育经历', async () => {
-  //   const req = createRequest({
-  //     params: doc._id,
-  //     body: rawEdu,
-  //   });
-  //   const res = createResponse();
-  //   await acceptors.deleteCareer(req, res);
-  //   const data = res._getData();
-  //   expect(data.ret).eql(0);
-  // });
+  it('list 普通用户可查看列表，但不包含仅有助学金记录的信息', async () => {
+    const req = createRequest({
+      user: normalUser,
+      query: {
+        pageSize: 500,
+      },
+    });
+    const res = createResponse();
+    await acceptors.list(req, res);
+    const result = res._getData();
+    expect(result.ret).eql(0);
+    if (result.data.totalCount >= 500) expect(result.data.data).have.length(500);
+    result.data.data.forEach(item => {
+      if (item.records) {
+        expect(item.records.some.bind(item.records, rec => rec.project === '奖学金'));
+      }
+    });
+    expect(result.ret).eql(0);
+  });
+
+  it('list 普通用户不可查看助学金信息', async () => {
+    const req = createRequest({
+      user: {
+        department: [supervisorDpt + 999999],
+        userid: 88,
+      },
+      query: {
+        project: '助学金',
+      },
+    });
+    const res = createResponse();
+    await acceptors.list(req, res);
+    const result = res._getData();
+    expect(result.ret).eql(401);
+  });
+
+  it('putEdu body中必须提供name和year参数', async () => {
+    const req = createRequest({
+      body: {},
+      user: normalUser,
+    });
+    const res = createResponse();
+    await acceptors.putEdu(() => doc._id)(req, res);
+    const data = res._getData(res);
+    expect(data.ret).eql(UNKNOWN_ERROR);
+  });
+
+  const rawEdu = {
+    name: '云南大学',
+    year: '2001',
+  };
+
+  it('putEdu 用户可添加教育经历', async () => {
+    const req = createRequest({
+      body: rawEdu,
+    });
+    const res = createResponse();
+    await acceptors.putEdu(() => doc._id)(req, res);
+    const data = res._getData();
+    expect(data.ret).eql(0);
+  });
+
+  it('deleteEdu body中必须提供name和year参数', async () => {
+    const req = createRequest({
+      body: {},
+      user: normalUser,
+    });
+    const res = createResponse();
+    await acceptors.deleteEdu()(req, res);
+    const data = res._getData(res);
+    expect(data.ret).eql(-1);
+  });
+
+  it('deleteEdu 用户可删除教育经历', async () => {
+    const req = createRequest({
+      body: rawEdu,
+    });
+    const res = createResponse();
+    await acceptors.deleteEdu(() => doc._id)(req, res);
+    const data = res._getData();
+    expect(data.ret).eql(0);
+  });
+
+  it('putCareer body中必须提供name和year参数', async () => {
+    const req = createRequest({
+      body: {},
+      user: normalUser,
+    });
+    const res = createResponse();
+    await acceptors.putCareer(() => doc._id)(req, res);
+    const data = res._getData(res);
+    expect(data.ret).eql(-1);
+  });
+
+  const rawCareer = rawEdu;
+
+  it('putCareer 用户可添加工作经历', async () => {
+    const req = createRequest({
+      body: rawCareer,
+    });
+    const res = createResponse();
+    await acceptors.putCareer(() => doc._id)(req, res);
+    const data = res._getData();
+    expect(data.ret).eql(0);
+  });
+
+  it('deleteCareer body中必须提供name和year参数', async () => {
+    const req = createRequest({
+      body: {},
+      user: normalUser,
+    });
+    const res = createResponse();
+    await acceptors.deleteCareer(() => doc._id)(req, res);
+    const data = res._getData(res);
+    expect(data.ret).eql(-1);
+  });
+
+  it('deleteCareer 用户可删除教育经历', async () => {
+    const req = createRequest({
+      body: rawEdu,
+    });
+    const res = createResponse();
+    await acceptors.deleteCareer(() => doc._id)(req, res);
+    const data = res._getData();
+    expect(data.ret).eql(0);
+  });
 
 });
