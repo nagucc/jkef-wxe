@@ -10,6 +10,9 @@ class RecordHistory extends React.Component {
   static propTypes = {
     data: PropTypes.array.isRequired,
   };
+  static defaultProps = {
+    data: [],
+  };
   render() {
     return (
       <Panel access>
