@@ -1,9 +1,9 @@
 import { findByIdCardNumber } from '../models/data-access';
-import { manageDpt, supervisorDpt, mongoUrl } from '../../config';
+import { manageDpt, supervisorDpt, mongoUrl, profileCollection } from '../../config';
 import { UNKNOWN_ERROR } from 'nagu-validates';
 import { MongoProfile } from 'nagu-profile';
 
-const profileDao = new MongoProfile(mongoUrl);
+const profileDao = new MongoProfile(mongoUrl, profileCollection);
 
 export const isManager = departments => departments.some(dept => dept === manageDpt);
 

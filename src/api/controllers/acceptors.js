@@ -17,16 +17,17 @@ import emptyFunction from 'fbjs/lib/emptyFunction';
 import { ObjectId } from 'mongodb';
 import { SUCCESS, UNAUTHORIZED, UNKNOWN_ERROR,
   OBJECT_IS_NOT_FOUND, SERVER_FAILED } from '../../err-codes';
-import { mongoUrl } from '../../config';
+import { mongoUrl, profileCollection } from '../../config';
 
 import { MongoProfileMiddlewares } from 'nagu-profile';
 
-const profile = new MongoProfileMiddlewares(mongoUrl);
+const profile = new MongoProfileMiddlewares(mongoUrl, profileCollection);
 const addProfile = profile.add(req => {
   const { name, isMale, phone } = req.body;
   return {
     name, phone,
     isMale: isMale === 'true',
+    isAcceptor: true,
   };
 });
 const getProfile = profile.get(req => (new ObjectId(req.params.id)));
@@ -363,8 +364,6 @@ router.delete('/record/:id/:recordId',
   onlyManagerCanDoNext,
   deleteRecord
 );
-
-
 
 export const postUpdate = (getId = req => new ObjectId(req.params.id)) =>
   async (req, res) => {
