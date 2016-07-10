@@ -1,6 +1,6 @@
 import { findByIdCardNumber } from '../models/data-access';
 import { manageDpt, supervisorDpt, mongoUrl, profileCollection } from '../../config';
-import { UNKNOWN_ERROR } from 'nagu-validates';
+import { UNKNOWN_ERROR, SERVER_FAILED } from 'nagu-validates';
 import { MongoProfile } from 'nagu-profile';
 
 const profileDao = new MongoProfile(mongoUrl, profileCollection);
@@ -12,9 +12,18 @@ export const isSupervisor = departments =>
 
   // 用于替换微信端获取身份信息，提高速度
 export const getUser = async (req, res, next) => {
-  const profile = await profileDao.getByUserId(req.user.userid);
-  req.user.department = profile.roles;
-  next();
+  try {
+    const profile = await profileDao.getByUserId(req.user.userid);
+    if (profile && profile.roles)
+      req.user.department = profile.roles;
+    else req.user.department = [];
+    next();
+  } catch (e) {
+    res.send({
+      ret: SERVER_FAILED,
+      msg: e,
+    });
+  }
 };
 
 /*
