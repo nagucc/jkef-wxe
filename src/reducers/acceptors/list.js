@@ -37,6 +37,7 @@ const showToast = (state = false, action) => {
     case FETCHING:
       return true;
     case FETCHED_ACCEPTORS_LIST:
+    case FETCH_FAILED:
       return false;
     default:
       return state;

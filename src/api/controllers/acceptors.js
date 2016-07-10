@@ -43,17 +43,12 @@ const router = new Router();
 
 export const list = async (req, res) => {
   const { pageIndex } = req.params;
-  let { project } = req.query;
-  const { year, text, pageSize } = req.query;
-  // 如果用户不在管理组中，且project参数为'助学金'或空，则返回错误
-  if (!isSupervisor(req.user.department)) {
-    if (project === '助学金') {
-      res.send({ ret: UNAUTHORIZED, msg: '您目前不能查看助学金受赠者列表' });
-      return;
-    } else if (!project) {
-      // 当用户不在管理组中，且project为空时，将project设置为'奖学金'
-      project = '奖学金';
-    }
+  const { year, text, pageSize, project } = req.query;
+  // 只有Supervisor或Manager可以查看列表
+  if (!isSupervisor(req.user.department)
+    && !isManager(req.user.department)) {
+    res.send({ ret: UNAUTHORIZED, msg: '您不能查看受赠者列表' });
+    return;
   }
   try {
     const data = await findAcceptors({
