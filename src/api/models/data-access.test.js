@@ -15,38 +15,30 @@ import { computeStatByProject, getStatByProject,
   addCareer, removeCareer } from './data-access';
 
 describe('Data Access Functions', () => {
+  const docId = Math.random();
   const rawDoc = {
-    name: 'test',
+    _id: docId,
     idCard: {
       type: 'type',
       number: Math.random(),
     },
-    isMale: false,
-    phone: '43434',
-    userid: 'useridtest',
   };
 
   const updatedDoc = {
-    name: 'testUpdatd',
+    _id: docId,
     idCard: {
       type: 'typeUpdated',
       number: Math.random(),
     },
-    isMale: true,
-    phone: '4534updated',
-    userid: 'useridtestUpdated',
   };
 
-  let docId;
-
-  it('addAcceptor 必须有name和idCard{type, number}', async () => {
+  it('addAcceptor 必须有idCard{type, number}', async () => {
     try {
       await Promise.all([
-        addAcceptor({ name: 'test' }),
-        addAcceptor({ name: 'test', idCard: {} }),
-        addAcceptor({ name: 'test', idCard: { type: 'ddd' } }),
-        addAcceptor({ name: 'test', idCard: { number: 'ddd' } }),
-        addAcceptor({ idCard: { number: 'ddd', type: 'dfsf' } }),
+        addAcceptor({}),
+        addAcceptor({ idCard: {} }),
+        addAcceptor({ idCard: { type: 'ddd' } }),
+        addAcceptor({ idCard: { number: 'ddd' } }),
         Promise.reject('success'),
       ]);
       throw new Error('test failed');
@@ -56,15 +48,12 @@ describe('Data Access Functions', () => {
   });
 
   it('addAcceptor 添加Acceptor, 正常返回_id', async () => {
-    docId = await addAcceptor(rawDoc);
-    expect(docId).to.be.ok;
+    await addAcceptor(rawDoc);
   });
 
   it('findById 可根据Id返回数据', async () => {
     const gettedDoc = await findById(docId);
-    const { _id, ...data } = gettedDoc;
-    expect(_id).eql(docId);
-    expect(data).to.eql(rawDoc);
+    expect(gettedDoc).to.eql(rawDoc);
   });
 
   it('addEdu 添加教育经历，name和year不能为空, year必须可转变为Number类型', async () => {
@@ -124,8 +113,7 @@ describe('Data Access Functions', () => {
 
   it('findByIdCardNumber 可根据idCard.number找到数据', async () => {
     const gettedDoc = await findByIdCardNumber(rawDoc.idCard.number);
-    const { _id, eduHistory, careerHistory, ...data } = gettedDoc;
-    expect(_id).eql(docId);
+    const { eduHistory, careerHistory, ...data } = gettedDoc;
     expect(eduHistory).eql([edu]);
     expect(careerHistory).eql([career]);
     expect(data).to.eql(rawDoc);
@@ -134,7 +122,7 @@ describe('Data Access Functions', () => {
   it('addAcceptor 当保存相同idCard.number的acceptor时，添加失败', async () => {
     const newDoc = {
       ...rawDoc,
-      phone: 'updated22',
+      _id: Math.random(),
     };
     try {
       await addAcceptor(newDoc);
@@ -230,23 +218,23 @@ describe('Data Access Functions', () => {
     expect(data).eql({ _id: docId, ...updatedDoc });
   });
 
-  it('removeEdu 正常删除教育经历', async () => {
-    await removeEdu(docId, edu);
-    const gettedDoc = findById(docId);
-    expect(gettedDoc.eduHistory).to.be.undefined;
-    await removeEdu(docId, edu);
-  });
-
-  it('removeCareer 正常删除教育经历', async () => {
-    await removeCareer(docId, career);
-    const gettedDoc = findById(docId);
-    expect(gettedDoc.careerHistory).to.be.undefined;
-    await removeCareer(docId, edu);
-  });
-
-  it('remove 彻底删除数据', async () => {
-    await remove(docId);
-    const gettedDoc = await findById(docId);
-    expect(gettedDoc).to.be.null;
-  });
+  // it('removeEdu 正常删除教育经历', async () => {
+  //   await removeEdu(docId, edu);
+  //   const gettedDoc = findById(docId);
+  //   expect(gettedDoc.eduHistory).to.be.undefined;
+  //   await removeEdu(docId, edu);
+  // });
+  //
+  // it('removeCareer 正常删除教育经历', async () => {
+  //   await removeCareer(docId, career);
+  //   const gettedDoc = findById(docId);
+  //   expect(gettedDoc.careerHistory).to.be.undefined;
+  //   await removeCareer(docId, edu);
+  // });
+  //
+  // it('remove 彻底删除数据', async () => {
+  //   await remove(docId);
+  //   const gettedDoc = await findById(docId);
+  //   expect(gettedDoc).to.be.null;
+  // });
 });
