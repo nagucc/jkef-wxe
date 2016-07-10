@@ -22,7 +22,7 @@ const error = (state = null, action) => {
     case FETCHING:
       return null;
     case FETCH_FAILED:
-      return { ...state, ...action.result };
+      return { ...state, ...action.error };
     default:
       return state;
   }
