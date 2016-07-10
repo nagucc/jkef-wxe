@@ -160,7 +160,7 @@ describe('Acceptors Middlewares', () => {
     expect(data.ret).eql(OBJECT_IS_NOT_FOUND);
   });
 
-  it('list 普通用户可查看列表，但不包含仅有助学金记录的信息', async () => {
+  it('list 普通用户不可查看列表', async () => {
     const req = createRequest({
       user: normalUser,
       query: {
@@ -170,14 +170,7 @@ describe('Acceptors Middlewares', () => {
     const res = createResponse();
     await acceptors.list(req, res);
     const result = res._getData();
-    expect(result.ret).eql(0);
-    if (result.data.totalCount >= 500) expect(result.data.data).have.length(500);
-    result.data.data.forEach(item => {
-      if (item.records) {
-        expect(item.records.some.bind(item.records, rec => rec.project === '奖学金'));
-      }
-    });
-    expect(result.ret).eql(0);
+    expect(result.ret).eql(UNAUTHORIZED);
   });
 
   it('list 普通用户不可查看助学金信息', async () => {
