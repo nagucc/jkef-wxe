@@ -12,14 +12,33 @@ import { findAcceptors, addAcceptor,
 import { getUserId } from 'wxe-auth-express';
 import { ensureAcceptorCanBeAdded,
   isManager, isSupervisor, isUndefined,
-  getUser as getUser2 } from './middlewares';
+  getUser } from './middlewares';
 import emptyFunction from 'fbjs/lib/emptyFunction';
 import { ObjectId } from 'mongodb';
 import { SUCCESS, UNAUTHORIZED, UNKNOWN_ERROR,
   OBJECT_IS_NOT_FOUND, SERVER_FAILED } from '../../err-codes';
-import * as profile from '../models/wxe-profile.middleware';
+import { mongoUrl } from '../../config';
+
+import { MongoProfileMiddlewares } from 'nagu-profile';
+
+const profile = new MongoProfileMiddlewares(mongoUrl);
+const addProfile = profile.add(req => {
+  const { name, isMale, phone } = req.body;
+  return {
+    name, phone,
+    isMale: isMale === 'true',
+  };
+});
+const getProfile = profile.get(req => (new ObjectId(req.params.id)));
+const updateProfile = profile.update(req => (new ObjectId(req.params.id)), req => {
+  const { name, isMale, phone } = req.body;
+  let userid = req.body.userid;
+  if (!isManager(req.user.department)) userid = req.user.userid;
+  return { name, isMale, phone, userid };
+});
 
 const router = new Router();
+
 
 export const list = async (req, res) => {
   const { pageIndex } = req.params;
@@ -50,7 +69,7 @@ export const list = async (req, res) => {
 };
 router.get('/list/:pageIndex',
   getUserId(),
-  getUser2,
+  getUser,
   list);
 
 /*
@@ -83,17 +102,11 @@ export const add = async (req, res) => {
   }
 };
 
-const addProfile = profile.add(req => {
-  const { name, isMale, phone } = req.body;
-  return {
-    name, phone,
-    isMale: isMale === 'true',
-  };
-});
+
 
 router.put('/add',
   getUserId(),
-  getUser2,
+  getUser,
   ensureAcceptorCanBeAdded,
   addProfile,
   add,
@@ -109,7 +122,6 @@ export const ensureIdIsCorrect = (req, res, next) => {
   } else next();
 };
 
-const getProfile = profile.get(req => (new ObjectId(req.params.id)));
 
 export const getDetail = (getId = req => (new ObjectId(req.params.id)),
   canUserRead = (req, res) => { // eslint-disable-line arrow-body-style
@@ -144,7 +156,7 @@ export const getDetail = (getId = req => (new ObjectId(req.params.id)),
 
 router.get('/detail/:id',
   getUserId(),
-  getUser2,
+  getUser,
   getProfile,
   getDetail(req => (new ObjectId(req.params.id))));
 
@@ -186,7 +198,7 @@ export const putEdu = (getId = req => (new ObjectId(req.params.id))) =>
   };
 router.put('/edu/:id',
   getUserId(),
-  getUser2,
+  getUser,
   onlyManagerAndOwnerCanDoNext(req => new ObjectId(req.params.id)),
   putEdu(),
 );
@@ -215,7 +227,7 @@ export const deleteEdu = (getId = req => (new ObjectId(req.params.id))) =>
 
 router.delete('/edu/:id',
   getUserId(),
-  getUser2,
+  getUser,
   onlyManagerAndOwnerCanDoNext(req => new ObjectId(req.params.id)),
   deleteEdu(),
 );
@@ -243,7 +255,7 @@ export const putCareer = (getId = req => (new ObjectId(req.params.id))) =>
 
 router.put('/career/:id',
 getUserId(),
-getUser2,
+getUser,
 onlyManagerAndOwnerCanDoNext(req => new ObjectId(req.params.id)),
 putCareer(),
 );
@@ -271,7 +283,7 @@ export const deleteCareer = (getId = req => (new ObjectId(req.params.id))) =>
 
 router.delete('/career/:id',
   getUserId(),
-  getUser2,
+  getUser,
   onlyManagerAndOwnerCanDoNext(req => new ObjectId(req.params.id)),
   deleteCareer(),
 );
@@ -320,7 +332,7 @@ export const putRecord = async (req, res) => {
 
 router.put('/record/:id',
   getUserId(),
-  getUser2,
+  getUser,
   onlyManagerCanDoNext,
   putRecord,
 );
@@ -347,17 +359,12 @@ export const deleteRecord = async (req, res) => {
 };
 router.delete('/record/:id/:recordId',
   getUserId(),
-  getUser2,
+  getUser,
   onlyManagerCanDoNext,
   deleteRecord
 );
 
-const updateProfile = profile.update(req => (new ObjectId(req.params.id)), req => {
-  const { name, isMale, phone } = req.body;
-  let userid = req.body.userid;
-  if (!isManager(req.user.department)) userid = req.user.userid;
-  return { name, isMale, phone, userid };
-});
+
 
 export const postUpdate = (getId = req => new ObjectId(req.params.id)) =>
   async (req, res) => {
@@ -382,7 +389,7 @@ export const postUpdate = (getId = req => new ObjectId(req.params.id)) =>
 
 router.post('/:id',
   getUserId(),
-  getUser2,
+  getUser,
   ensureAcceptorCanBeAdded,
   onlyManagerAndOwnerCanDoNext(req => new ObjectId(req.params.id)),
   ensureIdIsCorrect,

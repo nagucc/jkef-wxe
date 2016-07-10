@@ -50,6 +50,8 @@ export const auth = {
 // Mongodb 数据库服务器Url
 export const mongoUrl = process.env.MONGO_URL || 'mongodb://localhost/jkef';
 
+export const profileCollection = process.env.PROFILE_COLLECTION || 'profiles';
+
 export const redisConfig = {
   host: process.env.HOST_REDIS || 'localhost',
   port: process.env.PORT_REDIS || 6379,
