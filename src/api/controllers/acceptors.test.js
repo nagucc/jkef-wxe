@@ -54,7 +54,7 @@ describe('Acceptors Middlewares', () => {
         department: [manageDpt + 99999],
         userid: myUserid,
       },
-      body: { ...doc, name: 'updated' },
+      body: { ...doc, idCard: { type: 'updated' } },
     });
     const res = createResponse();
     await acceptors.postUpdate(() => (doc._id))(req, res);
@@ -74,7 +74,7 @@ describe('Acceptors Middlewares', () => {
     const resOwner = createResponse();
     await acceptors.onlyManagerAndOwnerCanDoNext(idGetter)(reqOwner, resOwner);
     let data = resOwner._getData();
-    expect(data).to.be.not.ok;
+    expect(data.ret).to.eql(UNAUTHORIZED);
 
     // Other
     const reqOther = createRequest({
@@ -115,7 +115,7 @@ describe('Acceptors Middlewares', () => {
       },
     });
     const res = createResponse();
-    await acceptors.getDetail(() => doc._id)(req, res);
+    await acceptors.getDetail(() => doc._id, () => true)(req, res);
     const data = res._getData();
     expect(data.ret).eql(SUCCESS);
   });
@@ -128,7 +128,8 @@ describe('Acceptors Middlewares', () => {
       },
     });
     const res = createResponse();
-    await acceptors.getDetail(() => doc._id)(req, res);
+    await acceptors.getDetail(() => doc._id,
+      () => true)(req, res);
     const data = res._getData();
     expect(data.ret).eql(SUCCESS);
   });
@@ -141,7 +142,7 @@ describe('Acceptors Middlewares', () => {
       },
     });
     const res = createResponse();
-    await acceptors.getDetail(() => doc._id)(req, res);
+    await acceptors.getDetail(() => doc._id, () => false)(req, res);
     const data = res._getData();
     expect(data.ret).eql(UNAUTHORIZED);
   });
@@ -154,7 +155,7 @@ describe('Acceptors Middlewares', () => {
       },
     });
     const res = createResponse();
-    await acceptors.getDetail(() => 'wrong id')(req, res);
+    await acceptors.getDetail(() => 'wrong id', () => true)(req, res);
     const data = res._getData();
     expect(data.ret).eql(OBJECT_IS_NOT_FOUND);
   });
