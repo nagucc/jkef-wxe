@@ -50,13 +50,12 @@ class RegistrationForm extends Component {
 
     // onSubmit的处理函数，发起一个submitForm action。
     const submit = value => {
-      console.log('eeeeeee', value);
       this.props.dispatch(submitForm(value));
-    }
+    };
 
     return (
       <div>
-        <NeedSignup />
+        {/*<NeedSignup />*/}
         <div className="bd">
           <form className="infoForm" role="form"
             onSubmit={handleSubmit(submit)}
