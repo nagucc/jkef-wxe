@@ -1,25 +1,13 @@
 import { combineReducers } from 'redux';
-import { FETCHED_ACCEPTORS_LIST,
-  RESET,
+import { FETCHED_CEE_RESULT,
   FETCH_FAILED, FETCHING } from '../../constants';
 
 const data = (state = [], action) => {
   switch (action.type) {
-    case FETCHED_ACCEPTORS_LIST:
-      return state.concat(action.data);
-    case RESET:
-      return [];
+    case FETCHED_CEE_RESULT:
+      return action.data;
     default:
       return state;
-  }
-};
-
-const totalCount = (state = 0, action) => {
-  switch (action.type) {
-    case FETCHED_ACCEPTORS_LIST:
-      return action.totalCount;
-    default:
-      return 0;
   }
 };
 
@@ -36,7 +24,7 @@ const showToast = (state = false, action) => {
   switch (action.type) {
     case FETCHING:
       return true;
-    case FETCHED_ACCEPTORS_LIST:
+    case FETCHED_CEE_RESULT:
     case FETCH_FAILED:
       return false;
     default:
@@ -46,7 +34,6 @@ const showToast = (state = false, action) => {
 
 export default combineReducers({
   data,
-  totalCount,
   error,
   showToast,
 });

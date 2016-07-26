@@ -11,6 +11,7 @@ const Registration = Mongoose.Schema({
   university: String,
   major: String,
   degree: String,
+  tel: String,
 });
 
 const FundInfo = Mongoose.model('FundInfo', Registration);

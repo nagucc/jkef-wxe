@@ -61,17 +61,16 @@ function fetchState(state, dispatch) {
     });
 }
 
-function getInput(value) {
-  return {
-    type: SUBMIT_FORM,
-    value,
-  };
-}
+// function getInput(value) {
+//   return {
+//     type: SUBMIT_FORM,
+//     value,
+//   };
+// }
 
 export function submitForm(value) {
-  console.log(value);
   return (dispatch, getState) => {
-    dispatch(getInput(value));
+    // dispatch(getInput(value));
     fetchState(getState(), dispatch);
   };
 }

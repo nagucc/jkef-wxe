@@ -2,7 +2,7 @@ import { connect } from 'react-redux';
 import React, { PropTypes } from 'react';
 import { Cells, Cell, CellFooter, CellBody,
   Panel, PanelHeader, PanelBody,
-  MediaBox,
+  MediaBox, Msg,
   Button, SearchBar } from 'react-weui';
 import NeedSignup from '../../../components/NeedSignup';
 import * as actions from '../../../actions/acceptors/list';
@@ -39,41 +39,45 @@ class ListAcceptors extends React.Component {
     fetchAcceptors(query);
   }
   render() {
-    const { data, totalCount, showToast } = this.props;
+    const { data, totalCount, showToast, error } = this.props;
     return (
       <div className="progress">
         <NeedSignup />
-        <div className="bd">
-          <SearchBar placeholder="搜索姓名" onChange={this.search.bind(this)} />
-          <Panel>
-            <PanelHeader>
-              受赠者列表
-            </PanelHeader>
-            <PanelBody>
-              <MediaBox type="small_appmsg">
-                <Cells access>
-                  {
-                    data.map(acc => (
-                      <Cell href={`/acceptors/detail/${acc._id}`} key={acc._id}>
-                        <CellBody>
-                          {acc.name}
-                        </CellBody>
-                        <CellFooter />
-                      </Cell>
-                    ))
-                  }
-                </Cells>
-              </MediaBox>
-            </PanelBody>
-          </Panel>
           {
-            totalCount > data.length
-            ? <Button onClick={this.nextPage.bind(this)}>
-                加载更多({`${data.length}/${totalCount}`})
-              </Button>
-          : null
+            error ? <Msg type="warn" title="发生错误" description={error.msg} /> : (
+              <div className="bd">
+                <SearchBar placeholder="搜索姓名" onChange={this.search.bind(this)} />
+                <Panel>
+                  <PanelHeader>
+                    受赠者列表
+                  </PanelHeader>
+                  <PanelBody>
+                    <MediaBox type="small_appmsg">
+                      <Cells access>
+                        {
+                          data.map(acc => (
+                            <Cell href={`/acceptors/detail/${acc._id}`} key={acc._id}>
+                              <CellBody>
+                                {acc.name}
+                              </CellBody>
+                              <CellFooter />
+                            </Cell>
+                          ))
+                        }
+                      </Cells>
+                    </MediaBox>
+                  </PanelBody>
+                </Panel>
+                {
+                  totalCount > data.length
+                  ? <Button onClick={this.nextPage.bind(this)}>
+                      加载更多({`${data.length}/${totalCount}`})
+                    </Button>
+                : null
+                }
+              </div>
+            )
           }
-        </div>
         <LoadingToast show={showToast} />
       </div>
     );

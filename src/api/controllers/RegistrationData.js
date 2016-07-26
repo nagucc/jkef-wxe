@@ -2,8 +2,18 @@ import FundInfo from '../../data/models/RegistrationSchema';
 import Mongoose from 'mongoose';
 import Router from 'express';
 import { mongoUrl } from '../../config';
+import { list } from '../models/cee-result';
 
 const router = new Router();
+
+router.get('/list', async (req, res) => {
+  try {
+    const data = await list();
+    res.send({ ret: 0, data });
+  } catch (e) {
+    res.send({ ret: 500, msg: e });
+  }
+});
 
 const opts = {
   server: {
@@ -59,6 +69,7 @@ export const postAdd = async (req, res) => {
         university: req.body.university,
         major: req.body.major,
         degree: req.body.degree,
+        tel: req.body.tel,
       });
       await saveData(info);
       res.json({ ret: 1, info: '信息录入成功' });

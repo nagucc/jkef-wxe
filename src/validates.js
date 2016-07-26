@@ -60,8 +60,6 @@ export function maxLength(max) {
   };
 }
 
-
-
 export function oneOf(enumeration) {
   return value => {
     if (!~enumeration.indexOf(value)) {

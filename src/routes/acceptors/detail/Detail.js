@@ -97,7 +97,7 @@ class Detail extends React.Component {
                 }
                 <RecordHistory data={acceptor.records} />
                 <ActionSheet {...actionSheetParams} />
-              <Button onClick={this.showActionSheet.bind(this)} >修改资料</Button>
+                <Button onClick={this.showActionSheet.bind(this)} >修改资料</Button>
               </div>
             )
           }

@@ -6,6 +6,9 @@ import { expect } from 'chai';
 import { createRequest, createResponse } from 'node-mocks-http';
 import { manageDpt, supervisorDpt } from '../../config';
 import * as acceptors from './acceptors';
+import { SUCCESS, UNAUTHORIZED, UNKNOWN_ERROR,
+  OBJECT_IS_NOT_FOUND, SERVER_FAILED,
+  OBJECT_IS_UNDEFINED_OR_NULL } from '../../err-codes';
 
 const myUserid = 88;
 const otherUserid = 89;
@@ -18,10 +21,6 @@ const otherUser = {
   userid: 89,
   department: [99999999],
 };
-// const supervisor = {
-//   userid: 90,
-//   department: [supervisorDpt],
-// };
 const manager = {
   user: 91,
   department: [manageDpt],
@@ -35,6 +34,7 @@ describe('Acceptors Middlewares', () => {
         userid: myUserid,
       },
       body: {
+        _id: Math.random().toString(), // _id在添加profile的时候生成
         userid: myUserid + 11,
         name: 'test',
         idCard: { type: 'test', number: Math.random() },
@@ -54,13 +54,12 @@ describe('Acceptors Middlewares', () => {
         department: [manageDpt + 99999],
         userid: myUserid,
       },
-      body: { ...doc, name: 'updated' },
-      params: { id: doc._id },
+      body: { ...doc, idCard: { type: 'updated' } },
     });
     const res = createResponse();
-    await acceptors.postUpdate(req, res);
+    await acceptors.postUpdate(() => (doc._id))(req, res);
     const data = res._getData();
-    expect(data.ret).eql(0);
+    expect(data.ret).eql(SUCCESS);
     expect(data.data._id).eql(doc._id);
   });
 
@@ -75,7 +74,7 @@ describe('Acceptors Middlewares', () => {
     const resOwner = createResponse();
     await acceptors.onlyManagerAndOwnerCanDoNext(idGetter)(reqOwner, resOwner);
     let data = resOwner._getData();
-    expect(data).to.be.not.ok;
+    expect(data.ret).to.eql(UNAUTHORIZED);
 
     // Other
     const reqOther = createRequest({
@@ -85,7 +84,7 @@ describe('Acceptors Middlewares', () => {
     const resOther = createResponse();
     await acceptors.onlyManagerAndOwnerCanDoNext(idGetter)(reqOther, resOther);
     data = resOther._getData();
-    expect(data.ret).to.eql(401);
+    expect(data.ret).to.eql(UNAUTHORIZED);
 
     // Manager
     const reqManager = createRequest({
@@ -101,12 +100,11 @@ describe('Acceptors Middlewares', () => {
   it('postUpdate 更新信息', async () => {
     const req = createRequest({
       body: { ...doc, name: 'updated3' },
-      params: { id: doc._id },
     });
     const res = createResponse();
-    await acceptors.postUpdate(req, res);
+    await acceptors.postUpdate(() => doc._id)(req, res);
     const data = res._getData();
-    expect(data.ret).eql(0);
+    expect(data.ret).eql(SUCCESS);
   });
 
   it('getDetail 用户可查看自己的信息', async () => {
@@ -115,13 +113,11 @@ describe('Acceptors Middlewares', () => {
         department: [supervisorDpt + 999999],
         userid: myUserid,
       },
-      // 这个必须是数据库中已存在的一个id号
-      params: { id: doc._id },
     });
     const res = createResponse();
-    await acceptors.getDetail(req, res);
+    await acceptors.getDetail(() => doc._id, () => true)(req, res);
     const data = res._getData();
-    expect(data.ret).eql(0);
+    expect(data.ret).eql(SUCCESS);
   });
 
   it('getDetail 监督员能查看他人信息', async () => {
@@ -130,12 +126,12 @@ describe('Acceptors Middlewares', () => {
         department: [supervisorDpt],
         userid: supervisorUserid,
       },
-      params: { id: doc._id },
     });
     const res = createResponse();
-    await acceptors.getDetail(req, res);
+    await acceptors.getDetail(() => doc._id,
+      () => true)(req, res);
     const data = res._getData();
-    expect(data.ret).eql(0);
+    expect(data.ret).eql(SUCCESS);
   });
 
   it('getDetail 非管理员或监督员不能查看他人信息', async () => {
@@ -144,12 +140,11 @@ describe('Acceptors Middlewares', () => {
         department: [supervisorDpt + 999999],
         userid: otherUserid,
       },
-      params: { id: doc._id },
     });
     const res = createResponse();
-    await acceptors.getDetail(req, res);
+    await acceptors.getDetail(() => doc._id, () => false)(req, res);
     const data = res._getData();
-    expect(data.ret).eql(401);
+    expect(data.ret).eql(UNAUTHORIZED);
   });
 
   it('getDetail 给定Id不存在时返回错误', async () => {
@@ -158,15 +153,14 @@ describe('Acceptors Middlewares', () => {
         department: [supervisorDpt + 999999],
         userid: 88,
       },
-      params: { id: 'ffddd' },
     });
     const res = createResponse();
-    await acceptors.getDetail(req, res);
+    await acceptors.getDetail(() => 'wrong id', () => true)(req, res);
     const data = res._getData();
-    expect(data.ret).eql(-1);
+    expect(data.ret).eql(OBJECT_IS_NOT_FOUND);
   });
 
-  it('list 普通用户可查看列表，但不包含仅有助学金记录的信息', async () => {
+  it('list 普通用户不可查看列表', async () => {
     const req = createRequest({
       user: normalUser,
       query: {
@@ -176,14 +170,7 @@ describe('Acceptors Middlewares', () => {
     const res = createResponse();
     await acceptors.list(req, res);
     const result = res._getData();
-    expect(result.ret).eql(0);
-    if (result.data.totalCount >= 500) expect(result.data.data).have.length(500);
-    result.data.data.forEach(item => {
-      if (item.records) {
-        expect(item.records.some.bind(item.records, rec => rec.project === '奖学金'));
-      }
-    });
-    expect(result.ret).eql(0);
+    expect(result.ret).eql(UNAUTHORIZED);
   });
 
   it('list 普通用户不可查看助学金信息', async () => {
@@ -205,13 +192,12 @@ describe('Acceptors Middlewares', () => {
   it('putEdu body中必须提供name和year参数', async () => {
     const req = createRequest({
       body: {},
-      params: doc._id,
       user: normalUser,
     });
     const res = createResponse();
-    await acceptors.putEdu(req, res);
+    await acceptors.putEdu(() => doc._id)(req, res);
     const data = res._getData(res);
-    expect(data.ret).eql(-1);
+    expect(data.ret).eql(UNKNOWN_ERROR);
   });
 
   const rawEdu = {
@@ -221,12 +207,10 @@ describe('Acceptors Middlewares', () => {
 
   it('putEdu 用户可添加教育经历', async () => {
     const req = createRequest({
-      params: doc._id,
-      // user: normalUser,
       body: rawEdu,
     });
     const res = createResponse();
-    await acceptors.putEdu(req, res);
+    await acceptors.putEdu(() => doc._id)(req, res);
     const data = res._getData();
     expect(data.ret).eql(0);
   });
@@ -234,22 +218,20 @@ describe('Acceptors Middlewares', () => {
   it('deleteEdu body中必须提供name和year参数', async () => {
     const req = createRequest({
       body: {},
-      params: doc._id,
       user: normalUser,
     });
     const res = createResponse();
-    await acceptors.deleteEdu(req, res);
+    await acceptors.deleteEdu()(req, res);
     const data = res._getData(res);
     expect(data.ret).eql(-1);
   });
 
   it('deleteEdu 用户可删除教育经历', async () => {
     const req = createRequest({
-      params: doc._id,
       body: rawEdu,
     });
     const res = createResponse();
-    await acceptors.deleteEdu(req, res);
+    await acceptors.deleteEdu(() => doc._id)(req, res);
     const data = res._getData();
     expect(data.ret).eql(0);
   });
@@ -257,11 +239,10 @@ describe('Acceptors Middlewares', () => {
   it('putCareer body中必须提供name和year参数', async () => {
     const req = createRequest({
       body: {},
-      params: doc._id,
       user: normalUser,
     });
     const res = createResponse();
-    await acceptors.putCareer(req, res);
+    await acceptors.putCareer(() => doc._id)(req, res);
     const data = res._getData(res);
     expect(data.ret).eql(-1);
   });
@@ -270,12 +251,10 @@ describe('Acceptors Middlewares', () => {
 
   it('putCareer 用户可添加工作经历', async () => {
     const req = createRequest({
-      params: doc._id,
-      // user: normalUser,
       body: rawCareer,
     });
     const res = createResponse();
-    await acceptors.putCareer(req, res);
+    await acceptors.putCareer(() => doc._id)(req, res);
     const data = res._getData();
     expect(data.ret).eql(0);
   });
@@ -283,22 +262,20 @@ describe('Acceptors Middlewares', () => {
   it('deleteCareer body中必须提供name和year参数', async () => {
     const req = createRequest({
       body: {},
-      params: doc._id,
       user: normalUser,
     });
     const res = createResponse();
-    await acceptors.deleteCareer(req, res);
+    await acceptors.deleteCareer(() => doc._id)(req, res);
     const data = res._getData(res);
     expect(data.ret).eql(-1);
   });
 
   it('deleteCareer 用户可删除教育经历', async () => {
     const req = createRequest({
-      params: doc._id,
       body: rawEdu,
     });
     const res = createResponse();
-    await acceptors.deleteCareer(req, res);
+    await acceptors.deleteCareer(() => doc._id)(req, res);
     const data = res._getData();
     expect(data.ret).eql(0);
   });

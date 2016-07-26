@@ -3,8 +3,9 @@ import { reduxForm } from 'redux-form';
 import { submitForm } from '../../actions/ceeRegistration/ceeRegistration';
 import {
   Button, ButtonArea, Form, FormCell, Select, Toast,
-  CellHeader, CellBody, Label, CellsTitle, Input, Icon,
+  CellHeader, CellBody, Label, CellsTitle, Input,
 } from 'react-weui';
+import NeedSignup from '../../components/NeedSignup';
 
 // 定义表单各个字段key
 export const fields = ['name', 'id', 'sex', 'style',
@@ -48,16 +49,13 @@ class RegistrationForm extends Component {
     } = this.props;
 
     // onSubmit的处理函数，发起一个submitForm action。
-    const submit = value => this.props.dispatch(submitForm(value));
+    const submit = value => {
+      this.props.dispatch(submitForm(value));
+    };
 
     return (
       <div>
-        <Toast icon={this.props.toastState.icon}
-          show={this.props.toastState.show}
-        >{this.props.toastState.info}</Toast>
-        <div className="hd">
-          <h1 className="page_title">学生信息</h1>
-        </div>
+        {/*<NeedSignup />*/}
         <div className="bd">
           <form className="infoForm" role="form"
             onSubmit={handleSubmit(submit)}
@@ -98,12 +96,13 @@ class RegistrationForm extends Component {
                     <option value="文科">文科</option>
                     <option value="理科">理科</option>
                     <option value="艺体">艺体</option>
+                    <option value="其他">其他</option>
                   </Select>
                 </CellBody>
               </FormCell>
               <FormCell>
                 <CellHeader>
-                  <Label>联系方式</Label>
+                  <Label>手机号</Label>
                 </CellHeader>
                 <CellBody>
                   <Input required type="number" placeholder="请输入联系方式" {...tel} />
@@ -120,10 +119,10 @@ class RegistrationForm extends Component {
               </FormCell>
               <FormCell>
                 <CellHeader>
-                  <Label>高考分数</Label>
+                  <Label>中/高考分数</Label>
                 </CellHeader>
                 <CellBody>
-                  <Input type="text" placeholder="请输入高考分数" {...grade} />
+                  <Input type="number" placeholder="请输入高考分数" {...grade} />
                 </CellBody>
               </FormCell>
               <FormCell>
@@ -148,6 +147,7 @@ class RegistrationForm extends Component {
                 <CellBody>
                   <Select {...degree} value={degree.value || '本科'}>
                     <option value="高中">高中</option>
+                    <option value="专科">专科</option>
                     <option value="本科">本科</option>
                     <option value="硕士研究生">硕士研究生</option>
                     <option value="博士研究生">博士研究生</option>
@@ -160,6 +160,10 @@ class RegistrationForm extends Component {
             </Form>
           </form>
         </div>
+        <Toast icon={this.props.toastState.icon}
+          show={this.props.toastState.show} >
+          {this.props.toastState.info}
+        </Toast>
       </div>
     );
   }
@@ -182,6 +186,11 @@ function selectState(state) {
   return {
     doneForm,
     toastState,
+    initialValues: {
+      degree: '本科',
+      sex: '男',
+      style: '文科',
+    },
   };
 }
 export default reduxForm({

@@ -9,6 +9,7 @@
 
 /* eslint-disable max-len */
 /* jscs:disable maximumLineLength */
+import { MongoProfileMiddlewares } from 'nagu-profile';
 
 export const port = process.env.PORT || 3000;
 export const host = process.env.WEBSITE_HOSTNAME || `wx.nagu.cc:${port}`;
@@ -50,6 +51,8 @@ export const auth = {
 // Mongodb 数据库服务器Url
 export const mongoUrl = process.env.MONGO_URL || 'mongodb://localhost/jkef';
 
+export const profileCollection = process.env.PROFILE_COLLECTION || 'profiles';
+
 export const redisConfig = {
   host: process.env.HOST_REDIS || 'localhost',
   port: process.env.PORT_REDIS || 6379,
@@ -65,3 +68,5 @@ export const manageDpt = parseInt(process.env.MANAGER_DEPT || '13', 10);
 export const supervisorDpt = parseInt(process.env.SUPERVISOR_DEPT || '13', 10);
 
 export const showLog = Boolean(process.env.SHOW_LOG) || true;
+
+export const profileMiddlewares = new MongoProfileMiddlewares(mongoUrl, profileCollection);
