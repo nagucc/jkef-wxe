@@ -69,6 +69,7 @@ export const postAdd = async (req, res) => {
         university: req.body.university,
         major: req.body.major,
         degree: req.body.degree,
+        tel: req.body.tel,
       });
       await saveData(info);
       res.json({ ret: 1, info: '信息录入成功' });
