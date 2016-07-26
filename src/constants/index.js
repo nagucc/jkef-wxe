@@ -105,3 +105,5 @@ export const STAT_BY_PROJECT = 'STAT_BY_PROJECT';
 毕业录取信息*/
 export const SUBMIT_FORM = 'SUBMIT_FORM';
 export const TOAST_SHOW = 'TOAST_SHOW';
+
+export const FETCHED_CEE_RESULT = 'FETCHED_CEE_RESULT';
