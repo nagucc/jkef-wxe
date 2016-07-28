@@ -74,7 +74,7 @@ export class RegistrationComponent extends React.Component {
         <NeedSignup />
         <CheckRoles success={roles => setUserRole(roles)} />
         <div className="hd">
-          <h1 className="page_title">{this.props.title || '受赠者登记'}</h1>
+          <h1 className="page_title">{this.props.title || '纳谷社区'}</h1>
         </div>
         <div className="bd">
           {
