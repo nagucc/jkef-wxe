@@ -42,6 +42,7 @@ const router = new Router();
 
 
 export const list = async (req, res) => {
+  console.log('start to list - express');
   const { pageIndex } = req.params;
   const { year, text, pageSize, project } = req.query;
   // 只有Supervisor或Manager可以查看列表
