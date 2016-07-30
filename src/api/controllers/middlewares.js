@@ -28,7 +28,7 @@ export const getUser = async (req, res, next) => {
 
 export const getProfileByUserId = (
   getUserId = req => req.user.userid,
-  setProfile = (profile, req, res, next) => {
+  success = (profile, req, res, next) => {
     if (profile) {
       req.user = profile; // eslint-disable-line no-param-reassign
     }
@@ -38,16 +38,15 @@ export const getProfileByUserId = (
       req.user.department = []; // eslint-disable-line no-param-reassign
     }
     next();
-  }) => async (req, res, next) => {
+  }, error = (msg, req, res) => res.send({ ret: SERVER_FAILED, msg })) =>
+  async (req, res, next) => {
+    console.log('start to getProfileByUserId');
     try {
       const userid = await getUserId(req, res);
       const profile = await profileDao.getByUserId(userid);
-      setProfile(profile, req, res, next);
+      success(profile, req, res, next);
     } catch (e) {
-      res.send({
-        ret: SERVER_FAILED,
-        msg: e,
-      });
+      error(e, req, res);
     }
   };
 /*
