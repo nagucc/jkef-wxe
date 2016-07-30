@@ -31,22 +31,29 @@ class ListAcceptors extends React.Component {
     query.pageIndex++;
     fetchAcceptors(query);
   }
-  search(text) {
-    const { fetchAcceptors, query, reset } = this.props;
-    query.text = text;
-    query.pageIndex = 0;
-    reset();
-    fetchAcceptors(query);
-  }
   render() {
-    const { data, totalCount, showToast, error } = this.props;
+    const { data, totalCount, showToast, error, fetchAcceptors, query, reset } = this.props;
+    let searchTimeoutId = null;
+    const search = text => {
+      /*
+      为了避免多次提交请求，这里延迟一秒。
+      一秒之内如果再次触发onChange事件，则取消上一个动作。
+       */
+      clearTimeout(searchTimeoutId);
+      searchTimeoutId = setTimeout(() => {
+        query.text = text;
+        query.pageIndex = 0;
+        reset();
+        fetchAcceptors(query);
+      }, 1000);
+    };
     return (
       <div className="progress">
         <NeedSignup />
           {
             error ? <Msg type="warn" title="发生错误" description={error.msg} /> : (
               <div className="bd">
-                <SearchBar placeholder="搜索姓名" onChange={this.search.bind(this)} />
+                <SearchBar placeholder="搜索姓名" onChange={search} />
                 <Panel>
                   <PanelHeader>
                     受赠者列表
