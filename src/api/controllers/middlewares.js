@@ -43,6 +43,7 @@ export const getProfileByUserId = (
     console.log('start to getProfileByUserId');
     try {
       const userid = await getUserId(req, res);
+      console.log('userid: ', userid);
       const profile = await profileDao.getByUserId(userid);
       success(profile, req, res, next);
     } catch (e) {
