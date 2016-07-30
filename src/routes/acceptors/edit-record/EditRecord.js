@@ -35,7 +35,7 @@ export class EditRecordComponent extends React.Component {
         <RecordHistory data={data} />
         <AddRecord {...this.props} />
         <RemoveRecord {...this.props} />
-        <Toast icon={toast.icon} show={toast.show} >{toast.text}</Toast>
+        <Toast icon="loading" show={toast.show} >加载中</Toast>
       </div>
     );
   }
