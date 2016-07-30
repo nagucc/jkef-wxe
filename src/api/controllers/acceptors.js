@@ -12,7 +12,7 @@ import { findAcceptors, addAcceptor,
 import { getUserId } from 'wxe-auth-express';
 import { ensureAcceptorCanBeAdded,
   isManager, isSupervisor, isUndefined,
-  getUser } from './middlewares';
+  getUser, getProfileByUserId } from './middlewares';
 import emptyFunction from 'fbjs/lib/emptyFunction';
 import { ObjectId } from 'mongodb';
 import { SUCCESS, UNAUTHORIZED, UNKNOWN_ERROR,
@@ -66,7 +66,8 @@ export const list = async (req, res) => {
 };
 router.get('/list/:pageIndex',
   getUserId(),
-  getUser,
+  // getUser,
+  getProfileByUserId(),
   list);
 
 /*

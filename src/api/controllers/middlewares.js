@@ -26,6 +26,30 @@ export const getUser = async (req, res, next) => {
   }
 };
 
+export const getProfileByUserId = (
+  getUserId = req => req.user.userid,
+  setProfile = (profile, req, res, next) => {
+    if (profile) {
+      req.user = profile; // eslint-disable-line no-param-reassign
+    }
+    if (profile && profile.roles) {
+      req.user.department = profile.roles; // eslint-disable-line no-param-reassign
+    } else {
+      req.user.department = []; // eslint-disable-line no-param-reassign
+    }
+    next();
+  }) => async (req, res, next) => {
+    try {
+      const userid = await getUserId(req, res);
+      const profile = await profileDao.getByUserId(userid);
+      setProfile(profile, req, res, next);
+    } catch (e) {
+      res.send({
+        ret: SERVER_FAILED,
+        msg: e,
+      });
+    }
+  };
 /*
 检查Acceptor数据是否可以被添加或更新
 主要是检查必须的数据字段是否存在
