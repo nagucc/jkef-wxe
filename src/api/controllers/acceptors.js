@@ -17,11 +17,9 @@ import emptyFunction from 'fbjs/lib/emptyFunction';
 import { ObjectId } from 'mongodb';
 import { SUCCESS, UNAUTHORIZED, UNKNOWN_ERROR,
   OBJECT_IS_NOT_FOUND, SERVER_FAILED } from '../../err-codes';
-import { mongoUrl, profileCollection } from '../../config';
+import { profileMiddlewares as profile } from '../../config';
 
-import { MongoProfileMiddlewares } from 'nagu-profile';
 
-const profile = new MongoProfileMiddlewares(mongoUrl, profileCollection);
 const addProfile = profile.add(req => {
   const { name, isMale, phone } = req.body;
   return {
@@ -42,7 +40,6 @@ const router = new Router();
 
 
 export const list = async (req, res) => {
-  console.log('start to list - express');
   const { pageIndex } = req.params;
   const { year, text, pageSize, project } = req.query;
   // 只有Supervisor或Manager可以查看列表
@@ -99,7 +96,6 @@ export const add = async (req, res) => {
     res.send({ ret: SERVER_FAILED, msg: e });
   }
 };
-
 
 
 router.put('/add',

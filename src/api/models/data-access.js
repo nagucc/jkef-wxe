@@ -110,7 +110,6 @@ export const getStatByYear = () =>
   });
 
 export const findAcceptors = ({ text, year, project, projections, skip = 0, limit = 20 } = {}) => {
-  console.log('start to findAcceptors');
   let condition = { isDeleted: { $ne: true } };
   if (text) {
     var reg = new RegExp(text); // eslint-disable-line vars-on-top, no-var
