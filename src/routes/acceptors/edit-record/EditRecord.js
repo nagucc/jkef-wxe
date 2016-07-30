@@ -3,41 +3,49 @@
  */
 import React, { PropTypes } from 'react';
 import { Toast, Msg } from 'react-weui';
-import AcceptHistory from '../detail/AcceptHistory';
-import AddCareer from './AddCareer';
-import RemoveCareer from './RemoveCareer';
+import RecordHistory from '../detail/RecordHistory';
+import AddRecord from './AddRecord';
+import RemoveRecord from './RemoveRecord';
 import { connect } from 'react-redux';
+import * as actions from '../../../actions/acceptors/record';
 
 export class EditRecordComponent extends React.Component {
   static propTypes = {
     data: React.PropTypes.array,
     add: PropTypes.func,
     remove: PropTypes.func,
-    init: PropTypes.func,1
+    init: PropTypes.func,
     err: PropTypes.object,
     fields: PropTypes.object,
     toast: PropTypes.object,
+    acceptorId: PropTypes.string.isRequired,
   };
-  static defaultProps = {
-    data: [],
+  static contextTypes = {
+    setTitle: PropTypes.func.isRequired,
   };
   componentDidMount() {
-    this.props.init();
+    this.props.init(this.props.acceptorId);
+    this.context.setTitle('修改受赠记录');
   }
   render() {
-    const { err, data, add, remove, toast } = this.props;
+    const { err, data, toast } = this.props;
 
     return err ? <Msg type="warn" title="发生错误" description={JSON.stringify(err.msg)} /> : (
       <div>
-        <AcceptHistory history={data} />
-        {/*<AddCareer add={add} />
-        <RemoveCareer remove={remove} history={history} />*/}
-        <Toast icon={toast.icon} show={toast.show} >{toast.text}</Toast>
+        <RecordHistory data={data} />
+        <AddRecord {...this.props} />
+        <RemoveRecord {...this.props} />
+        <Toast icon="loading" show={toast.show} >加载中</Toast>
       </div>
     );
   }
 }
 const mapStateToProps = state => ({
-  ...state.acceptors.careerHistory.data,
+  ...state.acceptors.records,
 });
-export default connect(mapStateToProps)(EditRecordComponent);
+const mapDispatchToProps = dispatch => ({
+  add: (id, record) => dispatch(actions.addRecord(id, record)),
+  init: id => dispatch(actions.initRecords(id)),
+  remove: (id, recordId) => dispatch(actions.deleteRecord(id, recordId)),
+});
+export default connect(mapStateToProps, mapDispatchToProps)(EditRecordComponent);

@@ -29,7 +29,9 @@ export const addEdu = (id, edu) =>
         reject(result);
       }
     } catch (e) {
-      dispatch(fetchFailed({ ret: -1, msg: e }));
+      const result = { ret: -1, msg: e };
+      dispatch(fetchFailed(result));
+      reject(result);
     }
   });
 

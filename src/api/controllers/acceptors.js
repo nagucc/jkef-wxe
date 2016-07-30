@@ -1,41 +1,52 @@
+/*
+eslint-disable no-param-reassign
+ */
+
 import { Router } from 'express';
 import { findAcceptors, addAcceptor,
   findByIdCardNumber, findById, update,
   addEdu, removeEdu,
-  addCareer, removeCareer } from '../models/data-access';
-import { wxentConfig as wxcfg,
-  redisConfig as redis } from '../../config';
-import api from 'wxent-api-redis';
-import { getUser, getUserId } from 'wxe-auth-express';
+  addCareer, removeCareer,
+  addRecord, removeRecord } from '../models/data-access';
+
+import { getUserId } from 'wxe-auth-express';
 import { ensureAcceptorCanBeAdded,
-  isManager, isSupervisor,
-  ensureUserSignedIn } from './middlewares';
+  isManager, isSupervisor, isUndefined,
+  getUser, getProfileByUserId } from './middlewares';
 import emptyFunction from 'fbjs/lib/emptyFunction';
 import { ObjectId } from 'mongodb';
-import profileDao from '../models/wxe-profile';
+import { SUCCESS, UNAUTHORIZED, UNKNOWN_ERROR,
+  OBJECT_IS_NOT_FOUND, SERVER_FAILED } from '../../err-codes';
+import { profileMiddlewares as profile } from '../../config';
 
-const wxapi = api(wxcfg.corpId, wxcfg.secret, wxcfg.agentId, redis.host, redis.port);
+
+const addProfile = profile.add(req => {
+  const { name, isMale, phone } = req.body;
+  return {
+    name, phone,
+    isMale: isMale === 'true',
+    isAcceptor: true,
+  };
+});
+const getProfile = profile.get(req => (new ObjectId(req.params.id)));
+const updateProfile = profile.update(req => (new ObjectId(req.params.id)), req => {
+  const { name, isMale, phone } = req.body;
+  let userid = req.body.userid;
+  if (!isManager(req.user.department)) userid = req.user.userid;
+  return { name, isMale, phone, userid };
+});
+
 const router = new Router();
 
-const getUser2 = async (req, res, next) => {
-  const profile = await profileDao.getByUserId(req.user.userid);
-  req.user.department = profile.roles;
-  next();
-};
 
 export const list = async (req, res) => {
   const { pageIndex } = req.params;
-  let { project } = req.query;
-  const { year, text, pageSize } = req.query;
-  // 如果用户不在管理组中，且project参数为'助学金'或空，则返回错误
-  if (!isSupervisor(req.user.department)) {
-    if (project === '助学金') {
-      res.send({ ret: 401, msg: '您目前不能查看助学金受赠者列表' });
-      return;
-    } else if (!project) {
-      // 当用户不在管理组中，且project为空时，将project设置为'奖学金'
-      project = '奖学金';
-    }
+  const { year, text, pageSize, project } = req.query;
+  // 只有Supervisor或Manager可以查看列表
+  if (!isSupervisor(req.user.department)
+    && !isManager(req.user.department)) {
+    res.send({ ret: UNAUTHORIZED, msg: '您不能查看受赠者列表' });
+    return;
   }
   try {
     const data = await findAcceptors({
@@ -47,14 +58,13 @@ export const list = async (req, res) => {
     });
     res.send({ ret: 0, data });
   } catch (e) {
-    res.send({ ret: -1, msg: e });
+    res.send({ ret: SERVER_FAILED, msg: e });
   }
 };
 router.get('/list/:pageIndex',
   getUserId(),
-  // getUser({ wxapi }),
-  getUser2,
-  // ensureUserSignedIn,
+  // getUser,
+  getProfileByUserId(),
   list);
 
 /*
@@ -62,7 +72,7 @@ router.get('/list/:pageIndex',
 任何用户可自助申请成为受赠者，管理员则可以任意添加受赠者，并指定关联企业号账户。
  */
 export const add = async (req, res) => {
-  const { name, isMale, phone, idCard } = req.body;
+  const { _id, name, isMale, phone, idCard } = req.body;
   try {
     // 3.0 检查是否有相同的idCard.number存在
     const doc = await findByIdCardNumber(idCard.number);
@@ -77,44 +87,72 @@ export const add = async (req, res) => {
       userid = req.user.userid;
     }
     // 3.1. 保存数据到数据库中
-    const _id = await addAcceptor({ name, isMale, phone, idCard, userid });
+    await addAcceptor({ _id, name, isMale, phone, idCard, userid });
     // 3.2 返回结果
-    res.send({ ret: 0, data: {
+    res.send({ ret: SUCCESS, data: {
       name, isMale, phone, idCard, userid, _id,
     } });
   } catch (e) {
-    res.send({ ret: -1, msg: e });
+    res.send({ ret: SERVER_FAILED, msg: e });
   }
 };
+
+
 router.put('/add',
   getUserId(),
-  getUser({ wxapi }),
+  getUser,
   ensureAcceptorCanBeAdded,
+  addProfile,
   add,
 );
 
-export const getDetail = async (req, res) => {
-  try {
-    const data = await findById(new ObjectId(req.params.id));
-    if (!data) {
-      res.send({ ret: -1, msg: '给定的Id不存在' });
-    }
-    // 普通成员只能看自己的数据
-    if (isSupervisor(req.user.department)
-      || data.userid === req.user.userid) res.send({ ret: 0, data });
-    else res.send({ ret: 401, msg: '无权查看' });
-  } catch (e) {
+export const ensureIdIsCorrect = (req, res, next) => {
+  const id = req.params.id;
+  if (!id || id === 'undefined') {
     res.send({
-      ret: -1,
-      msg: e,
+      ret: OBJECT_IS_NOT_FOUND,
+      msg: '所给Id不正确',
     });
-  }
+  } else next();
 };
+
+
+export const getDetail = (getId = req => (new ObjectId(req.params.id)),
+  canUserRead = (req, res) => { // eslint-disable-line arrow-body-style
+    return isSupervisor(req.user.department)
+      || res.profile.userid === req.user.userid;
+  }) =>
+  async (req, res) => {
+    try {
+      const id = getId(req, res);
+      const data = await findById(id);
+      if (!data) {
+        res.send({ ret: OBJECT_IS_NOT_FOUND, msg: '给定的Id不存在' });
+        return;
+      }
+      // 普通成员只能看自己的数据
+      if (canUserRead(req, res)) {
+        res.send({
+          ret: SUCCESS,
+          data: {
+            ...data,
+            ...res.profile,
+          },
+        });
+      } else res.send({ ret: UNAUTHORIZED, msg: '无权查看' });
+    } catch (e) {
+      res.send({
+        ret: SERVER_FAILED,
+        msg: e,
+      });
+    }
+  };
+
 router.get('/detail/:id',
   getUserId(),
-  getUser({ wxapi }),
-  ensureUserSignedIn,
-  getDetail);
+  getUser,
+  getProfile,
+  getDetail(req => (new ObjectId(req.params.id))));
 
 export const onlyManagerAndOwnerCanDoNext = idGetter =>
   async (req, res, next = emptyFunction) => {
@@ -132,138 +170,221 @@ export const onlyManagerAndOwnerCanDoNext = idGetter =>
     }
   };
 
-
-export const putEdu = async (req, res) => {
-  const { name, year } = req.body;
-  if (!name
-    || !year
-    || isNaN(parseInt(year, 10))) {
-    res.send({ ret: -1, msg: '必须提供学校名称和入学年份，入学年份必须是数字' });
-    return;
-  }
-  try {
-    await addEdu(new ObjectId(req.params.id), {
-      name,
-      year: parseInt(year, 10),
-    });
-    res.send({ ret: 0 });
-  } catch (e) {
-    res.send({ ret: -1, msg: e });
-  }
-};
+export const putEdu = (getId = req => (new ObjectId(req.params.id))) =>
+  async (req, res) => {
+    const { name, year } = req.body;
+    if (!name
+      || !year
+      || isNaN(parseInt(year, 10))) {
+      res.send({ ret: -1, msg: '必须提供学校名称和入学年份，入学年份必须是数字' });
+      return;
+    }
+    try {
+      const _id = getId(req, res);
+      await addEdu(_id, {
+        name,
+        year: parseInt(year, 10),
+      });
+      res.send({ ret: 0 });
+    } catch (e) {
+      res.send({ ret: -1, msg: e });
+    }
+  };
 router.put('/edu/:id',
   getUserId(),
-  getUser({ wxapi }),
-  ensureUserSignedIn,
+  getUser,
   onlyManagerAndOwnerCanDoNext(req => new ObjectId(req.params.id)),
-  putEdu,
+  putEdu(),
 );
 
-
-export const deleteEdu = async (req, res) => {
-  const { name, year } = req.body;
-  if (!name
-    || !year
-    || isNaN(parseInt(year, 10))) {
-    res.send({ ret: -1, msg: '必须提供学校名称和入学年份，入学年份必须是数字' });
-    return;
-  }
-  try {
-    await removeEdu(new ObjectId(req.params.id), {
-      name,
-      year: parseInt(year, 10),
-    });
-    res.send({ ret: 0 });
-  } catch (e) {
-    res.send({ ret: -1, msg: e });
-  }
-};
+export const deleteEdu = (getId = req => (new ObjectId(req.params.id))) =>
+  async (req, res) => {
+    const { name, year } = req.body;
+    if (!name
+      || !year
+      || isNaN(parseInt(year, 10))) {
+      res.send({ ret: -1, msg: '必须提供学校名称和入学年份，入学年份必须是数字' });
+      return;
+    }
+    try {
+      const _id = getId(req, res);
+      await removeEdu(_id, {
+        name,
+        year: parseInt(year, 10),
+      });
+      res.send({ ret: 0 });
+    } catch (e) {
+      // console.log('eeee:', e);
+      res.send({ ret: -1, msg: e });
+    }
+  };
 
 router.delete('/edu/:id',
   getUserId(),
-  getUser({ wxapi }),
-  ensureUserSignedIn,
+  getUser,
   onlyManagerAndOwnerCanDoNext(req => new ObjectId(req.params.id)),
-  deleteEdu,
+  deleteEdu(),
 );
 
-export const putCareer = async (req, res) => {
-  const { name, year } = req.body;
-  if (!name
-    || !year
-    || isNaN(parseInt(year, 10))) {
-    res.send({ ret: -1, msg: '必须提供公司名称和入职年份，入职年份必须是数字' });
-    return;
-  }
-  try {
-    await addCareer(new ObjectId(req.params.id), {
-      name,
-      year: parseInt(year, 10),
-    });
-    res.send({ ret: 0 });
-  } catch (e) {
-    res.send({ ret: -1, msg: e });
-  }
-};
+export const putCareer = (getId = req => (new ObjectId(req.params.id))) =>
+  async (req, res) => {
+    const { name, year } = req.body;
+    if (!name
+      || !year
+      || isNaN(parseInt(year, 10))) {
+      res.send({ ret: -1, msg: '必须提供公司名称和入职年份，入职年份必须是数字' });
+      return;
+    }
+    try {
+      const _id = getId(req, res);
+      await addCareer(_id, {
+        name,
+        year: parseInt(year, 10),
+      });
+      res.send({ ret: 0 });
+    } catch (e) {
+      res.send({ ret: -1, msg: e });
+    }
+  };
 
 router.put('/career/:id',
 getUserId(),
-getUser({ wxapi }),
-ensureUserSignedIn,
+getUser,
 onlyManagerAndOwnerCanDoNext(req => new ObjectId(req.params.id)),
-putCareer,
+putCareer(),
 );
 
-export const deleteCareer = async (req, res) => {
-  const { name, year } = req.body;
-  if (!name
-    || !year
-    || isNaN(parseInt(year, 10))) {
-    res.send({ ret: -1, msg: '必须提供公司名称和入职年份，入职年份必须是数字' });
-    return;
-  }
-  try {
-    await removeCareer(new ObjectId(req.params.id), {
-      name,
-      year: parseInt(year, 10),
-    });
-    res.send({ ret: 0 });
-  } catch (e) {
-    res.send({ ret: -1, msg: e });
-  }
-};
+export const deleteCareer = (getId = req => (new ObjectId(req.params.id))) =>
+  async (req, res) => {
+    const { name, year } = req.body;
+    if (!name
+      || !year
+      || isNaN(parseInt(year, 10))) {
+      res.send({ ret: -1, msg: '必须提供公司名称和入职年份，入职年份必须是数字' });
+      return;
+    }
+    try {
+      const _id = getId(req, res);
+      await removeCareer(_id, {
+        name,
+        year: parseInt(year, 10),
+      });
+      res.send({ ret: 0 });
+    } catch (e) {
+      res.send({ ret: -1, msg: e });
+    }
+  };
 
 router.delete('/career/:id',
   getUserId(),
-  getUser({ wxapi }),
-  ensureUserSignedIn,
+  getUser,
   onlyManagerAndOwnerCanDoNext(req => new ObjectId(req.params.id)),
-  deleteCareer,
+  deleteCareer(),
 );
 
-export const postUpdate = async (req, res) => {
-  const { id } = req.params;
-  try {
-    const data = await findById(id);
-    if (!isManager(req.user.department)
-      && req.user.userid !== data.userid) {
-      res.send({ ret: 401, msg: '无权操作' });
-      return;
-    }
-    await update(id, req.body);
+export const onlyManagerCanDoNext = (req, res, next) => {
+  if (isManager(req.user.department)) next();
+};
+
+export const putRecord = async (req, res) => {
+  const id = req.params.id;
+  if (isUndefined(id)) {
     res.send({
-      ret: 0,
-      data: { _id: id },
+      ret: OBJECT_IS_NOT_FOUND,
+      msg: '所给的Id不正确',
+    });
+    return;
+  }
+  const { project, amount, recommander, remark } = req.body;
+  let { date } = req.body;
+  if (isUndefined(date)) date = Date.now();
+  else date = Date.parse(date);
+  const _id = new ObjectId();
+  try {
+    await addRecord(new ObjectId(id), {
+      project, date, amount, recommander, remark,
+      _id,
+    });
+    res.send({
+      ret: SUCCESS,
+      data: {
+        _id,
+        project,
+        date,
+        amount,
+        recommander,
+        remark,
+      },
     });
   } catch (e) {
-    res.send({ ret: -1, msg: e });
+    res.send({
+      ret: UNKNOWN_ERROR,
+      msg: e,
+    });
   }
 };
 
+router.put('/record/:id',
+  getUserId(),
+  getUser,
+  onlyManagerCanDoNext,
+  putRecord,
+);
+
+export const deleteRecord = async (req, res) => {
+  const { id, recordId } = req.params;
+  if (isUndefined(id) || isUndefined(recordId)) {
+    res.send({
+      ret: OBJECT_IS_NOT_FOUND,
+      msg: '所给的Id不正确',
+    });
+    return;
+  }
+  let result = { ret: SUCCESS };
+  try {
+    await removeRecord(new ObjectId(id), new ObjectId(recordId));
+  } catch (e) {
+    result = {
+      ret: UNKNOWN_ERROR,
+      msg: e,
+    };
+  }
+  res.send(result);
+};
+router.delete('/record/:id/:recordId',
+  getUserId(),
+  getUser,
+  onlyManagerCanDoNext,
+  deleteRecord
+);
+
+export const postUpdate = (getId = req => new ObjectId(req.params.id)) =>
+  async (req, res) => {
+    const _id = getId(req, res);
+    try {
+      const doc = await update(_id, req.body);
+      if (doc.result.nModified > 0) {
+        res.send({
+          ret: SUCCESS,
+          data: { _id },
+        });
+      } else {
+        res.send({
+          ret: OBJECT_IS_NOT_FOUND,
+          msg: `给定的id(${_id})没找到`,
+        });
+      }
+    } catch (e) {
+      res.send({ ret: SERVER_FAILED, msg: e });
+    }
+  };
+
 router.post('/:id',
   getUserId(),
-  getUser({ wxapi }),
-  ensureUserSignedIn,
+  getUser,
   ensureAcceptorCanBeAdded,
-  postUpdate);
+  onlyManagerAndOwnerCanDoNext(req => new ObjectId(req.params.id)),
+  ensureIdIsCorrect,
+  updateProfile,
+  postUpdate());
 export default router;

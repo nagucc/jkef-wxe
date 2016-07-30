@@ -6,11 +6,13 @@ import React, { PropTypes } from 'react';
 import { connect } from 'react-redux';
 import { Toast, Msg, ActionSheet, Button } from 'react-weui';
 import NeedSignup from '../../../components/NeedSignup';
+import CheckRoles from '../../../components/CheckRoles';
 import EduHistory from './EduHistory';
 import CareerHistory from './CareerHistory';
 import RecordHistory from './RecordHistory';
 import BaseInfo from './BaseInfo';
 import * as actions from '../../../actions/acceptors/detail';
+import { setUserRole } from '../../../actions/wxe-auth';
 
 class Detail extends React.Component {
   static propTypes = {
@@ -20,12 +22,17 @@ class Detail extends React.Component {
     isManager: PropTypes.bool,
     acceptorId: PropTypes.string,
     fetchAcceptor: PropTypes.func,
+    setUserRole: PropTypes.func,
+  };
+  static contextTypes = {
+    setTitle: PropTypes.func.isRequired,
   };
   constructor(props) {
     super(props);
     this.state = { showActionSheet: false };
   }
   componentDidMount() {
+    this.context.setTitle('详细信息');
     const { acceptorId, fetchAcceptor } = this.props;
     fetchAcceptor(acceptorId);
   }
@@ -40,7 +47,8 @@ class Detail extends React.Component {
     });
   }
   render() {
-    const { acceptor, acceptor: { name, _id }, error, showToast, isManager } = this.props;
+    const { acceptor, acceptor: { name, _id },
+      error, showToast, isManager } = this.props;
 
     const actionSheetParams = {
       show: this.state.showActionSheet,
@@ -55,7 +63,7 @@ class Detail extends React.Component {
         onClick: () => (window.location = `/acceptors/edit-career/${_id}`),
       }, ...(isManager ? [{
         label: '受赠记录',
-        onClick: () => (window.location = `/acceptors/edit-accept-record/${_id}`),
+        onClick: () => (window.location = `/acceptors/edit-record/${_id}`),
       }] : []),
       ],
       actions: [{
@@ -72,6 +80,7 @@ class Detail extends React.Component {
         </div>
         <div className="bd">
           <NeedSignup />
+          <CheckRoles success={roles => this.props.setUserRole(roles)} />
           {
             error ? <Msg type="warn" title="发生错误" description={JSON.stringify(error.msg)} /> : (
               <div>
@@ -86,9 +95,9 @@ class Detail extends React.Component {
                     <CareerHistory history={acceptor.careerHistory} />
                   ) : null
                 }
-                <RecordHistory data={[]} />
+                <RecordHistory data={acceptor.records} />
                 <ActionSheet {...actionSheetParams} />
-              <Button onClick={this.showActionSheet.bind(this)} >修改资料</Button>
+                <Button onClick={this.showActionSheet.bind(this)} >修改资料</Button>
               </div>
             )
           }
@@ -100,12 +109,12 @@ class Detail extends React.Component {
 }
 
 const mapStateToProps = state => {
-  const { acceptor, error } = state.acceptors.detail;
+  const { acceptor, error, toast } = state.acceptors.detail;
   return {
-    showToast: acceptor === null && error === null,
-    acceptor: acceptor || { idCard: {} },
+    showToast: toast.show,
+    acceptor,
     error,
     isManager: state.me.roles.isManager,
   };
 };
-export default connect(mapStateToProps, { ...actions })(Detail);
+export default connect(mapStateToProps, { ...actions, setUserRole })(Detail);

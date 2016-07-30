@@ -10,6 +10,9 @@ class RecordHistory extends React.Component {
   static propTypes = {
     data: PropTypes.array.isRequired,
   };
+  static defaultProps = {
+    data: [],
+  };
   render() {
     return (
       <Panel access>
@@ -18,19 +21,13 @@ class RecordHistory extends React.Component {
           {
             this.props.data.map((record, i) => (
               <Cell key={i} >
-                <CellBody>{record.project} | {record.amount}</CellBody>
+                <CellBody>{record.project} | {record.amount / 1000}</CellBody>
                 <CellFooter>
-                  {record.year}年
+                  {(new Date(record.date)).getFullYear()}年
                 </CellFooter>
               </Cell>
             ))
           }
-          <Cell>
-            <CellBody>奖学金 | 1,000</CellBody>
-            <CellFooter>
-              2001年
-            </CellFooter>
-          </Cell>
         </PanelBody>
       </Panel>
     );

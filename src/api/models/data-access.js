@@ -1,5 +1,5 @@
 import { useCollection } from 'mongo-use-collection';
-import { mongoUrl } from '../../config';
+import { mongoUrl, showLog, profileCollection } from '../../config';
 
 export const ACCEPTORS_COLLECTION = 'acceptors';
 export const STAT_BY_PROJECT = 'stat_by_project';
@@ -8,6 +8,7 @@ export const STAT_BY_YEAR = 'stat_by_year';
 export const useAcceptors = cb => useCollection(mongoUrl, ACCEPTORS_COLLECTION, cb);
 export const useStatByProject = cb => useCollection(mongoUrl, STAT_BY_PROJECT, cb);
 export const useStatByYear = cb => useCollection(mongoUrl, STAT_BY_YEAR, cb);
+const useProfiles = cb => useCollection(mongoUrl, profileCollection, cb);
 
 export const computeStatByProject = async () =>
   new Promise((resolve, reject) => useAcceptors(async col => {
@@ -109,7 +110,8 @@ export const getStatByYear = () =>
   });
 
 export const findAcceptors = ({ text, year, project, projections, skip = 0, limit = 20 } = {}) => {
-  let condition = { isDeleted: { $ne: true } };
+  showLog && console.time('findAcceptors from Profiles');
+  let condition = { isAcceptor: true };
   if (text) {
     var reg = new RegExp(text); // eslint-disable-line vars-on-top, no-var
     condition = Object.assign(condition, {
@@ -136,21 +138,24 @@ export const findAcceptors = ({ text, year, project, projections, skip = 0, limi
     });
   }
   return new Promise((resolve, reject) => {
-    useAcceptors(async col => {
+    useProfiles(async col => {
       try {
+        showLog && console.log('condition:::', JSON.stringify(condition));
         const totalCount = await col.count(condition);
+        showLog && console.log('totalCount:::::', totalCount);
         const data = await col.find(condition, projections)
           .sort({ name: 1 })
           .skip(skip)
           .limit(limit).toArray();
         resolve({ totalCount, data });
+        showLog && console.timeEnd('findAcceptors from Profiles');
       } catch (e) {
         reject(e);
+        showLog && console.timeEnd('findAcceptors from Profiles');
       }
     });
   });
 };
-
 
 /*
 通过idCard.number找到相应的acceptor
@@ -170,14 +175,11 @@ export const findByIdCardNumber = async idCardNumber =>
 /*
 idCard.number作为唯一标识字段，添加或更新acceptor
 当idCard.number重复时，reject
+至存储核心数据，其他数据移到profile中
  */
-export const addAcceptor = async ({ name, isMale, idCard, phone = '', userid = '' } = {}) =>
+export const addAcceptor = async ({ _id, idCard } = {}) =>
   new Promise((resolve, reject) => {
     useAcceptors(async col => {
-      if (!name) {
-        reject('姓名不能为空');
-        return;
-      }
       if (!idCard || !idCard.type || !idCard.number) {
         reject('证件类型和号码不能为空');
         return;
@@ -189,7 +191,7 @@ export const addAcceptor = async ({ name, isMale, idCard, phone = '', userid = '
           return;
         }
         const result = await col.updateOne({ 'idCard.number': idCard.number },
-          { name, phone, isMale, idCard, userid },
+          { _id, idCard },
           { upsert: true });
         if (result.result.ok === 1) resolve(result.upsertedId._id);
         else reject(result.result);
@@ -218,12 +220,8 @@ export const findById = async _id =>
 export const update = async (_id, newData) =>
   new Promise((resolve, reject) => useAcceptors(async col => {
     try {
-      const { name, phone, idCard, isMale, userid } = newData;
-      let query = {};
-      if (name) query = { ...query, name };
-      if (phone) query = { ...query, phone };
-      if (isMale !== undefined) query = { ...query, isMale };
-      // if (idCard) query = { ...query, idCard };
+      const { idCard } = newData;
+      const query = {};
       if (idCard) {
         if (idCard.type) {
           Object.assign(query, {
@@ -236,7 +234,6 @@ export const update = async (_id, newData) =>
           });
         }
       }
-      if (userid) query = { ...query, userid };
       const result = await col.updateOne({ _id }, {
         $set: query,
       });
@@ -348,6 +345,45 @@ export const removeCareer = async (_id, careerHistory) =>
           $set: {
             careerHistory: oldDoc.careerHistory,
           },
+        });
+        resolve();
+      } catch (e) {
+        reject(e);
+      }
+    }));
+
+/*
+为_id添加受赠记录
+ */
+export const addRecord = async (_id, record) =>
+  new Promise((resolve, reject) => {
+    if (!record
+        || !record.project
+        || isNaN(parseFloat(record.amount, 10))) {
+      Promise.reject('所给数据不完整');
+      return;
+    }
+    useAcceptors(async col => {
+      try {
+        await col.updateOne({ _id }, {
+          $addToSet: { records: record },
+        });
+        resolve();
+      } catch (e) {
+        reject(e);
+      }
+    });
+  });
+
+export const removeRecord = async (_id, recordId) =>
+  new Promise((resolve, reject) =>
+    useAcceptors(async col => {
+      try {
+        const oldDoc = await findById(_id);
+        const records = oldDoc.records.filter(record =>
+          record._id !== recordId);
+        await col.updateOne({ _id }, {
+          $set: { records },
         });
         resolve();
       } catch (e) {

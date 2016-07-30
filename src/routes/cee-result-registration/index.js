@@ -6,6 +6,8 @@ export default {
   path: '/cee-result-registration',
 
   async action() {
-    return <RegistrationForm />;
+    return (
+      <RegistrationForm />
+      );
   },
 };

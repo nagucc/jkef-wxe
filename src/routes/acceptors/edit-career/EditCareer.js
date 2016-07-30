@@ -7,6 +7,7 @@ import CareerHistory from '../detail/CareerHistory';
 import AddCareer from './AddCareer';
 import RemoveCareer from './RemoveCareer';
 import { connect } from 'react-redux';
+import NeedSignup from '../../../components/NeedSignup';
 
 export class EditCareerComponent extends React.Component {
   static propTypes = {
@@ -21,7 +22,11 @@ export class EditCareerComponent extends React.Component {
   static defaultProps = {
     history: [],
   };
+  static contextTypes = {
+    setTitle: PropTypes.func.isRequired,
+  };
   componentDidMount() {
+    this.context.setTitle('按年度统计');
     this.props.init();
   }
   render() {
@@ -29,6 +34,7 @@ export class EditCareerComponent extends React.Component {
 
     return err ? <Msg type="warn" title="发生错误" description={JSON.stringify(err.msg)} /> : (
       <div>
+        <NeedSignup />
         <CareerHistory history={history} />
         <AddCareer add={add} />
         <RemoveCareer remove={remove} history={history} />

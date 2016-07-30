@@ -19,12 +19,17 @@ export const findAcceptors = async ({ project, year, text, pageIndex = 0, pageSi
   query += `&year=${year || ''}`;
   query += `&text=${text ? encodeURIComponent(text) : ''}`;
   query += `&pageSize=${pageSize || 20}`;
-  const res = await fetch(`/api/acceptors/list/${pageIndex}?${query}`, {
-    credentials: 'same-origin',
-  });
-  const result = await res.json();
+  let result;
+  try {
+    const res = await fetch(`/api/acceptors/list/${pageIndex}?${query}`, {
+      credentials: 'same-origin',
+    });
+    result = await res.json();
+  } catch (e) {
+    throw { ret: 999, msg: e }; // eslint-disable-line no-throw-literal
+  }
   if (result.ret === 0) return result.data;
-  else throw result; // eslint-disable-line no-else-return
+  throw result;
 };
 
 export const getMe = async () => {

@@ -10,13 +10,15 @@ import { Form, FormCell, Icon,
   CellsTitle, CellsTips, Input,
   Button } from 'react-weui';
 import { reduxForm } from 'redux-form';
-import { required, range } from '../../../validates';
-import { REQUIRED } from '../../../err-codes';
+import { required, range, integer } from 'nagu-validates';
+import { REQUIRED, INVALID_NUMBER,
+  TOO_LARGE_NUMBER, TOO_SMALL_NUMBER,
+  INVALID_INTEGER } from '../../../err-codes';
 
 const validate = values => {
   const errors = {
     name: required(values.name),
-    year: required(values.year) || range(values.year, 1900, 2100),
+    year: required(values.year) || integer(values.year) || range(values.year, 1900, 2100),
   };
   return errors;
 };
@@ -66,8 +68,12 @@ export class AddCareerComponent extends React.Component {
           ) : null
         }
         {
-          year.touched && year.error !== REQUIRED ? (
-            <CellsTips>* 入职年份必须是正确的4为数字</CellsTips>
+          year.touched && (
+            year.error === INVALID_NUMBER
+            || year.error === TOO_SMALL_NUMBER
+            || year.error === TOO_LARGE_NUMBER
+            || year.error === INVALID_INTEGER ) ? (
+            <CellsTips>* 入职年份必须是正确的4位数字</CellsTips>
           ) : null
         }
 

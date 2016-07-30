@@ -1,15 +1,16 @@
 import { combineReducers } from 'redux';
 import { FETCHED_ACCEPTOR_BY_ID,
-  FETCHING_ACCEPTOR_BY_ID,
-  FETCH_ACCEPTOR_BY_ID_FAILED } from '../../constants';
+  FETCHING,
+  FETCH_FAILED } from '../../constants';
 
-const acceptor = (state = null, action) => {
+const emptyAcceptor = {
+  idCard: {},
+  records: [],
+};
+const acceptor = (state = emptyAcceptor, action) => {
   switch (action.type) {
     case FETCHED_ACCEPTOR_BY_ID:
       return action.acceptor;
-    case FETCHING_ACCEPTOR_BY_ID:
-    case FETCH_ACCEPTOR_BY_ID_FAILED:
-      return null;
     default:
       return state;
   }
@@ -18,10 +19,24 @@ const acceptor = (state = null, action) => {
 const error = (state = null, action) => {
   switch (action.type) {
     case FETCHED_ACCEPTOR_BY_ID:
-    case FETCHING_ACCEPTOR_BY_ID:
+    case FETCHING:
       return null;
-    case FETCH_ACCEPTOR_BY_ID_FAILED:
-      return { ...state, ...action.result };
+    case FETCH_FAILED:
+      return { ...state, ...action.error };
+    default:
+      return state;
+  }
+};
+
+const toast = (state = {
+  show: false,
+}, action) => {
+  switch (action.type) {
+    case FETCHING:
+      return { show: true };
+    case FETCH_FAILED:
+    case FETCHED_ACCEPTOR_BY_ID:
+      return { show: false };
     default:
       return state;
   }
@@ -30,4 +45,5 @@ const error = (state = null, action) => {
 export default combineReducers({
   acceptor,
   error,
+  toast,
 });
