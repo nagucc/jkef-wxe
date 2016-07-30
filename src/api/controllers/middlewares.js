@@ -26,6 +26,30 @@ export const getUser = async (req, res, next) => {
   }
 };
 
+export const getProfileByUserId = (
+  getUserId = req => req.user.userid,
+  success = (profile, req, res, next) => {
+    if (profile) {
+      req.user = profile; // eslint-disable-line no-param-reassign
+    }
+    if (profile && profile.roles) {
+      req.user.department = profile.roles; // eslint-disable-line no-param-reassign
+    } else {
+      req.user.department = []; // eslint-disable-line no-param-reassign
+    }
+    next();
+  }, error = (msg, req, res) => res.send({ ret: SERVER_FAILED, msg })) =>
+  async (req, res, next) => {
+    console.log('start to getProfileByUserId');
+    try {
+      const userid = await getUserId(req, res);
+      console.log('userid: ', userid);
+      const profile = await profileDao.getByUserId(userid);
+      success(profile, req, res, next);
+    } catch (e) {
+      error(e, req, res);
+    }
+  };
 /*
 检查Acceptor数据是否可以被添加或更新
 主要是检查必须的数据字段是否存在

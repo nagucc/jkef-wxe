@@ -110,7 +110,8 @@ export const getStatByYear = () =>
   });
 
 export const findAcceptors = ({ text, year, project, projections, skip = 0, limit = 20 } = {}) => {
-  let condition = { isDeleted: { $ne: true } };
+  showLog && console.time('findAcceptors from Profiles');
+  let condition = { isAcceptor: true };
   if (text) {
     var reg = new RegExp(text); // eslint-disable-line vars-on-top, no-var
     condition = Object.assign(condition, {
@@ -147,8 +148,10 @@ export const findAcceptors = ({ text, year, project, projections, skip = 0, limi
           .skip(skip)
           .limit(limit).toArray();
         resolve({ totalCount, data });
+        showLog && console.timeEnd('findAcceptors from Profiles');
       } catch (e) {
         reject(e);
+        showLog && console.timeEnd('findAcceptors from Profiles');
       }
     });
   });

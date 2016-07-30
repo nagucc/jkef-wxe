@@ -12,16 +12,14 @@ import { findAcceptors, addAcceptor,
 import { getUserId } from 'wxe-auth-express';
 import { ensureAcceptorCanBeAdded,
   isManager, isSupervisor, isUndefined,
-  getUser } from './middlewares';
+  getUser, getProfileByUserId } from './middlewares';
 import emptyFunction from 'fbjs/lib/emptyFunction';
 import { ObjectId } from 'mongodb';
 import { SUCCESS, UNAUTHORIZED, UNKNOWN_ERROR,
   OBJECT_IS_NOT_FOUND, SERVER_FAILED } from '../../err-codes';
-import { mongoUrl, profileCollection } from '../../config';
+import { profileMiddlewares as profile } from '../../config';
 
-import { MongoProfileMiddlewares } from 'nagu-profile';
 
-const profile = new MongoProfileMiddlewares(mongoUrl, profileCollection);
 const addProfile = profile.add(req => {
   const { name, isMale, phone } = req.body;
   return {
@@ -65,7 +63,8 @@ export const list = async (req, res) => {
 };
 router.get('/list/:pageIndex',
   getUserId(),
-  getUser,
+  // getUser,
+  getProfileByUserId(),
   list);
 
 /*
@@ -97,7 +96,6 @@ export const add = async (req, res) => {
     res.send({ ret: SERVER_FAILED, msg: e });
   }
 };
-
 
 
 router.put('/add',
