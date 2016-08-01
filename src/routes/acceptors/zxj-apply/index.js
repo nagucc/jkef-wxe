@@ -9,5 +9,4 @@ export default {
   async action() {
     return <Apply />;
   },
-
 };
