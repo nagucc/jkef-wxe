@@ -6,13 +6,16 @@ import NeedSignup from '../../../components/NeedSignup';
 import MustHaveProfile from '../../../components/Profile/MustHaveProfile';
 import { reduxForm } from 'redux-form';
 import * as profileActions from '../../../actions/profile';
+import * as eduActions from '../../../actions/acceptors/edu';
 
 class Apply extends React.Component { // eslint-disable-line react/prefer-stateless-function
   static propTypes = {
     error: PropTypes.object,
     fields: PropTypes.object,
     profile: PropTypes.object,
+    school: PropTypes.object,
     fetchedMyProfile: PropTypes.func.isRequired,
+    initEduHistory: PropTypes.func.isRequired,
   };
   constructor(props) {
     super(props);
@@ -23,14 +26,14 @@ class Apply extends React.Component { // eslint-disable-line react/prefer-statel
     };
   }
   render() {
-    const { error, fetchedMyProfile, profile,
-      fields: { homeAddress, nation, familyIncomeIntro, publicActivtesIntro }} = this.props;
+    const { error, fetchedMyProfile, profile, initEduHistory, school,
+      fields: { homeAddress, nation, familyIncomeIntro, publicActivtesIntro } } = this.props;
 
     const changeIdCardPhoto = file => {
       this.setState({
         idCardPhotoes: [{
           url: file.data,
-        }]
+        }],
       });
     };
     const clearIdCardPhoto = () => this.setState({
@@ -66,7 +69,11 @@ class Apply extends React.Component { // eslint-disable-line react/prefer-statel
     return (
       <div className="progress">
         <NeedSignup />
-        <MustHaveProfile success = {data => fetchedMyProfile(data)} />
+        <MustHaveProfile success = {data => {
+          fetchedMyProfile(data);
+          initEduHistory(data._id);
+        }}
+        />
         <div className="hd">
           <h1 className="page_title">{profile.name}</h1>
         </div>
@@ -78,7 +85,7 @@ class Apply extends React.Component { // eslint-disable-line react/prefer-statel
             <CellsTitle>填写下面信息</CellsTitle>
               <Cell>
                 <CellHeader>就读学校</CellHeader>
-                <CellBody>xx大学</CellBody>
+                <CellBody>{school.name} | {school.year}年入学</CellBody>
               </Cell>
               <FormCell>
                 <CellHeader>家庭住址</CellHeader>
@@ -160,12 +167,23 @@ class Apply extends React.Component { // eslint-disable-line react/prefer-statel
   }
 }
 
-const mapStateToProps = state => ({
-  me: state.me,
-  profile: state.profile.me,
-  initialValues: state.acceptors.registration.data,
-});
+const mapStateToProps = state => {
+  const eduHistory = state.acceptors.eduHistory.data;
+  let school = {};
+  if (eduHistory.length) {
+    school = eduHistory.reduce((prev, cur) => {
+      return prev.year > cur.year ? prev : cur;
+    });
+    console.log(school);
+  }
+  return {
+    me: state.me,
+    profile: state.profile.me,
+    school,
+    initialValues: state.acceptors.registration.data,
+  };
+};
 export default reduxForm({
   form: 'zxjApply',
   fields: ['homeAddress', 'nation', 'familyIncomeIntro', 'publicActivtesIntro'],
-}, mapStateToProps, { ...profileActions })(Apply);
+}, mapStateToProps, { ...profileActions, ...eduActions })(Apply);
