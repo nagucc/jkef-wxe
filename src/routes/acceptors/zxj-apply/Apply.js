@@ -23,7 +23,8 @@ class Apply extends React.Component { // eslint-disable-line react/prefer-statel
     };
   }
   render() {
-    const { error, fetchedMyProfile, profile } = this.props;
+    const { error, fetchedMyProfile, profile,
+      fields: { homeAddress, nation, familyIncomeIntro, publicActivtesIntro }} = this.props;
 
     const changeIdCardPhoto = file => {
       this.setState({
@@ -82,25 +83,25 @@ class Apply extends React.Component { // eslint-disable-line react/prefer-statel
               <FormCell>
                 <CellHeader>家庭住址</CellHeader>
                 <CellBody>
-                  <Input placeholder="请输入家庭住址" />
+                  <Input placeholder="请输入家庭住址" {...homeAddress} />
                 </CellBody>
               </FormCell>
               <FormCell>
                 <CellHeader>民族</CellHeader>
                 <CellBody>
-                  <Input placeholder="请输入民族，如：回族" />
+                  <Input placeholder="请输入民族，如：回族" {...nation} />
                 </CellBody>
               </FormCell>
               <CellsTitle>家庭经济收入情况</CellsTitle>
               <FormCell>
                 <CellBody>
-                  <TextArea placeholder="家庭经济收入情况" rows="5" />
+                  <TextArea placeholder="家庭经济收入情况" rows="5" {...familyIncomeIntro} />
                 </CellBody>
               </FormCell>
               <CellsTitle>参加公益活动的经历</CellsTitle>
               <FormCell>
                 <CellBody>
-                  <TextArea placeholder="参加公益活动的经历" rows="5" />
+                  <TextArea placeholder="参加公益活动的经历" rows="5" {...publicActivtesIntro} />
                 </CellBody>
               </FormCell>
               <FormCell>
@@ -161,10 +162,10 @@ class Apply extends React.Component { // eslint-disable-line react/prefer-statel
 
 const mapStateToProps = state => ({
   me: state.me,
-  profile: state.profile,
-  // initialValues: state.acceptors.registration.data,
+  profile: state.profile.me,
+  initialValues: state.acceptors.registration.data,
 });
 export default reduxForm({
   form: 'zxjApply',
-  fields: ['homeAddress', 'schoolName'],
+  fields: ['homeAddress', 'nation', 'familyIncomeIntro', 'publicActivtesIntro'],
 }, mapStateToProps, { ...profileActions })(Apply);

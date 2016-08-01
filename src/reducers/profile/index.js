@@ -1,7 +1,7 @@
 import { combineReducers } from 'redux';
 import { FETCHED_MY_PROFILE } from '../../constants';
 
-const data = (state = {}, action) => {
+const me = (state = {}, action) => {
   switch (action.type) {
     case FETCHED_MY_PROFILE:
       return action.profile;
@@ -10,4 +10,6 @@ const data = (state = {}, action) => {
   }
 };
 
-export default data;
+export default combineReducers({
+  me,
+});
