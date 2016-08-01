@@ -23,7 +23,9 @@ class MustHaveProfile extends React.Component {
     // 从服务器获取当前用户的Profile
     let result;
     try {
-      const res = await fetch('/api/profiles/me');
+      const res = await fetch('/api/profiles/me', {
+        credentials: 'same-origin',
+      });
       result = await res.json();
     } catch (e) {
       result = { ret: SERVER_FAILED, msg: e };

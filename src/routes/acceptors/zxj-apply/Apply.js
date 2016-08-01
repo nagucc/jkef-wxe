@@ -1,12 +1,18 @@
 import React, { PropTypes } from 'react';
 import { CellsTitle, CellHeader, CellBody, CellsTips, Cell, TextArea,
   Form, FormCell, Input, Msg, Button, ButtonArea, Uploader } from 'react-weui';
+
 import NeedSignup from '../../../components/NeedSignup';
+import MustHaveProfile from '../../../components/Profile/MustHaveProfile';
+import { reduxForm } from 'redux-form';
+import * as profileActions from '../../../actions/profile';
 
 class Apply extends React.Component { // eslint-disable-line react/prefer-stateless-function
   static propTypes = {
-    error: React.PropTypes.object,
+    error: PropTypes.object,
     fields: PropTypes.object,
+    profile: PropTypes.object,
+    fetchedMyProfile: PropTypes.func.isRequired,
   };
   constructor(props) {
     super(props);
@@ -17,7 +23,8 @@ class Apply extends React.Component { // eslint-disable-line react/prefer-statel
     };
   }
   render() {
-    const { error, fields } = this.props;
+    const { error, fetchedMyProfile, profile } = this.props;
+
     const changeIdCardPhoto = file => {
       this.setState({
         idCardPhotoes: [{
@@ -54,11 +61,13 @@ class Apply extends React.Component { // eslint-disable-line react/prefer-statel
     const clearScorePhotoes = () => this.setState({
       scorePhotoes: [],
     });
+
     return (
       <div className="progress">
         <NeedSignup />
+        <MustHaveProfile success = {data => fetchedMyProfile(data)} />
         <div className="hd">
-          <h1 className="page_title">姓名</h1>
+          <h1 className="page_title">{profile.name}</h1>
         </div>
         <div className="bd">
         {
@@ -141,7 +150,6 @@ class Apply extends React.Component { // eslint-disable-line react/prefer-statel
               <ButtonArea>
                 <Button>确定</Button>
               </ButtonArea>
-
             </Form>
           )
           }
@@ -151,4 +159,12 @@ class Apply extends React.Component { // eslint-disable-line react/prefer-statel
   }
 }
 
-export default Apply;
+const mapStateToProps = state => ({
+  me: state.me,
+  profile: state.profile,
+  // initialValues: state.acceptors.registration.data,
+});
+export default reduxForm({
+  form: 'zxjApply',
+  fields: ['homeAddress', 'schoolName'],
+}, mapStateToProps, { ...profileActions })(Apply);

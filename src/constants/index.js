@@ -107,3 +107,5 @@ export const SUBMIT_FORM = 'SUBMIT_FORM';
 export const TOAST_SHOW = 'TOAST_SHOW';
 
 export const FETCHED_CEE_RESULT = 'FETCHED_CEE_RESULT';
+
+export const FETCHED_MY_PROFILE = 'FETCHED_MY_PROFILE';
