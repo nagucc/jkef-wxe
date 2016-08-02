@@ -293,11 +293,11 @@ export const removeEdu = async (_id, eduHistory) =>
     useAcceptors(async col => {
       try {
         const oldDoc = await findById(_id);
-        oldDoc.eduHistory = oldDoc.eduHistory.filter(edu =>
-          edu.name !== eduHistory.name || edu.year !== eduHistory);
+        const filtered = oldDoc.eduHistory.filter(edu =>
+          !(edu.name === eduHistory.name && edu.year === eduHistory.year));
         await col.updateOne({ _id }, {
           $set: {
-            eduHistory: oldDoc.eduHistory,
+            eduHistory: filtered,
           },
         });
         resolve();
