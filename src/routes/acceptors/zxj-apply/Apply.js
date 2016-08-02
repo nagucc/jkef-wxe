@@ -1,6 +1,6 @@
 import React, { PropTypes } from 'react';
-import { CellsTitle, CellHeader, CellBody, CellsTips, Cell, TextArea,
-  Form, FormCell, Input, Msg, Button, ButtonArea, Uploader } from 'react-weui';
+import { CellsTitle, CellHeader, CellBody, CellsTips, Cell, TextArea, Cells,
+  Form, FormCell, Input, Msg, Button, ButtonArea, Uploader, CellFooter } from 'react-weui';
 
 import NeedSignup from '../../../components/NeedSignup';
 import MustHaveProfile from '../../../components/Profile/MustHaveProfile';
@@ -83,10 +83,21 @@ class Apply extends React.Component { // eslint-disable-line react/prefer-statel
           : (
             <Form>
             <CellsTitle>填写下面信息</CellsTitle>
-              <Cell>
+              <FormCell>
                 <CellHeader>就读学校</CellHeader>
-                <CellBody>{school.name} | {school.year}年入学</CellBody>
-              </Cell>
+                {
+                  school.name ? (
+                    <CellBody>{school.name} | {school.degree} | {school.year}年入学</CellBody>
+                  ) : null
+                }
+              </FormCell>
+              <CellsTips>
+                <p>就读学校将自动从教育经历中选取</p>
+                <Button href={`/acceptors/edit-edu/${profile._id}`}
+                  size="small" type="default"
+                >添加教育经历</Button>
+              </CellsTips>
+
               <FormCell>
                 <CellHeader>家庭住址</CellHeader>
                 <CellBody>
