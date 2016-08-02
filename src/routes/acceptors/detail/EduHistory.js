@@ -18,7 +18,7 @@ class EduHistory extends React.Component {
           {
             this.props.history.map((edu, i) => (
               <Cell key={i} >
-                <CellBody>{edu.name}</CellBody>
+                <CellBody>{edu.name} | {edu.degree || '其他'}</CellBody>
                 <CellFooter>
                   {edu.year}年入学
                 </CellFooter>

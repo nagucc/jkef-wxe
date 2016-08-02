@@ -175,17 +175,18 @@ export const onlyManagerAndOwnerCanDoNext = idGetter =>
 
 export const putEdu = (getId = req => (new ObjectId(req.params.id))) =>
   async (req, res) => {
-    const { name, year } = req.body;
+    const { name, year, degree } = req.body;
     if (!name
       || !year
+      || !degree
       || isNaN(parseInt(year, 10))) {
-      res.send({ ret: -1, msg: '必须提供学校名称和入学年份，入学年份必须是数字' });
+      res.send({ ret: -1, msg: '必须提供学校名称、层次和入学年份，入学年份必须是数字' });
       return;
     }
     try {
       const _id = getId(req, res);
       await addEdu(_id, {
-        name,
+        name, degree,
         year: parseInt(year, 10),
       });
       res.send({ ret: 0 });
