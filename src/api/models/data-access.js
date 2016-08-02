@@ -272,11 +272,8 @@ export const remove = async _id =>
  */
 export const addEdu = async (_id, eduHistory) =>
   new Promise((resolve, reject) => {
-    if (!eduHistory
-        || !eduHistory.name
-        || !eduHistory.year
-        || isNaN(parseInt(eduHistory.year, 10))) {
-      Promise.reject('name和year必须存在，且year必须是整数');
+    if (!eduHistory) {
+      Promise.reject('必须提供eduHistory数据');
       return;
     }
     useAcceptors(async col => {
