@@ -1,13 +1,14 @@
 import React, { PropTypes } from 'react';
-import { CellsTitle, CellHeader, CellBody, CellsTips, Cell, TextArea, Cells,
-  Form, FormCell, Input, Msg, Button, ButtonArea, Uploader, CellFooter } from 'react-weui';
+import { CellsTitle, CellHeader, CellBody, CellsTips, TextArea,
+  Form, FormCell, Input, Msg, Button, ButtonArea, Uploader } from 'react-weui';
 
 import NeedSignup from '../../../components/NeedSignup';
 import MustHaveProfile from '../../../components/Profile/MustHaveProfile';
 import { reduxForm } from 'redux-form';
 import * as profileActions from '../../../actions/profile';
 import * as eduActions from '../../../actions/acceptors/edu';
-
+import * as zxjApplyActions from '../../../actions/acceptors/zxj-apply';
+import fetch from '../../../core/fetch';
 class Apply extends React.Component { // eslint-disable-line react/prefer-stateless-function
   static propTypes = {
     error: PropTypes.object,
@@ -23,48 +24,107 @@ class Apply extends React.Component { // eslint-disable-line react/prefer-statel
       idCardPhotoes: [],
       stuCardPhotoes: [],
       scorePhotoes: [],
+      stuCardPhotoIds: [],
+      scorePhotoIds: [],
     };
+  }
+  async componentDidMount() {
+    let result;
+    try {
+      const res = await fetch('/api/zxj-apply/jsconfig');
+      result = await res.json();
+    } catch (e) {
+      alert('服务器返回jsconfig时错误');
+      return;
+    }
+    if (result.ret === 0) {
+      wx.config(result.data);
+    } else {
+      alert('服务器返回jsconfig时错误2');
+    }
   }
   render() {
     const { error, fetchedMyProfile, profile, initEduHistory, school,
+      handleSubmit, addApply,
       fields: { homeAddress, nation, familyIncomeIntro, publicActivtesIntro } } = this.props;
 
     const changeIdCardPhoto = file => {
-      this.setState({
-        idCardPhotoes: [{
-          url: file.data,
-        }],
+      wx.uploadImage({
+        localId: file.data,
+        success: res => {
+          this.setState({
+            idCardPhotoes: [{
+              url: file.data,
+            }],
+            idCardPhotoId: res.serverId,
+          });
+        },
       });
     };
     const clearIdCardPhoto = () => this.setState({
       idCardPhotoes: [],
+      idCardPhotoId: undefined,
     });
     const changeStuCardPhotoes = file => {
-      const oldPhotoes = this.state.stuCardPhotoes;
-      this.setState({
-        stuCardPhotoes: [
-          ...oldPhotoes,
-          {
-            url: file.data,
-          }],
+      const { stuCardPhotoes, stuCardPhotoIds } = this.state;
+      wx.uploadImage({
+        localId: file.data,
+        success: res => {
+          this.setState({
+            stuCardPhotoes: [
+              ...stuCardPhotoes,
+              {
+                url: file.data,
+              }],
+            stuCardPhotoIds: [
+              ...stuCardPhotoIds,
+              res.serverId,
+            ],
+          });
+        },
       });
     };
     const clearStuCardPhotoes = () => this.setState({
       stuCardPhotoes: [],
+      stuCardPhotoIds: [],
     });
     const changeScorePhotoes = file => {
-      const oldPhotoes = this.state.scorePhotoes;
-      this.setState({
-        scorePhotoes: [
-          ...oldPhotoes,
-          {
-            url: file.data,
-          }],
+      const { scorePhotoes, scorePhotoIds } = this.state;
+      wx.uploadImage({
+        localId: file.data,
+        success: res => {
+          this.setState({
+            scorePhotoes: [
+              ...scorePhotoes,
+              {
+                url: file.data,
+              }],
+            scorePhotoIds: [
+              ...scorePhotoIds,
+              res.serverId,
+            ],
+          });
+        },
       });
     };
     const clearScorePhotoes = () => this.setState({
       scorePhotoes: [],
+      scorePhotoIds: [],
     });
+
+    const submit = values => {
+      const { idCardPhotoId, stuCardPhotoIds, scorePhotoIds } = this.state;
+      addApply(profile._id, {
+        ...values,
+        name: profile.name,
+        schoolName: school.name,
+        year: school.year,
+        degree: school.degree,
+        idCardPhotoId,
+        stuCardPhotoIds,
+        scorePhotoIds,
+      });
+    };
 
     return (
       <div className="progress">
@@ -167,7 +227,7 @@ class Apply extends React.Component { // eslint-disable-line react/prefer-statel
                 <p>注意：成绩正面照片应当清晰可见</p>
               </CellsTips>
               <ButtonArea>
-                <Button>确定</Button>
+                <Button onClick={handleSubmit(submit)}>确定</Button>
               </ButtonArea>
             </Form>
           )
@@ -182,10 +242,7 @@ const mapStateToProps = state => {
   const eduHistory = state.acceptors.eduHistory.data;
   let school = {};
   if (eduHistory.length) {
-    school = eduHistory.reduce((prev, cur) => {
-      return prev.year > cur.year ? prev : cur;
-    });
-    console.log(school);
+    school = eduHistory.reduce((prev, cur) => prev.year > cur.year ? prev : cur);
   }
   return {
     me: state.me,
@@ -197,4 +254,7 @@ const mapStateToProps = state => {
 export default reduxForm({
   form: 'zxjApply',
   fields: ['homeAddress', 'nation', 'familyIncomeIntro', 'publicActivtesIntro'],
-}, mapStateToProps, { ...profileActions, ...eduActions })(Apply);
+}, mapStateToProps, {
+  ...profileActions,
+  ...eduActions,
+  ...zxjApplyActions })(Apply);

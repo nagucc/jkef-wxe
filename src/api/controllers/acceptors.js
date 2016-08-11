@@ -218,7 +218,6 @@ export const deleteEdu = (getId = req => (new ObjectId(req.params.id))) =>
       });
       res.send({ ret: 0 });
     } catch (e) {
-      // console.log('eeee:', e);
       res.send({ ret: -1, msg: e });
     }
   };
