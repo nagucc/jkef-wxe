@@ -20,6 +20,7 @@ class ImageUploaderCell extends React.Component {
     OnWxUpload: PropTypes.func,
     OnClear: PropTypes.func,
     clearButtonText: PropTypes.string,
+    tip: PropTypes.string,
   };
   static defaultProps = {
     title: '图片上传',
@@ -38,7 +39,7 @@ class ImageUploaderCell extends React.Component {
   }
   render() {
     const { OnChange, OnWxUpload, OnClear,
-      title, maxCount, clearButtonText } = this.props;
+      title, maxCount, clearButtonText, tip } = this.props;
     const changePhoto = file => {
       const { Photoes, PhotoIds } = this.state;
       this.setState({
@@ -86,6 +87,7 @@ class ImageUploaderCell extends React.Component {
           <Button onClick={clearPhoto} size="small" type="default">
             {clearButtonText}
           </Button>
+          { tip ? (<p>{tip}</p>) : null }
         </CellsTips>
       </div>
     );
