@@ -1,6 +1,6 @@
 import React, { PropTypes } from 'react';
 import { CellsTitle, CellHeader, CellBody, CellsTips, TextArea,
-  Form, FormCell, Input, Msg, Button, ButtonArea, Uploader } from 'react-weui';
+  Form, FormCell, Input, Msg, Button, ButtonArea } from 'react-weui';
 
 import NeedSignup from '../../../components/NeedSignup';
 import MustHaveProfile from '../../../components/Profile/MustHaveProfile';
@@ -9,6 +9,8 @@ import * as profileActions from '../../../actions/profile';
 import * as eduActions from '../../../actions/acceptors/edu';
 import * as zxjApplyActions from '../../../actions/acceptors/zxj-apply';
 import fetch from '../../../core/fetch';
+import ImageUploaderCell from './ImageUploaderCell';
+
 class Apply extends React.Component { // eslint-disable-line react/prefer-stateless-function
   static propTypes = {
     error: PropTypes.object,
@@ -18,16 +20,15 @@ class Apply extends React.Component { // eslint-disable-line react/prefer-statel
     fetchedMyProfile: PropTypes.func.isRequired,
     initEduHistory: PropTypes.func.isRequired,
   };
+
   constructor(props) {
     super(props);
     this.state = {
-      idCardPhotoes: [],
-      stuCardPhotoes: [],
-      scorePhotoes: [],
       stuCardPhotoIds: [],
       scorePhotoIds: [],
     };
   }
+
   async componentDidMount() {
     let result;
     try {
@@ -43,72 +44,40 @@ class Apply extends React.Component { // eslint-disable-line react/prefer-statel
       alert('服务器返回jsconfig时错误2');
     }
   }
+
   render() {
     const { error, fetchedMyProfile, profile, initEduHistory, school,
       handleSubmit, addApply,
       fields: { homeAddress, nation, familyIncomeIntro, publicActivtesIntro } } = this.props;
 
-    const changeIdCardPhoto = file => {
-      wx.uploadImage({
-        localId: file.data,
-        success: res => {
-          this.setState({
-            idCardPhotoes: [{
-              url: file.data,
-            }],
-            idCardPhotoId: res.serverId,
-          });
-        },
-      });
-    };
-    const clearIdCardPhoto = () => this.setState({
-      idCardPhotoes: [],
+    const setIdCardPhotoId = serverId => this.setState({
+      idCardPhotoId: serverId,
+    });
+    const clearIdCardPhotoId = () => this.setState({
       idCardPhotoId: undefined,
     });
-    const changeStuCardPhotoes = file => {
-      const { stuCardPhotoes, stuCardPhotoIds } = this.state;
-      wx.uploadImage({
-        localId: file.data,
-        success: res => {
-          this.setState({
-            stuCardPhotoes: [
-              ...stuCardPhotoes,
-              {
-                url: file.data,
-              }],
-            stuCardPhotoIds: [
-              ...stuCardPhotoIds,
-              res.serverId,
-            ],
-          });
-        },
-      });
+
+    const addStuCardPhotoId = serverId => {
+      const { stuCardPhotoIds } = this.state;
+      this.setState({
+        stuCardPhotoIds: [
+          ...stuCardPhotoIds,
+          serverId,
+        ] });
     };
-    const clearStuCardPhotoes = () => this.setState({
-      stuCardPhotoes: [],
+    const clearStuCardPhotoIds = () => this.setState({
       stuCardPhotoIds: [],
     });
-    const changeScorePhotoes = file => {
-      const { scorePhotoes, scorePhotoIds } = this.state;
-      wx.uploadImage({
-        localId: file.data,
-        success: res => {
-          this.setState({
-            scorePhotoes: [
-              ...scorePhotoes,
-              {
-                url: file.data,
-              }],
-            scorePhotoIds: [
-              ...scorePhotoIds,
-              res.serverId,
-            ],
-          });
-        },
-      });
+
+    const addScorePhotoId = serverId => {
+      const { scorePhotoIds } = this.state;
+      this.setState({
+        scorePhotoIds: [
+          ...scorePhotoIds,
+          serverId,
+        ] });
     };
-    const clearScorePhotoes = () => this.setState({
-      scorePhotoes: [],
+    const clearScorePhotoeIds = () => this.setState({
       scorePhotoIds: [],
     });
 
@@ -182,50 +151,26 @@ class Apply extends React.Component { // eslint-disable-line react/prefer-statel
                   <TextArea placeholder="参加公益活动的经历" rows="5" {...publicActivtesIntro} />
                 </CellBody>
               </FormCell>
-              <FormCell>
-                <CellBody>
-                  <Uploader title="身份证正面照片"
-                    maxCount={1}
-                    files={this.state.idCardPhotoes}
-                    onChange={changeIdCardPhoto}
-                  />
-                </CellBody>
-              </FormCell>
-              <CellsTips>
-                <Button onClick={clearIdCardPhoto} size="small" type="default">
-                  清空身份证照片
-                </Button>
-              </CellsTips>
-              <FormCell>
-                <CellBody>
-                  <Uploader title="学生证照片"
-                    maxCount={4}
-                    files={this.state.stuCardPhotoes}
-                    onChange={changeStuCardPhotoes}
-                  />
-                </CellBody>
-              </FormCell>
-              <CellsTips>
-                <Button onClick={clearStuCardPhotoes} size="small" type="default">
-                  清空学生证照片
-                </Button>
-                <p>注意：学生证照片必须包含封面，及带照片、基本信息及注册章的内页</p>
-              </CellsTips>
-              <FormCell>
-                <CellBody>
-                  <Uploader title="成绩证明照片"
-                    maxCount={10}
-                    files={this.state.scorePhotoes}
-                    onChange={changeScorePhotoes}
-                  />
-                </CellBody>
-              </FormCell>
-              <CellsTips>
-                <Button onClick={clearScorePhotoes} size="small" type="default">
-                  清空成绩证明照片
-                </Button>
-                <p>注意：成绩正面照片应当清晰可见</p>
-              </CellsTips>
+              <ImageUploaderCell title="身份证正面照片"
+                maxCount={1}
+                clearButtonText="清空身份证照片"
+                OnWxUpload={setIdCardPhotoId}
+                OnClear={clearIdCardPhotoId}
+              />
+              <ImageUploaderCell title="学生证照片"
+                maxCount={4}
+                clearButtonText="清空学生证照片"
+                tip="注意：学生证照片必须包含封面，及带照片、基本信息及注册章的内页"
+                OnWxUpload={addStuCardPhotoId}
+                OnClear={clearStuCardPhotoIds}
+              />
+              <ImageUploaderCell title="成绩证明照片"
+                maxCount={10}
+                clearButtonText="清空成绩证明照片"
+                tip="注意：成绩正面照片应当清晰可见"
+                OnWxUpload={addScorePhotoId}
+                OnClear={clearScorePhotoeIds}
+              />
               <ButtonArea>
                 <Button onClick={handleSubmit(submit)}>确定</Button>
               </ButtonArea>
@@ -251,6 +196,7 @@ const mapStateToProps = state => {
     initialValues: state.acceptors.registration.data,
   };
 };
+
 export default reduxForm({
   form: 'zxjApply',
   fields: ['homeAddress', 'nation', 'familyIncomeIntro', 'publicActivtesIntro'],
