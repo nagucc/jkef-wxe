@@ -10,7 +10,17 @@ import * as eduActions from '../../../actions/acceptors/edu';
 import * as zxjApplyActions from '../../../actions/acceptors/zxj-apply';
 import fetch from '../../../core/fetch';
 import ImageUploaderCell from './ImageUploaderCell';
+import { required, range, integer } from 'nagu-validates';
 
+const validate = values => {
+  const errors = {
+    referer: required(values.referer),
+    homeAddress: required(values.homeAddress),
+    nation: required(values.nation),
+    familyIncomeIntro: required(values.familyIncomeIntro),
+    publicActivtesIntro: required(values.publicActivtesIntro),
+  }
+}
 class Apply extends React.Component { // eslint-disable-line react/prefer-stateless-function
   static propTypes = {
     error: PropTypes.object,
@@ -26,6 +36,7 @@ class Apply extends React.Component { // eslint-disable-line react/prefer-statel
     this.state = {
       stuCardPhotoIds: [],
       scorePhotoIds: [],
+      otherPhotoIds: [],
     };
   }
 
@@ -48,7 +59,7 @@ class Apply extends React.Component { // eslint-disable-line react/prefer-statel
   render() {
     const { error, fetchedMyProfile, profile, initEduHistory, school,
       handleSubmit, addApply,
-      fields: { homeAddress, nation, familyIncomeIntro, publicActivtesIntro } } = this.props;
+      fields: { referer, homeAddress, nation, familyIncomeIntro, publicActivtesIntro } } = this.props;
 
     const setIdCardPhotoId = serverId => this.setState({
       idCardPhotoId: serverId,
@@ -81,17 +92,26 @@ class Apply extends React.Component { // eslint-disable-line react/prefer-statel
       scorePhotoIds: [],
     });
 
+    const addOtherPhotoId = serverId => {
+      const { otherPhotoIds } = this.state;
+      this.setState({
+        otherPhotoIds: [
+          ...otherPhotoIds,
+          serverId,
+        ] });
+    };
+    const clearOtherPhotoIds = () => this.setState({
+      otherPhotoIds: [],
+    });
+
     const submit = values => {
-      const { idCardPhotoId, stuCardPhotoIds, scorePhotoIds } = this.state;
       addApply(profile._id, {
         ...values,
         name: profile.name,
         schoolName: school.name,
         year: school.year,
         degree: school.degree,
-        idCardPhotoId,
-        stuCardPhotoIds,
-        scorePhotoIds,
+        ...this.state,
       });
     };
 
@@ -127,6 +147,12 @@ class Apply extends React.Component { // eslint-disable-line react/prefer-statel
                 >添加教育经历</Button>
               </CellsTips>
 
+              <FormCell>
+                <CellHeader>推荐人</CellHeader>
+                <CellBody>
+                  <Input placeholder="推荐人姓名" {...referer} />
+                </CellBody>
+              </FormCell>
               <FormCell>
                 <CellHeader>家庭住址</CellHeader>
                 <CellBody>
@@ -165,11 +191,15 @@ class Apply extends React.Component { // eslint-disable-line react/prefer-statel
                 OnClear={clearStuCardPhotoIds}
               />
               <ImageUploaderCell title="成绩证明照片"
-                maxCount={10}
                 clearButtonText="清空成绩证明照片"
                 tip="注意：成绩正面照片应当清晰可见"
                 OnWxUpload={addScorePhotoId}
                 OnClear={clearScorePhotoeIds}
+              />
+              <ImageUploaderCell title="其他证明文件"
+                tip="用于证明家庭经济条件、参与公益活动情况的图片资料"
+                OnWxUpload={addOtherPhotoId}
+                OnClear={clearOtherPhotoIds}
               />
               <ButtonArea>
                 <Button onClick={handleSubmit(submit)}>确定</Button>
@@ -199,7 +229,7 @@ const mapStateToProps = state => {
 
 export default reduxForm({
   form: 'zxjApply',
-  fields: ['homeAddress', 'nation', 'familyIncomeIntro', 'publicActivtesIntro'],
+  fields: ['referer', 'homeAddress', 'nation', 'familyIncomeIntro', 'publicActivtesIntro'],
 }, mapStateToProps, {
   ...profileActions,
   ...eduActions,
