@@ -1,4 +1,3 @@
-import { connect } from 'react-redux';
 import React, { PropTypes } from 'react';
 import { Cells, Cell, CellFooter, CellBody,
   Panel, PanelHeader, PanelBody,

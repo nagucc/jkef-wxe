@@ -46,6 +46,7 @@ export default class EntityManager {
  * @return {Promise}       操作结果
  */
   find(query = {}, limit = 100, skip = 0) {
+    console.log('cond::', query);
     return new Promise((resolve, reject) => useEntity(async col => {
       let result;
       try {
@@ -54,6 +55,17 @@ export default class EntityManager {
         resolve(result);
       } catch (e) {
         console.log('EntityManager Error: ', e); // eslint-disable-line no-console
+        reject(e);
+      }
+    }));
+  }
+
+  count(query = {}) {
+    return new Promise((resolve, reject) => useEntity(async col => {
+      try {
+        const result = await col.count(query);
+        resolve(result);
+      } catch (e) {
         reject(e);
       }
     }));

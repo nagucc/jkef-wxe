@@ -1,5 +1,7 @@
 import { useCollection } from 'mongo-use-collection';
-import { mongoUrl, showLog, profileCollection } from '../../config';
+import { mongoUrl, showLog, profileCollection, profileManager } from '../../config';
+
+const { all } = Promise;
 
 export const ACCEPTORS_COLLECTION = 'acceptors';
 export const STAT_BY_PROJECT = 'stat_by_project';
@@ -109,11 +111,11 @@ export const getStatByYear = () =>
     });
   });
 
-export const findAcceptors = ({ text, year, project, projections, skip = 0, limit = 20 } = {}) => {
+export const findAcceptors = async ({ text, year, project, projections, skip = 0, limit = 20 } = {}) => {
   showLog && console.time('findAcceptors from Profiles');
   let condition = { isAcceptor: true };
   if (text) {
-    var reg = new RegExp(text); // eslint-disable-line vars-on-top, no-var
+    const reg = new RegExp(text);
     condition = Object.assign(condition, {
       $or: [{ name: reg }, { phone: reg }],
     });
@@ -137,24 +139,17 @@ export const findAcceptors = ({ text, year, project, projections, skip = 0, limi
       },
     });
   }
-  return new Promise((resolve, reject) => {
-    useProfiles(async col => {
-      try {
-        showLog && console.log('condition:::', JSON.stringify(condition));
-        const totalCount = await col.count(condition);
-        showLog && console.log('totalCount:::::', totalCount);
-        const data = await col.find(condition, projections)
-          .sort({ name: 1 })
-          .skip(skip)
-          .limit(limit).toArray();
-        resolve({ totalCount, data });
-        showLog && console.timeEnd('findAcceptors from Profiles');
-      } catch (e) {
-        reject(e);
-        showLog && console.timeEnd('findAcceptors from Profiles');
-      }
+
+  const { find, count } = profileManager;
+  try {
+    const result = await all([count(condition), find(condition)]);
+    return Promise.resolve({
+      totalCount: result[0],
+      data: result[1],
     });
-  });
+  } catch (e) {
+    return Promise.reject(e);
+  }
 };
 
 /*
