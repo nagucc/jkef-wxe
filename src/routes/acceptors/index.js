@@ -10,6 +10,7 @@ import editCareer from './edit-career';
 import list from './list';
 import editRecord from './edit-record';
 import zxjApply from './zxj-apply';
+import zxjApplyList from './zxj-apply-list';
 
 export default {
   path: '/acceptors',
@@ -22,6 +23,7 @@ export default {
     list,
     editRecord,
     zxjApply,
+    zxjApplyList,
   ],
   async action({ next }) {
     const component = await next();

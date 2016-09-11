@@ -12,7 +12,7 @@ export const add = zxjApply =>
   new Promise((resolve, reject) => useZxjApply(async (col, db) => {
     const { acceptorId, name, schoolName, degree, year, nation,
       familyIncomeIntro, publicActivtesIntro,
-      idCardPhoto, stuCardPhotoes,
+      idCardPhoto, stuCardPhotoes, otherPhotoes,
       scorePhotoes } = zxjApply;
     try {
       // 1. 添加图片到GridStore中
@@ -21,10 +21,13 @@ export const add = zxjApply =>
         writeData(photo, `stuCardPhoto_${i}`)));
       const saveScorePhotoes = Promise.all(scorePhotoes.map((photo, i) =>
         writeData(photo, `scorePhotoes_${i}`)));
+      const saveOtherPhotoes = Promise.all(otherPhotoes.map((photo, i) =>
+        writeData(photo, `otherPhotoes_${i}`)));
       const photoIds = await Promise.all([
         saveIdCardPhoto,
         saveStuCardPhotoes,
         saveScorePhotoes,
+        saveOtherPhotoes,
       ]);
 
       // 2. 添加基本信息到zxjApply集合中
@@ -34,6 +37,7 @@ export const add = zxjApply =>
         idCardPhotoId: photoIds[0],
         stuCardPhotoIds: photoIds[1],
         scorePhotoIds: photoIds[2],
+        otherPhotoIds: photoIds[3],
       });
       resolve();
     } catch (e) {

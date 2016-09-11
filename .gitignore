@@ -11,3 +11,5 @@ npm-debug.log
 test.js
 
 dump.rdb
+
+.DS_Store

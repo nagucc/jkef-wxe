@@ -1,6 +1,6 @@
 import { findByIdCardNumber } from '../models/data-access';
 import { manageDpt, supervisorDpt, mongoUrl, profileCollection } from '../../config';
-import { UNKNOWN_ERROR, SERVER_FAILED } from 'nagu-validates';
+import { UNKNOWN_ERROR, SERVER_FAILED, UNAUTHORIZED } from 'nagu-validates';
 import { MongoProfile } from 'nagu-profile';
 
 const profileDao = new MongoProfile(mongoUrl, profileCollection);
@@ -90,3 +90,31 @@ export const ensureUserSignedIn = (req, res, next) => {
 export const isUndefined = param => (
   param === undefined || param === 'undefined'
 );
+
+export const isNullOrEmpty = param => (
+  isUndefined(param) || param === 'null' || param === ''
+);
+
+// 只有管理员和观察员可以继续做next
+export const onlyManagerOrSupervisorCanDoNext = (getRoles,
+  success = (req, res, next) => next(),
+  fail = (req, res) => res.send({ ret: UNAUTHORIZED, msg: '没有权限' }),
+  error = (msg, req, res) => res.send({ ret: SERVER_FAILED, msg })) =>
+  async (req, res, next) => {
+    try {
+      const roles = await getRoles(req, res);
+      if (isSupervisor(roles) || isManager(roles)) {
+        await success(req, res, next);
+      } else {
+        await fail(req, res, next);
+      }
+    } catch (e) {
+      error(e, req, res, next);
+    }
+  };
+
+/*
+默认的处理错误的方法：将错误信息发送回客户端
+ */
+export const handleServerFailed = res =>
+  msg => res.send({ ret: SERVER_FAILED, msg });

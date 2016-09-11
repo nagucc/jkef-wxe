@@ -10,7 +10,7 @@ import * as eduActions from '../../../actions/acceptors/edu';
 import * as zxjApplyActions from '../../../actions/acceptors/zxj-apply';
 import fetch from '../../../core/fetch';
 import ImageUploaderCell from './ImageUploaderCell';
-import { required, range, integer } from 'nagu-validates';
+import { required } from 'nagu-validates';
 
 const validate = values => {
   const errors = {
@@ -19,8 +19,10 @@ const validate = values => {
     nation: required(values.nation),
     familyIncomeIntro: required(values.familyIncomeIntro),
     publicActivtesIntro: required(values.publicActivtesIntro),
-  }
-}
+  };
+  return errors;
+};
+
 class Apply extends React.Component { // eslint-disable-line react/prefer-stateless-function
   static propTypes = {
     error: PropTypes.object,
@@ -105,6 +107,19 @@ class Apply extends React.Component { // eslint-disable-line react/prefer-statel
     });
 
     const submit = values => {
+      // 验证图片是否已上传
+      if (!this.state.idCardPhotoId) {
+        alert('请上传身份证正面照片');
+        return;
+      }
+      if (!this.state.stuCardPhotoIds.length) {
+        alert('请上传学生证照片');
+        return;
+      }
+      if (!this.state.scorePhotoIds.length) {
+        alert('请上传成绩证明照片');
+        return;
+      }
       addApply(profile._id, {
         ...values,
         name: profile.name,
@@ -131,7 +146,7 @@ class Apply extends React.Component { // eslint-disable-line react/prefer-statel
           error ? <Msg type="warn" title="发生错误" description={error.msg} />
           : (
             <Form>
-            <CellsTitle>填写下面信息</CellsTitle>
+              <CellsTitle>填写下面信息</CellsTitle>
               <FormCell>
                 <CellHeader>就读学校</CellHeader>
                 {
@@ -147,19 +162,19 @@ class Apply extends React.Component { // eslint-disable-line react/prefer-statel
                 >添加教育经历</Button>
               </CellsTips>
 
-              <FormCell>
+              <FormCell warn={!!(referer.touched && referer.error)}>
                 <CellHeader>推荐人</CellHeader>
                 <CellBody>
                   <Input placeholder="推荐人姓名" {...referer} />
                 </CellBody>
               </FormCell>
-              <FormCell>
+              <FormCell warn={!!(homeAddress.touched && homeAddress.error)}>
                 <CellHeader>家庭住址</CellHeader>
                 <CellBody>
                   <Input placeholder="请输入家庭住址" {...homeAddress} />
                 </CellBody>
               </FormCell>
-              <FormCell>
+              <FormCell warn={!!(nation.touched && nation.error)} >
                 <CellHeader>民族</CellHeader>
                 <CellBody>
                   <Input placeholder="请输入民族，如：回族" {...nation} />
@@ -201,6 +216,31 @@ class Apply extends React.Component { // eslint-disable-line react/prefer-statel
                 OnWxUpload={addOtherPhotoId}
                 OnClear={clearOtherPhotoIds}
               />
+              {
+                referer.touched && referer.error ? (
+                  <CellsTips>* 必须输入推荐人姓名</CellsTips>
+                ) : null
+              }
+              {
+                homeAddress.touched && homeAddress.error ? (
+                  <CellsTips>* 必须输入家庭住址</CellsTips>
+                ) : null
+              }
+              {
+                nation.touched && nation.error ? (
+                  <CellsTips>* 必须填写民族</CellsTips>
+                ) : null
+              }
+              {
+                familyIncomeIntro.touched && familyIncomeIntro.error ? (
+                  <CellsTips>* 必须填写家庭经济情况</CellsTips>
+                ) : null
+              }
+              {
+                publicActivtesIntro.touched && publicActivtesIntro.error ? (
+                  <CellsTips>* 必须填写参与公益活动情况</CellsTips>
+                ) : null
+              }
               <ButtonArea>
                 <Button onClick={handleSubmit(submit)}>确定</Button>
               </ButtonArea>
@@ -230,6 +270,7 @@ const mapStateToProps = state => {
 export default reduxForm({
   form: 'zxjApply',
   fields: ['referer', 'homeAddress', 'nation', 'familyIncomeIntro', 'publicActivtesIntro'],
+  validate,
 }, mapStateToProps, {
   ...profileActions,
   ...eduActions,

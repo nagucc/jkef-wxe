@@ -12,6 +12,7 @@
 import { MongoProfileMiddlewares } from 'nagu-profile';
 import API from 'wxent-api-redis';
 import { writeData as gsWriteData } from './gridstore';
+import EntityManager from './entity';
 
 export const port = process.env.PORT || 3000;
 export const host = process.env.WEBSITE_HOSTNAME || `wx.nagu.cc:${port}`;
@@ -82,3 +83,5 @@ export const writeData = async (data, filename = null, options = {}) => {
     throw e;
   }
 };
+
+export const zxjApplyManager = new EntityManager('zxjApply', mongoUrl);

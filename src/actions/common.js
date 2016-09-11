@@ -16,3 +16,6 @@ export const timeout = (microsecends, action) => dispatch =>
 export const reset = () => ({
   type: RESET,
 });
+export const clean = () => ({
+  type: RESET,
+});
