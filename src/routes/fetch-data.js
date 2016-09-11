@@ -11,14 +11,14 @@ export const findAcceptorsByProject = async (project, pageIndex = 0) => {
   throw new Error(`find acceptors by project failed:${JSON.stringify(result.msg)}`);
 };
 
-export const findAcceptors = async ({ project, year, text, pageIndex = 0, pageSize = 20 } = {
+export const findAcceptors = async ({ project, year, text, pageIndex = 0, pageSize = 100 } = {
   pageIndex: 0,
-  pageSize: 20,
+  pageSize: 100,
 }) => {
   let query = `project=${project ? encodeURIComponent(project) : ''}`;
   query += `&year=${year || ''}`;
   query += `&text=${text ? encodeURIComponent(text) : ''}`;
-  query += `&pageSize=${pageSize || 20}`;
+  query += `&pageSize=${pageSize}`;
   let result;
   try {
     const res = await fetch(`/api/acceptors/list/${pageIndex}?${query}`, {
