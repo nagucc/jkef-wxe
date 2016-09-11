@@ -9,6 +9,7 @@ export default {
   async action() {
     // 提交到服务器进行注册的方法
     const action = async data => {
+      let result;
       try {
         const res = await fetch('/api/acceptors/add', {
           credentials: 'same-origin',
@@ -19,13 +20,13 @@ export default {
             'Content-Type': 'application/json',
           },
         });
-        const result = await res.json();
-        if (result.ret === 0) return Promise.resolve(result.data);
-        return Promise.reject(result);
+        result = await res.json();
       } catch (e) {
         // 其他错误
         return Promise.reject({ ret: 999, msg: e });
       }
+      if (result.ret === 0) return Promise.resolve(result.data);
+      return Promise.reject(result);
     };
     const props = {
       action,

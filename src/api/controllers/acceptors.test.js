@@ -29,10 +29,7 @@ let doc;
 describe('Acceptors Middlewares', () => {
   it('add 非管理员添加数据时将userid修改为自己', async () => {
     const req = createRequest({
-      user: {
-        department: [manageDpt + 99999],
-        userid: myUserid,
-      },
+      user: normalUser,
       body: {
         _id: Math.random().toString(), // _id在添加profile的时候生成
         userid: myUserid + 11,

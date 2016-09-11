@@ -32,6 +32,7 @@ import statCtrl from './api/controllers/stat';
 import acceptorsCtrl from './api/controllers/acceptors';
 import wxeAuthCtrl from './api/controllers/wxe-auth';
 import profileCtrl from './api/controllers/profiles';
+import zxjApplyCtrl from './api/controllers/zxj-apply';
 const app = express();
 
 //
@@ -47,7 +48,8 @@ global.navigator.userAgent = global.navigator.userAgent || 'all';
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(cookieParser('jkef.nagu.cc cookie key'));
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '50mb' }));
+app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 if (showLog) {
   const morgan = require('morgan');
   app.use(morgan('dev'));
@@ -62,7 +64,7 @@ app.use('/api/fundinfo', regData);
 require('./api/controllers/worker');
 app.use('/api/wxe-auth', wxeAuthCtrl);
 app.use('/api/profiles', profileCtrl);
-
+app.use('/api/zxj-apply', zxjApplyCtrl);
 //
 // Authentication
 // -----------------------------------------------------------------------------

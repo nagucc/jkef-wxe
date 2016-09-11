@@ -10,6 +10,9 @@
 /* eslint-disable max-len */
 /* jscs:disable maximumLineLength */
 import { MongoProfileMiddlewares } from 'nagu-profile';
+import API from 'wxent-api-redis';
+import { writeData as gsWriteData } from './gridstore';
+import EntityManager from './entity';
 
 export const port = process.env.PORT || 3000;
 export const host = process.env.WEBSITE_HOSTNAME || `wx.nagu.cc:${port}`;
@@ -63,6 +66,8 @@ export const wxentConfig = {
   secret: process.env.WXE_SECRET,
   angetId: process.env.WXE_AGENTID || 5,
 };
+export const wxapi = API(wxentConfig.corpId, wxentConfig.secret,
+  wxentConfig.agentId, redisConfig.host, redisConfig.port);
 
 export const manageDpt = parseInt(process.env.MANAGER_DEPT || '13', 10);
 export const supervisorDpt = parseInt(process.env.SUPERVISOR_DEPT || '13', 10);
@@ -70,3 +75,17 @@ export const supervisorDpt = parseInt(process.env.SUPERVISOR_DEPT || '13', 10);
 export const showLog = Boolean(process.env.SHOW_LOG) || true;
 
 export const profileMiddlewares = new MongoProfileMiddlewares(mongoUrl, profileCollection);
+
+export const writeData = async (data, filename = null, options = {}) => {
+  try {
+    return await gsWriteData(mongoUrl, data, filename, options);
+  } catch (e) {
+    throw e;
+  }
+};
+
+export const zxjApplyManager = new EntityManager('zxjApply', mongoUrl);
+
+export const acceptorManager = new EntityManager('acceptors', mongoUrl);
+
+export const profileManager = new EntityManager('profiles', mongoUrl);

@@ -12,16 +12,14 @@ import { findAcceptors, addAcceptor,
 import { getUserId } from 'wxe-auth-express';
 import { ensureAcceptorCanBeAdded,
   isManager, isSupervisor, isUndefined,
-  getUser } from './middlewares';
+  getUser, getProfileByUserId } from './middlewares';
 import emptyFunction from 'fbjs/lib/emptyFunction';
 import { ObjectId } from 'mongodb';
 import { SUCCESS, UNAUTHORIZED, UNKNOWN_ERROR,
   OBJECT_IS_NOT_FOUND, SERVER_FAILED } from '../../err-codes';
-import { mongoUrl, profileCollection } from '../../config';
+import { profileMiddlewares as profile } from '../../config';
 
-import { MongoProfileMiddlewares } from 'nagu-profile';
 
-const profile = new MongoProfileMiddlewares(mongoUrl, profileCollection);
 const addProfile = profile.add(req => {
   const { name, isMale, phone } = req.body;
   return {
@@ -65,7 +63,8 @@ export const list = async (req, res) => {
 };
 router.get('/list/:pageIndex',
   getUserId(),
-  getUser,
+  // getUser,
+  getProfileByUserId(),
   list);
 
 /*
@@ -73,7 +72,7 @@ router.get('/list/:pageIndex',
 任何用户可自助申请成为受赠者，管理员则可以任意添加受赠者，并指定关联企业号账户。
  */
 export const add = async (req, res) => {
-  const { _id, name, isMale, phone, idCard } = req.body;
+  const { _id, idCard, ...other } = req.body;
   try {
     // 3.0 检查是否有相同的idCard.number存在
     const doc = await findByIdCardNumber(idCard.number);
@@ -81,23 +80,22 @@ export const add = async (req, res) => {
       res.send({ ret: -1, msg: `证件号码'${idCard.number}'已存在。` });
     }
 
-    // 3.0-1 关联企业号账户
-    let { userid } = req.body;
-    // 3.0-1.1 如果当前用户不是管理员，只能关联自己的企业号账户，忽略body.userid参数
-    if (!isManager(req.user.department)) {
-      userid = req.user.userid;
-    }
+    // // 3.0-1 关联企业号账户
+    // let { userid } = req.body;
+    // // 3.0-1.1 如果当前用户不是管理员，只能关联自己的企业号账户，忽略body.userid参数
+    // if (!isManager(req.user.department)) {
+    //   userid = req.user.userid;
+    // }
     // 3.1. 保存数据到数据库中
-    await addAcceptor({ _id, name, isMale, phone, idCard, userid });
+    await addAcceptor({ _id, idCard });
     // 3.2 返回结果
     res.send({ ret: SUCCESS, data: {
-      name, isMale, phone, idCard, userid, _id,
+      idCard, _id, ...other,
     } });
   } catch (e) {
     res.send({ ret: SERVER_FAILED, msg: e });
   }
 };
-
 
 
 router.put('/add',
@@ -127,10 +125,13 @@ export const getDetail = (getId = req => (new ObjectId(req.params.id)),
   async (req, res) => {
     try {
       const id = getId(req, res);
-      const data = await findById(id);
+      let data = await findById(id);
       if (!data) {
-        res.send({ ret: OBJECT_IS_NOT_FOUND, msg: '给定的Id不存在' });
-        return;
+        // res.send({ ret: OBJECT_IS_NOT_FOUND, msg: '给定的Id不存在' });
+        // return;
+        const idCard = { type: '其他', number: res.profile._id.toString() };
+        await addAcceptor({ _id: res.profile._id, idCard });
+        data = { idCard };
       }
       // 普通成员只能看自己的数据
       if (canUserRead(req, res)) {
@@ -174,17 +175,18 @@ export const onlyManagerAndOwnerCanDoNext = idGetter =>
 
 export const putEdu = (getId = req => (new ObjectId(req.params.id))) =>
   async (req, res) => {
-    const { name, year } = req.body;
+    const { name, year, degree } = req.body;
     if (!name
       || !year
+      || !degree
       || isNaN(parseInt(year, 10))) {
-      res.send({ ret: -1, msg: '必须提供学校名称和入学年份，入学年份必须是数字' });
+      res.send({ ret: -1, msg: '必须提供学校名称、层次和入学年份，入学年份必须是数字' });
       return;
     }
     try {
       const _id = getId(req, res);
       await addEdu(_id, {
-        name,
+        name, degree,
         year: parseInt(year, 10),
       });
       res.send({ ret: 0 });
@@ -216,7 +218,6 @@ export const deleteEdu = (getId = req => (new ObjectId(req.params.id))) =>
       });
       res.send({ ret: 0 });
     } catch (e) {
-      // console.log('eeee:', e);
       res.send({ ret: -1, msg: e });
     }
   };

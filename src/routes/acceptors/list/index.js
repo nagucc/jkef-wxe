@@ -8,8 +8,6 @@ export default {
   async action({ query }) { // eslint-disable-line react/prop-types
     return <ListAcceptors query={{
       text: '',
-      pageIndex: 0,
-      pageSize: 20,
       ...query,
     }}
     />;

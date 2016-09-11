@@ -53,7 +53,7 @@ class RegistrationForm extends Component {
       this.props.dispatch(submitForm(value));
     };
 
-    return (
+  return (
       <div>
         {/*<NeedSignup />*/}
         <div className="bd">

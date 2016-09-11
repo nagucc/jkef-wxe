@@ -9,3 +9,7 @@ npm-debug.log
 .idea
 *~
 test.js
+
+dump.rdb
+
+.DS_Store

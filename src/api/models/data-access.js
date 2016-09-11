@@ -1,5 +1,7 @@
 import { useCollection } from 'mongo-use-collection';
-import { mongoUrl, showLog, profileCollection } from '../../config';
+import { mongoUrl, showLog, profileCollection, profileManager } from '../../config';
+
+const { all } = Promise;
 
 export const ACCEPTORS_COLLECTION = 'acceptors';
 export const STAT_BY_PROJECT = 'stat_by_project';
@@ -109,10 +111,11 @@ export const getStatByYear = () =>
     });
   });
 
-export const findAcceptors = ({ text, year, project, projections, skip = 0, limit = 20 } = {}) => {
-  let condition = { isDeleted: { $ne: true } };
+export const findAcceptors = async ({ text, year, project, projections, skip = 0, limit = 20 } = {}) => {
+  showLog && console.time('findAcceptors from Profiles');
+  let condition = { isAcceptor: true };
   if (text) {
-    var reg = new RegExp(text); // eslint-disable-line vars-on-top, no-var
+    const reg = new RegExp(text);
     condition = Object.assign(condition, {
       $or: [{ name: reg }, { phone: reg }],
     });
@@ -136,22 +139,17 @@ export const findAcceptors = ({ text, year, project, projections, skip = 0, limi
       },
     });
   }
-  return new Promise((resolve, reject) => {
-    useProfiles(async col => {
-      try {
-        showLog && console.log('condition:::', JSON.stringify(condition));
-        const totalCount = await col.count(condition);
-        showLog && console.log('totalCount:::::', totalCount);
-        const data = await col.find(condition, projections)
-          .sort({ name: 1 })
-          .skip(skip)
-          .limit(limit).toArray();
-        resolve({ totalCount, data });
-      } catch (e) {
-        reject(e);
-      }
+
+  const { find, count } = profileManager;
+  try {
+    const result = await all([count(condition), find(condition)]);
+    return Promise.resolve({
+      totalCount: result[0],
+      data: result[1],
     });
-  });
+  } catch (e) {
+    return Promise.reject(e);
+  }
 };
 
 /*
@@ -269,11 +267,8 @@ export const remove = async _id =>
  */
 export const addEdu = async (_id, eduHistory) =>
   new Promise((resolve, reject) => {
-    if (!eduHistory
-        || !eduHistory.name
-        || !eduHistory.year
-        || isNaN(parseInt(eduHistory.year, 10))) {
-      Promise.reject('name和year必须存在，且year必须是整数');
+    if (!eduHistory) {
+      Promise.reject('必须提供eduHistory数据');
       return;
     }
     useAcceptors(async col => {
@@ -293,11 +288,11 @@ export const removeEdu = async (_id, eduHistory) =>
     useAcceptors(async col => {
       try {
         const oldDoc = await findById(_id);
-        oldDoc.eduHistory = oldDoc.eduHistory.filter(edu =>
-          edu.name !== eduHistory.name || edu.year !== eduHistory);
+        const filtered = oldDoc.eduHistory.filter(edu =>
+          !(edu.name === eduHistory.name && edu.year === eduHistory.year));
         await col.updateOne({ _id }, {
           $set: {
-            eduHistory: oldDoc.eduHistory,
+            eduHistory: filtered,
           },
         });
         resolve();

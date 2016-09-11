@@ -4,7 +4,7 @@
 import React, { PropTypes } from 'react';
 import { Form, FormCell,
   CellHeader, CellBody,
-  CellsTitle, Input, Select,
+  CellsTitle, Input, Select, ButtonArea,
   Button, Msg, Toast } from 'react-weui';
 import EduHistory from '../detail/EduHistory';
 import { reduxForm } from 'redux-form';
@@ -37,6 +37,7 @@ export class EditEduComponent extends React.Component {
       await addEdu({
         name: fields.name.value,
         year: parseInt(fields.year.value, 10),
+        degree: fields.degree.value,
       });
       this.props.resetForm();
     };
@@ -57,6 +58,38 @@ export class EditEduComponent extends React.Component {
             </CellBody>
           </FormCell>
           <FormCell>
+            <CellHeader>层次</CellHeader>
+            <CellBody>
+              <Select {...fields.degree} data={[{
+                value: '',
+                label: '请选择',
+              }, {
+                value: '小学',
+                label: '小学',
+              }, {
+                value: '初中',
+                label: '初中',
+              }, {
+                value: '高中',
+                label: '高中',
+              }, {
+                value: '大学',
+                label: '大学',
+              }, {
+                value: '硕士',
+                label: '硕士',
+              }, {
+                value: '博士',
+                label: '博士',
+              }, {
+                value: '其他',
+                label: '其他',
+              },
+              ]}
+              />
+            </CellBody>
+          </FormCell>
+          <FormCell>
             <CellHeader>入学年份</CellHeader>
             <CellBody>
               <Input placeholder="入学年份"
@@ -64,7 +97,9 @@ export class EditEduComponent extends React.Component {
               />
             </CellBody>
           </FormCell>
-          <Button onClick={submitNewEdu}>添加</Button>
+          <ButtonArea>
+            <Button onClick={submitNewEdu}>添加</Button>
+          </ButtonArea>
         </Form>
         <Form>
           <CellsTitle>删除教育经历</CellsTitle>
@@ -76,13 +111,15 @@ export class EditEduComponent extends React.Component {
             },
             ...eduHistory.map(edu => ({
               value: JSON.stringify(edu),
-              label: edu.name,
+              label: `${edu.name} | ${edu.year}`,
             })),
             ]}
             />
           </CellHeader>
         </FormCell>
-        <Button type="warn" onClick={submitRemoveEdu}>删除</Button>
+        <ButtonArea>
+          <Button type="warn" onClick={submitRemoveEdu}>删除</Button>
+        </ButtonArea>
         </Form>
         <Toast icon={toast.icon} show={toast.show} >{toast.text}</Toast>
       </div>
@@ -97,5 +134,5 @@ const mapStateToProps = state => ({
 });
 export default reduxForm({
   form: 'eduHistory',
-  fields: ['name', 'year', 'eduNeedDelete'],
+  fields: ['name', 'year', 'eduNeedDelete', 'degree'],
 }, mapStateToProps)(EditEduComponent);

@@ -1,6 +1,10 @@
+/*
+用于判断当前微信用户是否已经具有一条Profile记录。
+如果有，则执行success（默认为空），如果没有则执行fail（默认直接跳转到注册页面）
+ */
 import React, { PropTypes } from 'react';
 import emptyFunction from 'fbjs/lib/emptyFunction';
-import { OBJECT_IS_NOT_FOUND } from 'nagu-validates';
+import { OBJECT_IS_NOT_FOUND, SERVER_FAILED } from 'nagu-validates';
 
 class MustHaveProfile extends React.Component {
   static propTypes = {
@@ -19,15 +23,17 @@ class MustHaveProfile extends React.Component {
     // 从服务器获取当前用户的Profile
     let result;
     try {
-      const res = fetch('/api/profiles/me');
+      const res = await fetch('/api/profiles/me', {
+        credentials: 'same-origin',
+      });
       result = await res.json();
     } catch (e) {
-      result = { ret: 500, msg: e };
+      result = { ret: SERVER_FAILED, msg: e };
     }
 
     // 判断获取结果
     if (result.ret === 0) success(result.data);
-    else if (result.ret === OBJECT_IS_NOT_FOUND) fail();
+    else if (result.ret === OBJECT_IS_NOT_FOUND) fail(result);
     else error(result);
   }
   render() {
