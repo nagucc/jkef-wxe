@@ -16,11 +16,11 @@ import API from 'wxent-api-redis';
 
 const router = new Router();
 
-const wxapi = api(wxcfg.corpId, wxcfg.secret, wxcfg.agentId, redis.host, redis.port);
+const wxapi = API(wxcfg.corpId, wxcfg.secret, wxcfg.agentId, redis.host, redis.port);
 
 router.get('/jsconfig', (req, res) => {
-  var param = {
-    debug:false,
+  const param = {
+    debug: false,
     jsApiList: ['uploadImage', 'chooseImage', 'previewImage'],
     url: `http://${host}/acceptors/zxj-apply`,
   };
