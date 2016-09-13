@@ -52,6 +52,7 @@ export default class EntityManager {
       try {
         const cursor = col.find(query).skip(skip).limit(limit);
         result = await cursor.toArray();
+        console.log('[EntityManager count]result.length::', result.length);
         resolve(result);
       } catch (e) {
         console.log('[EntityManager find]Error: ', e); // eslint-disable-line no-console
@@ -65,6 +66,7 @@ export default class EntityManager {
     return new Promise((resolve, reject) => useEntity(async col => {
       try {
         const result = await col.count(query);
+        console.log('[EntityManager count]result::', result);
         resolve(result);
       } catch (e) {
         console.log('[EntityManager count]Error: ', e); // eslint-disable-line no-console
