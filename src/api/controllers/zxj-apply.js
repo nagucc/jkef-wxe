@@ -12,6 +12,7 @@ import { ObjectId } from 'mongodb';
 import { add } from '../models/zxj-apply';
 import { onlyManagerOrSupervisorCanDoNext,
   handleServerFailed, isNullOrEmpty } from './middlewares';
+import API from 'wxent-api-redis';
 
 const router = new Router();
 

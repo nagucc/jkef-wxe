@@ -10,7 +10,7 @@
 /* eslint-disable max-len */
 /* jscs:disable maximumLineLength */
 import { MongoProfileMiddlewares } from 'nagu-profile';
-import API from 'wxent-api-redis';
+
 import { writeData as gsWriteData } from './gridstore';
 import EntityManager from './entity';
 
