@@ -149,6 +149,7 @@ export const findAcceptors = async ({ text, year, project, projections, skip = 0
       data: result[1],
     });
   } catch (e) {
+    console.log('ERRRRR::', JSON.stringify(e));
     return Promise.reject(e);
   }
 };
