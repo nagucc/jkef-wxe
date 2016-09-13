@@ -5,7 +5,8 @@ eslint-disable no-param-reassign
 import { Router } from 'express';
 import { SUCCESS,
   OBJECT_IS_NOT_FOUND, SERVER_FAILED } from 'nagu-validates';
-import { profileMiddlewares, wxapi, host, zxjApplyManager } from '../../config';
+import { profileMiddlewares, host, zxjApplyManager,
+  wxentConfig as wxcfg, redisConfig as redis } from '../../config';
 import { getUserId } from 'wxe-auth-express';
 import { ObjectId } from 'mongodb';
 import { add } from '../models/zxj-apply';
@@ -13,6 +14,8 @@ import { onlyManagerOrSupervisorCanDoNext,
   handleServerFailed, isNullOrEmpty } from './middlewares';
 
 const router = new Router();
+
+const wxapi = api(wxcfg.corpId, wxcfg.secret, wxcfg.agentId, redis.host, redis.port);
 
 router.get('/jsconfig', (req, res) => {
   var param = {

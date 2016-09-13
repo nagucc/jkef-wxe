@@ -66,8 +66,8 @@ export const wxentConfig = {
   secret: process.env.WXE_SECRET,
   angetId: process.env.WXE_AGENTID || 5,
 };
-export const wxapi = API(wxentConfig.corpId, wxentConfig.secret,
-  wxentConfig.agentId, redisConfig.host, redisConfig.port);
+// export const wxapi = API(wxentConfig.corpId, wxentConfig.secret,
+//   wxentConfig.agentId, redisConfig.host, redisConfig.port);
 
 export const manageDpt = parseInt(process.env.MANAGER_DEPT || '13', 10);
 export const supervisorDpt = parseInt(process.env.SUPERVISOR_DEPT || '13', 10);
