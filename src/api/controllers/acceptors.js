@@ -7,7 +7,7 @@ import { findAcceptors, addAcceptor,
   findByIdCardNumber, findById, update,
   addEdu, removeEdu,
   addCareer, removeCareer,
-  addRecord, removeRecord } from '../models/data-access';
+  addRecord, removeRecord, addNgv } from '../models/data-access';
 
 import { getUserId } from 'wxe-auth-express';
 import { ensureAcceptorCanBeAdded,
@@ -100,12 +100,31 @@ export const add = async (req, res) => {
 };
 
 
+
 router.put('/add',
   getUserId(),
   getUser,
   ensureAcceptorCanBeAdded,
   addProfile,
   add,
+);
+
+const addNgvMiddleware = async (req, res) => {
+  try {
+    await addNgv({
+      ...req.body,
+      userid: req.user.userid,
+    });
+    res.send({ ret: 0 });
+  } catch (e) {
+    res.send({ ret: SERVER_FAILED, msg: e });
+  }
+};
+
+router.put('/add-ngv',
+  getUserId(),
+  getUser,
+  addNgvMiddleware,
 );
 
 export const ensureIdIsCorrect = (req, res, next) => {

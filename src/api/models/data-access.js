@@ -11,6 +11,19 @@ export const useAcceptors = cb => useCollection(mongoUrl, ACCEPTORS_COLLECTION, 
 export const useStatByProject = cb => useCollection(mongoUrl, STAT_BY_PROJECT, cb);
 export const useStatByYear = cb => useCollection(mongoUrl, STAT_BY_YEAR, cb);
 const useProfiles = cb => useCollection(mongoUrl, profileCollection, cb);
+const useNgvs = cb => useCollection(mongoUrl, 'ngvs', cb);
+
+export const addNgv = ngv =>
+  new Promise((resolve, reject) => useNgvs(async col => {
+    try {
+      const result = await col.updateOne({ userid: ngv.userid }, {
+        $set: ngv,
+      }, { upsert: true });
+      resolve(result);
+    } catch (e) {
+      reject(e);
+    }
+  }));
 
 export const computeStatByProject = async () =>
   new Promise((resolve, reject) => useAcceptors(async col => {
