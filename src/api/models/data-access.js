@@ -142,7 +142,9 @@ export const findAcceptors = async ({ text, year, project, projections, skip = 0
 
   const { find, count } = profileManager;
   try {
-    const result = await all([count(condition), find(condition)]);
+    const result = []//await all([count(condition), find(condition)]);
+    result[0] = await count(condition);
+    result[1] = await find(condition);
     console.log('result::::::::', result);
     return Promise.resolve({
       totalCount: result[0],
