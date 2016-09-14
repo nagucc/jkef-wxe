@@ -11,6 +11,7 @@ import list from './list';
 import editRecord from './edit-record';
 import zxjApply from './zxj-apply';
 import zxjApplyList from './zxj-apply-list';
+import ngv from './ngv';
 
 export default {
   path: '/acceptors',
@@ -24,6 +25,7 @@ export default {
     editRecord,
     zxjApply,
     zxjApplyList,
+    ngv,
   ],
   async action({ next }) {
     const component = await next();

@@ -63,11 +63,21 @@ export class RegistrationComponent extends React.Component {
       }
     };
     // 处理提交按钮的点击事件
-    const submit = values => action(values).then(acc => {
-      window.location = `/acceptors/detail/${acc._id}`;
-    }, result => {
-      alert(`操作失败：${JSON.stringify(result)}`); // eslint-disable-line no-alert
-    });
+    const submit = values => {
+      if (values.idCard.number.length !== 18) {
+        alert('请填写正确的18位身份证号');
+        return;
+      }
+      if (!values.name) {
+        alert('请填写姓名');
+        return;
+      }
+      action(values).then(() => {
+        alert('已登记成功，谢谢.\n 请关闭本页面');
+      }, result => {
+        alert(`操作失败：${JSON.stringify(result)}`); // eslint-disable-line no-alert
+      });
+    };
     // 返回组件
     return (
       <div className="progress">
@@ -94,9 +104,6 @@ export class RegistrationComponent extends React.Component {
                     }, {
                       value: '身份证',
                       label: '身份证',
-                    }, {
-                      value: '统一社会信用代码证',
-                      label: '统一社会信用代码证',
                     }]}
                       {...fields.idCard.type}
                       onChange={typeChanged}
