@@ -6,6 +6,8 @@ import { CellsTitle, CellHeader, CellBody,
   Form, FormCell, Input, Select, Button, Msg } from 'react-weui';
 import NeedSignup from '../../../components/NeedSignup';
 import CheckRoles from '../../../components/CheckRoles';
+import LoadingToast from '../../../components/LoadingToast';
+
 import { reduxForm } from 'redux-form';
 import * as registrationActions from '../../../actions/acceptors/registration';
 import * as authActions from '../../../actions/wxe-auth';
@@ -28,6 +30,10 @@ export class RegistrationComponent extends React.Component {
   static contextTypes = {
     setTitle: PropTypes.func.isRequired,
   };
+  constructor(props) {
+    super(props);
+    this.state = { showToast: false };
+  }
   async componentDidMount() {
     // 设置标题
     this.context.setTitle('填写成员信息');
@@ -72,7 +78,13 @@ export class RegistrationComponent extends React.Component {
         alert('请填写姓名');
         return;
       }
+      this.setState({
+        showToast: true,
+      });
       action(values).then(() => {
+        this.setState({
+          showToast: false,
+        });
         alert('已登记成功，谢谢.\n 请关闭本页面');
       }, result => {
         alert(`操作失败：${JSON.stringify(result)}`); // eslint-disable-line no-alert
@@ -178,6 +190,7 @@ export class RegistrationComponent extends React.Component {
             ) : null
           }
         </div>
+        <LoadingToast show={this.state.showToast} />
       </div>
     );
   }
