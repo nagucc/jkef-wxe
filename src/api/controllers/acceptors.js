@@ -58,6 +58,8 @@ export const list = async (req, res) => {
     });
     res.send({ ret: 0, data });
   } catch (e) {
+    console.log('Error ACCEDFDFD');
+    console.log(JSON.stringify(e));
     res.send({ ret: SERVER_FAILED, msg: e });
   }
 };
