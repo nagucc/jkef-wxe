@@ -131,11 +131,11 @@ export const findAcceptors = async ({ text, year, project, projections, skip = 0
       },
     });
   }
-  const { find, count } = acceptorManager;
   try {
+    console.log('start to find from acceptors');
     const result = []; //await all([count(condition), find(condition)]);
-    result[0] = await count(acceptorCondition);
-    result[1] = await find(acceptorCondition);
+    result[0] = await acceptorManager.count(acceptorCondition);
+    result[1] = await acceptorManager.find(acceptorCondition);
 
     // 如果有text参数，则需要从两个集合中取数据合并
     if (text) {
