@@ -7,7 +7,7 @@ import { findAcceptors, addAcceptor,
   findByIdCardNumber, findById, update,
   addEdu, removeEdu,
   addCareer, removeCareer,
-  addRecord, removeRecord, addNgv } from '../models/data-access';
+  addRecord, removeRecord } from '../models/data-access';
 
 import { getUserId } from 'wxe-auth-express';
 import { ensureAcceptorCanBeAdded,
@@ -58,7 +58,6 @@ export const list = async (req, res) => {
     });
     res.send({ ret: 0, data });
   } catch (e) {
-    console.log('Error ACCEDFDFD');
     console.log(JSON.stringify(e));
     res.send({ ret: SERVER_FAILED, msg: e });
   }
@@ -107,24 +106,6 @@ router.put('/add',
   ensureAcceptorCanBeAdded,
   addProfile,
   add,
-);
-
-const addNgvMiddleware = async (req, res) => {
-  try {
-    await addNgv({
-      ...req.body,
-      userid: req.user.userid,
-    });
-    res.send({ ret: 0 });
-  } catch (e) {
-    res.send({ ret: SERVER_FAILED, msg: e });
-  }
-};
-
-router.put('/add-ngv',
-  getUserId(),
-  getUser,
-  addNgvMiddleware,
 );
 
 export const ensureIdIsCorrect = (req, res, next) => {
@@ -321,8 +302,9 @@ export const putRecord = async (req, res) => {
   }
   const { project, amount, recommander, remark } = req.body;
   let { date } = req.body;
+  console.log('Date Req: ', date);
   if (isUndefined(date)) date = Date.now();
-  else date = Date.parse(date);
+  else date = new Date(date);
   const _id = new ObjectId();
   try {
     await addRecord(new ObjectId(id), {

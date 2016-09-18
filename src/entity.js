@@ -46,13 +46,13 @@ export default class EntityManager {
  * @return {Promise}       操作结果
  */
   find(query = {}, limit = 100, skip = 0) {
-    console.log('[EntityManager find]query::', query);
+    console.log('[EntityManager find]query::', JSON.stringify(query));
     return new Promise((resolve, reject) => useEntity(async col => {
       let result;
       try {
         const cursor = col.find(query).skip(skip).limit(limit);
         result = await cursor.toArray();
-        console.log('[EntityManager count]result.length::', result.length);
+        console.log('[EntityManager find]result.length::', result.length);
         resolve(result);
       } catch (e) {
         console.log('[EntityManager find]Error: ', e); // eslint-disable-line no-console
@@ -62,7 +62,7 @@ export default class EntityManager {
   }
 
   count(query = {}) {
-    console.log('[EntityManager count]query::', query);
+    console.log('[EntityManager count]query::', JSON.stringify(query));
     return new Promise((resolve, reject) => useEntity(async col => {
       try {
         const result = await col.count(query);

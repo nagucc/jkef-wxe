@@ -1,5 +1,5 @@
 import { useCollection } from 'mongo-use-collection';
-import { mongoUrl, showLog, profileCollection, profileManager } from '../../config';
+import { mongoUrl, showLog, profileCollection, profileManager, acceptorManager } from '../../config';
 
 const { all } = Promise;
 
@@ -11,19 +11,6 @@ export const useAcceptors = cb => useCollection(mongoUrl, ACCEPTORS_COLLECTION, 
 export const useStatByProject = cb => useCollection(mongoUrl, STAT_BY_PROJECT, cb);
 export const useStatByYear = cb => useCollection(mongoUrl, STAT_BY_YEAR, cb);
 const useProfiles = cb => useCollection(mongoUrl, profileCollection, cb);
-const useNgvs = cb => useCollection(mongoUrl, 'ngvs', cb);
-
-export const addNgv = ngv =>
-  new Promise((resolve, reject) => useNgvs(async col => {
-    try {
-      const result = await col.updateOne({ userid: ngv.userid }, {
-        $set: ngv,
-      }, { upsert: true });
-      resolve(result);
-    } catch (e) {
-      reject(e);
-    }
-  }));
 
 export const computeStatByProject = async () =>
   new Promise((resolve, reject) => useAcceptors(async col => {
@@ -125,23 +112,15 @@ export const getStatByYear = () =>
   });
 
 export const findAcceptors = async ({ text, year, project, projections, skip = 0, limit = 20 } = {}) => {
-  showLog && console.time('findAcceptors from Profiles');
-  let condition = { isAcceptor: true };
-  if (text) {
-    const reg = new RegExp(text);
-    condition = Object.assign(condition, {
-      $or: [{ name: reg }, { phone: reg }],
-    });
-  }
+  let acceptorCondition = {};
   if (project) {
-    condition = Object.assign(condition, {
+    acceptorCondition = Object.assign(acceptorCondition, {
       'records.project': project,
     });
   }
-
   if (year) {
     year = parseInt(year, 10); // eslint-disable-line
-    condition = Object.assign(condition, {
+    acceptorCondition = Object.assign(acceptorCondition, {
       records: {
         $elemMatch: {
           date: {
@@ -152,19 +131,31 @@ export const findAcceptors = async ({ text, year, project, projections, skip = 0
       },
     });
   }
-
-  const { find, count } = profileManager;
+  const { find, count } = acceptorManager;
   try {
-    const result = []//await all([count(condition), find(condition)]);
-    result[0] = await count(condition);
-    result[1] = await find(condition);
-    console.log('result::::::::', result);
+    const result = []; //await all([count(condition), find(condition)]);
+    result[0] = await count(acceptorCondition);
+    result[1] = await find(acceptorCondition);
+
+    // 如果有text参数，则需要从两个集合中取数据合并
+    if (text) {
+      let profileCondition = { isAcceptor: true };
+      const reg = new RegExp(text);
+      profileCondition = Object.assign(profileCondition, {
+        $or: [{ name: reg }, { phone: reg }],
+      });
+      const profileResult = await profileManager.find(profileCondition, Number.MAX_VALUE);
+      result[1] = result[1].filter(acceptorItem =>
+        profileResult.some(profileItem =>
+          profileItem._id.toString() === acceptorItem._id.toString()
+        ));
+      result[0] = result[1].length;
+    }
     return Promise.resolve({
       totalCount: result[0],
       data: result[1],
     });
   } catch (e) {
-    console.log('ERRRRR::', JSON.stringify(e));
     return Promise.reject(e);
   }
 };
