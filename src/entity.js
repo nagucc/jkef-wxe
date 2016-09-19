@@ -17,6 +17,7 @@ export default class EntityManager {
     this.collectionName = collectionName;
     this.mongoUrl = mongoUrl;
     useEntity = cb => useCollection(mongoUrl, collectionName, cb);
+    console.log('[EntityManager init]collectionName:', collectionName);
   }
 
   /**
