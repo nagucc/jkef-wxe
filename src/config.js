@@ -88,4 +88,4 @@ export const zxjApplyManager = new EntityManager('zxjApply', mongoUrl);
 
 export const acceptorManager = new EntityManager('acceptors', mongoUrl);
 
-export const profileManager = new EntityManager('profiles', mongoUrl);
+export const profileManager = new EntityManager(profileCollection, mongoUrl);
