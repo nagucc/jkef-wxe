@@ -1,5 +1,6 @@
 import { useCollection } from 'mongo-use-collection';
-import { mongoUrl, showLog, profileCollection, profileManager, acceptorManager } from '../../config';
+import { mongoUrl,
+  profileCollection, profileManager, acceptorManager } from '../../config';
 
 const { all } = Promise;
 
@@ -10,7 +11,6 @@ export const STAT_BY_YEAR = 'stat_by_year';
 export const useAcceptors = cb => useCollection(mongoUrl, ACCEPTORS_COLLECTION, cb);
 export const useStatByProject = cb => useCollection(mongoUrl, STAT_BY_PROJECT, cb);
 export const useStatByYear = cb => useCollection(mongoUrl, STAT_BY_YEAR, cb);
-const useProfiles = cb => useCollection(mongoUrl, profileCollection, cb);
 
 export const computeStatByProject = async () =>
   new Promise((resolve, reject) => useAcceptors(async col => {
