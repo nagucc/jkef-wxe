@@ -180,7 +180,7 @@ idCard.number作为唯一标识字段，添加或更新acceptor
 当idCard.number重复时，reject
 至存储核心数据，其他数据移到profile中
  */
-export const addAcceptor = async ({ _id, idCard } = {}) =>
+export const addAcceptor = async ({ _id, idCard, ...other } = {}) =>
   new Promise((resolve, reject) => {
     useAcceptors(async col => {
       if (!idCard || !idCard.type || !idCard.number) {
@@ -194,7 +194,7 @@ export const addAcceptor = async ({ _id, idCard } = {}) =>
           return;
         }
         const result = await col.updateOne({ 'idCard.number': idCard.number },
-          { _id, idCard },
+          { _id, idCard, ...other },
           { upsert: true });
         if (result.result.ok === 1) resolve(result.upsertedId._id);
         else reject(result.result);
