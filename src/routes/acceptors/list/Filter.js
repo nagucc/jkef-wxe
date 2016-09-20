@@ -46,7 +46,7 @@ class Filter extends React.Component {
             <FormCell select>
               <CellBody>
                 <Select {...year} >
-                  <option>年份</option>
+                  <option value="">年份</option>
                   <option>2006</option>
                   <option>2007</option>
                   <option>2008</option>
@@ -64,7 +64,7 @@ class Filter extends React.Component {
             <FormCell select>
               <CellBody>
                 <Select {...project} >
-                  <option>项目</option>
+                  <option value="">项目</option>
                   <option>奖学金</option>
                   <option>助学金</option>
                   <option>其他</option>
