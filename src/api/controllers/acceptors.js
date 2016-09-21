@@ -73,7 +73,7 @@ router.get('/list/:pageIndex',
 任何用户可自助申请成为受赠者，管理员则可以任意添加受赠者，并指定关联企业号账户。
  */
 export const add = async (req, res) => {
-  const { _id, idCard, ...other } = req.body;
+  const { _id, idCard, name, isMale, phone } = req.body;
   try {
     // 3.0 检查是否有相同的idCard.number存在
     const doc = await findByIdCardNumber(idCard.number);
@@ -88,10 +88,10 @@ export const add = async (req, res) => {
     //   userid = req.user.userid;
     // }
     // 3.1. 保存数据到数据库中
-    await addAcceptor({ _id, idCard });
+    await addAcceptor({ _id, idCard, name, phone, isMale });
     // 3.2 返回结果
     res.send({ ret: SUCCESS, data: {
-      idCard, _id, ...other,
+      idCard, _id, name, isMale, phone,
     } });
   } catch (e) {
     res.send({ ret: SERVER_FAILED, msg: e });
