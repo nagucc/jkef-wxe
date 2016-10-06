@@ -1,18 +1,10 @@
-/**
- * React Starter Kit (https://www.reactstarterkit.com/)
- *
- * Copyright © 2014-2016 Kriasoft, LLC. All rights reserved.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE.txt file in the root directory of this source tree.
- */
-
 /* eslint-disable max-len */
 /* jscs:disable maximumLineLength */
 import { MongoProfileMiddlewares } from 'nagu-profile';
 
 import { writeData as gsWriteData } from './gridstore';
 import EntityManager from './entity';
+import AcceptorManager from 'jkef-model';
 
 export const port = process.env.PORT || 3000;
 export const host = process.env.WEBSITE_HOSTNAME || `wx.nagu.cc:${port}`;
@@ -86,6 +78,6 @@ export const writeData = async (data, filename = null, options = {}) => {
 
 export const zxjApplyManager = new EntityManager('zxjApply', mongoUrl);
 
-export const acceptorManager = new EntityManager('acceptors', mongoUrl);
-
 export const profileManager = new EntityManager(profileCollection, mongoUrl);
+
+export const acceptorManager = new AcceptorManager(mongoUrl, 'acceptors');

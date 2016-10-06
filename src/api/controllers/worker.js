@@ -1,15 +1,15 @@
-import { computeStatByProject, computeStatByYear } from '../models/data-access';
+import { acceptorManager } from '../../config';
 
 const interval = 60000;
 
 const statByProject = async () => {
-  await computeStatByProject();
-  setTimeout(statByProject, interval);
+  await acceptorManager.computeStatByProject();
+  setTimeout(acceptorManager.computeStatByProject.bind(acceptorManager), interval);
 };
 
 const statByYear = async () => {
-  await computeStatByYear();
-  setTimeout(statByYear, interval);
+  await acceptorManager.computeStatByYear();
+  setTimeout(acceptorManager.computeStatByYear.bind(acceptorManager), interval);
 };
 
 statByProject();

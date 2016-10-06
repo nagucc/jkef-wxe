@@ -1,5 +1,4 @@
-import { findByIdCardNumber } from '../models/data-access';
-import { manageDpt, supervisorDpt, mongoUrl, profileCollection } from '../../config';
+import { manageDpt, supervisorDpt, mongoUrl, profileCollection, acceptorManager } from '../../config';
 import { UNKNOWN_ERROR, SERVER_FAILED, UNAUTHORIZED } from 'nagu-validates';
 import { MongoProfile } from 'nagu-profile';
 
@@ -72,7 +71,7 @@ export const ensureAcceptorCanBeAdded = async (req, res, next) => {
  */
 export const findAcceptorByIdCardNumber = getNum => async (req, res, next) => {
   const number = getNum(req, res);
-  const doc = await findByIdCardNumber(number);
+  const doc = await acceptorManager.findByIdCardNumber(number);
   if (doc) res.acceptor = doc;
 };
 

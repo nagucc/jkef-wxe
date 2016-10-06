@@ -3,11 +3,6 @@ eslint-disable no-param-reassign
  */
 
 import { Router } from 'express';
-import { findAcceptors, addAcceptor,
-  findByIdCardNumber, findById, update,
-  addEdu, removeEdu,
-  addCareer, removeCareer,
-  addRecord, removeRecord } from '../models/data-access';
 
 import { getUserId } from 'wxe-auth-express';
 import { ensureAcceptorCanBeAdded,
@@ -17,8 +12,8 @@ import emptyFunction from 'fbjs/lib/emptyFunction';
 import { ObjectId } from 'mongodb';
 import { SUCCESS, UNAUTHORIZED, UNKNOWN_ERROR,
   OBJECT_IS_NOT_FOUND, SERVER_FAILED } from '../../err-codes';
-import { profileMiddlewares as profile } from '../../config';
-
+import { profileMiddlewares as profile, acceptorManager } from '../../config';
+import { insert } from './acceptor-middlewares';
 
 const addProfile = profile.add(req => {
   const { name, isMale, phone } = req.body;
@@ -49,16 +44,15 @@ export const list = async (req, res) => {
     return;
   }
   try {
-    const data = await findAcceptors({
+    const data = await acceptorManager.listByRecord({
       project,
-      year,
+      year: parseInt(year, 10),
       text,
       limit: parseInt(pageSize, 10) || 20,
       skip: (parseInt(pageSize, 10) || 20) * pageIndex,
     });
     res.send({ ret: 0, data });
   } catch (e) {
-    console.log(JSON.stringify(e));
     res.send({ ret: SERVER_FAILED, msg: e });
   }
 };
@@ -73,10 +67,10 @@ router.get('/list/:pageIndex',
 任何用户可自助申请成为受赠者，管理员则可以任意添加受赠者，并指定关联企业号账户。
  */
 export const add = async (req, res) => {
-  const { _id, idCard, ...other } = req.body;
+  const { _id, idCard, name, isMale, phone } = req.body;
   try {
     // 3.0 检查是否有相同的idCard.number存在
-    const doc = await findByIdCardNumber(idCard.number);
+    const doc = await acceptorManager.findByIdCardNumber(idCard.number);
     if (doc) {
       res.send({ ret: -1, msg: `证件号码'${idCard.number}'已存在。` });
     }
@@ -88,24 +82,24 @@ export const add = async (req, res) => {
     //   userid = req.user.userid;
     // }
     // 3.1. 保存数据到数据库中
-    await addAcceptor({ _id, idCard });
+    // await addAcceptor({ _id, idCard, name, phone, isMale });
+    await acceptorManager.insert({ _id, idCard, name, phone, isMale });
     // 3.2 返回结果
     res.send({ ret: SUCCESS, data: {
-      idCard, _id, ...other,
+      idCard, _id, name, isMale, phone,
     } });
   } catch (e) {
     res.send({ ret: SERVER_FAILED, msg: e });
   }
 };
 
-
-
 router.put('/add',
   getUserId(),
   getUser,
   ensureAcceptorCanBeAdded,
   addProfile,
-  add,
+  // add,
+  insert(),
 );
 
 export const ensureIdIsCorrect = (req, res, next) => {
@@ -127,12 +121,11 @@ export const getDetail = (getId = req => (new ObjectId(req.params.id)),
   async (req, res) => {
     try {
       const id = getId(req, res);
-      let data = await findById(id);
+      let data = await acceptorManager.findById(id);
       if (!data) {
-        // res.send({ ret: OBJECT_IS_NOT_FOUND, msg: '给定的Id不存在' });
-        // return;
         const idCard = { type: '其他', number: res.profile._id.toString() };
-        await addAcceptor({ _id: res.profile._id, idCard });
+        // await addAcceptor({ _id: res.profile._id, idCard });
+        acceptorManager.insert({ ...res.profile, idCard })
         data = { idCard };
       }
       // 普通成员只能看自己的数据
@@ -163,7 +156,7 @@ export const onlyManagerAndOwnerCanDoNext = idGetter =>
   async (req, res, next = emptyFunction) => {
     const id = idGetter(req, res);
     try {
-      const data = await findById(id);
+      const data = await acceptorManager.findById(id);
       if (!isManager(req.user.department)
         && req.user.userid !== data.userid) {
         res.send({ ret: 401, msg: '无权操作' });
@@ -187,7 +180,7 @@ export const putEdu = (getId = req => (new ObjectId(req.params.id))) =>
     }
     try {
       const _id = getId(req, res);
-      await addEdu(_id, {
+      await acceptorManager.addEdu(_id, {
         name, degree,
         year: parseInt(year, 10),
       });
@@ -214,7 +207,7 @@ export const deleteEdu = (getId = req => (new ObjectId(req.params.id))) =>
     }
     try {
       const _id = getId(req, res);
-      await removeEdu(_id, {
+      await acceptorManager.removeEdu(_id, {
         name,
         year: parseInt(year, 10),
       });
@@ -242,7 +235,7 @@ export const putCareer = (getId = req => (new ObjectId(req.params.id))) =>
     }
     try {
       const _id = getId(req, res);
-      await addCareer(_id, {
+      await acceptorManager.addCareer(_id, {
         name,
         year: parseInt(year, 10),
       });
@@ -270,7 +263,7 @@ export const deleteCareer = (getId = req => (new ObjectId(req.params.id))) =>
     }
     try {
       const _id = getId(req, res);
-      await removeCareer(_id, {
+      await acceptorManager.removeCareer(_id, {
         name,
         year: parseInt(year, 10),
       });
@@ -307,7 +300,7 @@ export const putRecord = async (req, res) => {
   else date = new Date(date);
   const _id = new ObjectId();
   try {
-    await addRecord(new ObjectId(id), {
+    await acceptorManager.addRecord(new ObjectId(id), {
       project, date, amount, recommander, remark,
       _id,
     });
@@ -348,7 +341,7 @@ export const deleteRecord = async (req, res) => {
   }
   let result = { ret: SUCCESS };
   try {
-    await removeRecord(new ObjectId(id), new ObjectId(recordId));
+    await acceptorManager.removeRecord(new ObjectId(id), new ObjectId(recordId));
   } catch (e) {
     result = {
       ret: UNKNOWN_ERROR,
@@ -368,7 +361,7 @@ export const postUpdate = (getId = req => new ObjectId(req.params.id)) =>
   async (req, res) => {
     const _id = getId(req, res);
     try {
-      const doc = await update(_id, req.body);
+      const doc = await acceptorManager.updateById({ ...req.body, _id });
       if (doc.result.nModified > 0) {
         res.send({
           ret: SUCCESS,
