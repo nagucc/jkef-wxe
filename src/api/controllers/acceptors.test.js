@@ -27,7 +27,7 @@ const manager = {
 };
 let doc;
 describe('Acceptors Middlewares', () => {
-  it('add 非管理员添加数据时将userid修改为自己', async () => {
+  it('add 添加数据', async () => {
     const req = createRequest({
       user: normalUser,
       body: {
@@ -42,7 +42,6 @@ describe('Acceptors Middlewares', () => {
     const data = res._getData();
     expect(data.ret).eql(0);
     doc = data.data;
-    expect(doc.userid).eql(myUserid);
   });
 
   it('postUpdate 用户能更新自己的信息', async () => {
@@ -144,19 +143,6 @@ describe('Acceptors Middlewares', () => {
     expect(data.ret).eql(UNAUTHORIZED);
   });
 
-  it('getDetail 给定Id不存在时返回错误', async () => {
-    const req = createRequest({
-      user: {
-        department: [supervisorDpt + 999999],
-        userid: 88,
-      },
-    });
-    const res = createResponse();
-    await acceptors.getDetail(() => 'wrong id', () => true)(req, res);
-    const data = res._getData();
-    expect(data.ret).eql(OBJECT_IS_NOT_FOUND);
-  });
-
   it('list 普通用户不可查看列表', async () => {
     const req = createRequest({
       user: normalUser,
@@ -199,6 +185,7 @@ describe('Acceptors Middlewares', () => {
 
   const rawEdu = {
     name: '云南大学',
+    degree: '硕士',
     year: '2001',
   };
 
