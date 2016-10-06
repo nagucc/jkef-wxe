@@ -21,11 +21,10 @@ export const insert = (getData = req => req.body,
     try {
       const { _id, idCard: { type, number }, name, isMale, phone } = getData(req, res);
       // 3.0 检查是否有相同的idCard.number存在
-      const doc = await acceptorManager.findByIdCardNumber(number);
+      const doc = await acceptorManager.findOneByIdCardNumber(number);
       if (doc) {
         fail({ ret: -1, msg: `证件号码'${number}'已存在。` }, req, res, next);
       }
-
       // 3.1. 保存数据到数据库中
       const insertedId = await acceptorManager.insert({
         _id,

@@ -62,43 +62,11 @@ router.get('/list/:pageIndex',
   getProfileByUserId(),
   list);
 
-/*
-添加受赠者。
-任何用户可自助申请成为受赠者，管理员则可以任意添加受赠者，并指定关联企业号账户。
- */
-export const add = async (req, res) => {
-  const { _id, idCard, name, isMale, phone } = req.body;
-  try {
-    // 3.0 检查是否有相同的idCard.number存在
-    const doc = await acceptorManager.findByIdCardNumber(idCard.number);
-    if (doc) {
-      res.send({ ret: -1, msg: `证件号码'${idCard.number}'已存在。` });
-    }
-
-    // // 3.0-1 关联企业号账户
-    // let { userid } = req.body;
-    // // 3.0-1.1 如果当前用户不是管理员，只能关联自己的企业号账户，忽略body.userid参数
-    // if (!isManager(req.user.department)) {
-    //   userid = req.user.userid;
-    // }
-    // 3.1. 保存数据到数据库中
-    // await addAcceptor({ _id, idCard, name, phone, isMale });
-    await acceptorManager.insert({ _id, idCard, name, phone, isMale });
-    // 3.2 返回结果
-    res.send({ ret: SUCCESS, data: {
-      idCard, _id, name, isMale, phone,
-    } });
-  } catch (e) {
-    res.send({ ret: SERVER_FAILED, msg: e });
-  }
-};
-
 router.put('/add',
   getUserId(),
   getUser,
   ensureAcceptorCanBeAdded,
   addProfile,
-  // add,
   insert(),
 );
 
