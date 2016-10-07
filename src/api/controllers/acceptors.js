@@ -13,7 +13,7 @@ import { ObjectId } from 'mongodb';
 import { SUCCESS, UNAUTHORIZED, UNKNOWN_ERROR,
   OBJECT_IS_NOT_FOUND, SERVER_FAILED } from '../../err-codes';
 import { profileMiddlewares as profile, acceptorManager } from '../../config';
-import { insert } from './acceptor-middlewares';
+import { insert, getById } from './acceptor-middlewares';
 
 const addProfile = profile.add(req => {
   const { name, isMale, phone } = req.body;
@@ -80,45 +80,16 @@ export const ensureIdIsCorrect = (req, res, next) => {
   } else next();
 };
 
-
-export const getDetail = (getId = req => (new ObjectId(req.params.id)),
-  canUserRead = (req, res) => { // eslint-disable-line arrow-body-style
-    return isSupervisor(req.user.department)
-      || res.profile.userid === req.user.userid;
-  }) =>
-  async (req, res) => {
-    try {
-      const id = getId(req, res);
-      let data = await acceptorManager.findById(id);
-      if (!data) {
-        const idCard = { type: '其他', number: res.profile._id.toString() };
-        // await addAcceptor({ _id: res.profile._id, idCard });
-        acceptorManager.insert({ ...res.profile, idCard })
-        data = { idCard };
-      }
-      // 普通成员只能看自己的数据
-      if (canUserRead(req, res)) {
-        res.send({
-          ret: SUCCESS,
-          data: {
-            ...data,
-            ...res.profile,
-          },
-        });
-      } else res.send({ ret: UNAUTHORIZED, msg: '无权查看' });
-    } catch (e) {
-      res.send({
-        ret: SERVER_FAILED,
-        msg: e,
-      });
-    }
-  };
-
 router.get('/detail/:id',
   getUserId(),
   getUser,
   getProfile,
-  getDetail(req => (new ObjectId(req.params.id))));
+  getById(req => (new ObjectId(req.params.id)),
+    (acceptor, req, res) => (
+      isSupervisor(req.user.department)
+        || res.profile.userid === req.user.userid
+    )
+  ));
 
 export const onlyManagerAndOwnerCanDoNext = idGetter =>
   async (req, res, next = emptyFunction) => {
