@@ -81,3 +81,6 @@ export const zxjApplyManager = new EntityManager('zxjApply', mongoUrl);
 export const profileManager = new EntityManager(profileCollection, mongoUrl);
 
 export const acceptorManager = new AcceptorManager(mongoUrl, 'acceptors');
+
+// 用于受赠者统计的cron字符串,默认为2分钟统计一次。
+export const statCron = process.env.ACCEPTORS_STAT_CRON || '00 */2 * * * *';
