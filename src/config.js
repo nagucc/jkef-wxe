@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 /* jscs:disable maximumLineLength */
-import { MongoProfileMiddlewares } from 'nagu-profile';
+import { MongoProfileMiddlewares, MongoProfile } from 'nagu-profile';
 
 import { writeData as gsWriteData } from './gridstore';
 import EntityManager from './entity';
@@ -17,31 +17,6 @@ export const analytics = {
   google: { trackingId: process.env.GOOGLE_TRACKING_ID || 'UA-XXXXX-X' },
 
 };
-
-export const auth = {
-
-  jwt: { secret: process.env.JWT_SECRET || 'React Starter Kit' },
-
-  // https://developers.facebook.com/
-  facebook: {
-    id: process.env.FACEBOOK_APP_ID || '186244551745631',
-    secret: process.env.FACEBOOK_APP_SECRET || 'a970ae3240ab4b9b8aae0f9f0661c6fc',
-  },
-
-  // https://cloud.google.com/console/project
-  google: {
-    id: process.env.GOOGLE_CLIENT_ID || '251410730550-ahcg0ou5mgfhl8hlui1urru7jn5s12km.apps.googleusercontent.com',
-    secret: process.env.GOOGLE_CLIENT_SECRET || 'Y8yR9yZAhm9jQ8FKAL8QIEcd',
-  },
-
-  // https://apps.twitter.com/
-  twitter: {
-    key: process.env.TWITTER_CONSUMER_KEY || 'Ie20AZvLJI2lQD5Dsgxgjauns',
-    secret: process.env.TWITTER_CONSUMER_SECRET || 'KTZ6cxoKnEakQCeSpZlaUCJWGAlTEBJj0y2EMkUBujA7zWSvaQ',
-  },
-
-};
-
 
 // Mongodb 数据库服务器Url
 export const mongoUrl = process.env.MONGO_URL || 'mongodb://localhost/jkef';
@@ -62,7 +37,7 @@ export const wxentConfig = {
 //   wxentConfig.agentId, redisConfig.host, redisConfig.port);
 
 export const manageDpt = parseInt(process.env.MANAGER_DEPT || '13', 10);
-export const supervisorDpt = parseInt(process.env.SUPERVISOR_DEPT || '13', 10);
+export const supervisorDpt = parseInt(process.env.SUPERVISOR_DEPT || '14', 10);
 
 export const showLog = Boolean(process.env.SHOW_LOG) || true;
 
@@ -79,6 +54,8 @@ export const writeData = async (data, filename = null, options = {}) => {
 export const zxjApplyManager = new EntityManager('zxjApply', mongoUrl);
 
 export const profileManager = new EntityManager(profileCollection, mongoUrl);
+
+export const profileManager2 = new MongoProfile(mongoUrl, profileCollection);
 
 export const acceptorManager = new AcceptorManager(mongoUrl, 'acceptors');
 

@@ -6,7 +6,7 @@ export const getJson = async(url, options) => {
 };
 
 export const findAcceptorsByProject = async (project, pageIndex = 0) => {
-  const result = await getJson(`/api/acceptors/list/${pageIndex}?project=${encodeURIComponent(project)}`);
+  const result = await getJson(`/api/acceptors/list/${pageIndex}?project=${encodeURIComponent(project)}`); // eslint-disable-line max-len
   if (result.ret === 0) return result.data;
   throw new Error(`find acceptors by project failed:${JSON.stringify(result.msg)}`);
 };

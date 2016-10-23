@@ -5,91 +5,116 @@ eslint-disable no-param-reassign
 import { Router } from 'express';
 
 import { getUserId } from 'wxe-auth-express';
-import { ensureAcceptorCanBeAdded,
-  isManager, isSupervisor, isUndefined,
-  getUser, getProfileByUserId } from './middlewares';
+import { isUndefined, getUser } from './middlewares';
 import emptyFunction from 'fbjs/lib/emptyFunction';
 import { ObjectId } from 'mongodb';
 import { SUCCESS, UNAUTHORIZED, UNKNOWN_ERROR,
-  OBJECT_IS_NOT_FOUND, SERVER_FAILED } from '../../err-codes';
-import { profileMiddlewares as profile, acceptorManager } from '../../config';
-import { insert, getById } from './acceptor-middlewares';
+  OBJECT_IS_NOT_FOUND, SERVER_FAILED,
+  OBJECT_ALREADY_EXISTS } from 'nagu-validates';
+import { profileMiddlewares as profile, acceptorManager,
+  manageDpt, supervisorDpt } from '../../config';
+import { insert, getById, findOneByIdCardNumber, listByRecord,
+  updateById } from './acceptor-middlewares';
 
-const addProfile = profile.add(req => {
-  const { name, isMale, phone } = req.body;
-  return {
-    name, phone,
-    isMale: isMale === 'true',
-    isAcceptor: true,
-  };
-});
-const getProfile = profile.get(req => (new ObjectId(req.params.id)));
-const updateProfile = profile.update(req => (new ObjectId(req.params.id)), req => {
-  const { name, isMale, phone } = req.body;
-  let userid = req.body.userid;
-  if (!isManager(req.user.department)) userid = req.user.userid;
-  return { name, isMale, phone, userid };
-});
+const tryRun = func => {
+  try {
+    return func();
+  } catch (e) {
+    return null;
+  }
+};
 
 const router = new Router();
 
-
-export const list = async (req, res) => {
-  const { pageIndex } = req.params;
-  const { year, text, pageSize, project } = req.query;
-  // 只有Supervisor或Manager可以查看列表
-  if (!isSupervisor(req.user.department)
-    && !isManager(req.user.department)) {
-    res.send({ ret: UNAUTHORIZED, msg: '您不能查看受赠者列表' });
-    return;
-  }
-  try {
-    const data = await acceptorManager.listByRecord({
-      project,
-      year: parseInt(year, 10),
-      text,
-      limit: parseInt(pageSize, 10) || 20,
-      skip: (parseInt(pageSize, 10) || 20) * pageIndex,
-    });
-    res.send({ ret: 0, data });
-  } catch (e) {
-    res.send({ ret: SERVER_FAILED, msg: e });
-  }
-};
 router.get('/list/:pageIndex',
   getUserId(),
-  // getUser,
-  getProfileByUserId(),
-  list);
+  // 判断是否是Supervisor或Manager，只有这两种角色可以查看列表
+  profile.isSupervisorOrManager(
+    req => req.user.userid,
+    manageDpt,
+    supervisorDpt,
+    (isSupervisorOrManager, req, res, next) => {
+      if (isSupervisorOrManager) next();
+      else res.send({ ret: UNAUTHORIZED });
+    },
+  ),
+  // 获取数据
+  listByRecord(
+    req => ({
+      ...req.query,
+      pageIndex: parseInt(req.params.pageIndex, 10),
+      pageSize: parseInt(req.query.pageSize, 10),
+    }),
+    (data, req, res) => res.send({ ret: SUCCESS, data }),
+  ),
+);
 
 router.put('/add',
   getUserId(),
-  getUser,
-  ensureAcceptorCanBeAdded,
-  addProfile,
-  insert(),
+  // 检查证件号码是否已在
+  findOneByIdCardNumber(
+    req => req.body.idCard ? req.body.idCard.number : null,
+    (acceptor, req, res, next) => {
+      if (acceptor) {
+        res.send({
+          ret: OBJECT_ALREADY_EXISTS,
+          msg: `证件号码为${acceptor.idCard.number}的数据已存在`,
+        });
+      } else next();
+    }
+  ),
+  // 检查当前用户是否是管理员，以确定userid的值
+  profile.isManager(
+    req => req.user.userid,
+    manageDpt,
+    (isManager, req, res, next) => {
+      if (!isManager) {
+        req.body.userid = req.user.userid; // 如果用户不是管理员，则只能取当前用户自己的userid
+      }
+      next();
+    },
+  ),
+  // 在profile中添加数据
+  profile.add(
+    req => {
+      // 只需要添加以下字段，其他字段忽略。
+      const { name, isMale, phone, userid } = req.body;
+      return {
+        name, phone, userid,
+        isMale: isMale === 'true',
+        isAcceptor: true,
+      };
+    },
+    (prof, req, res, next) => {
+      req.profile = prof;
+      next();
+    }
+  ),
+  // 在acceptor中添加数据
+  insert(
+    // acceptor中的数据包括idCard和profile中的所有字段
+    req => ({ idCard: req.body.idCard, ...req.profile }),
+    (data, req, res) => res.send({ ret: SUCCESS, data }),
+  ),
 );
-
-export const ensureIdIsCorrect = (req, res, next) => {
-  const id = req.params.id;
-  if (!id || id === 'undefined') {
-    res.send({
-      ret: OBJECT_IS_NOT_FOUND,
-      msg: '所给Id不正确',
-    });
-  } else next();
-};
 
 router.get('/detail/:id',
   getUserId(),
-  getUser,
-  getProfile,
-  getById(req => (new ObjectId(req.params.id)),
-    (acceptor, req, res) => (
-      isSupervisor(req.user.department)
-        || res.profile.userid === req.user.userid
-    )
-  ));
+  // 判断用户是否具有查看权限。拥有者、管理者可以查看
+  profile.isOwnerOrSupervisorOrManager(
+    req => tryRun(() => new ObjectId(req.params.id)),
+    req => req.user.userid,
+    manageDpt,
+    supervisorDpt,
+    (result, req, res, next) => {
+      if (result) next();
+      else res.send({ ret: UNAUTHORIZED });
+    },
+  ),
+  getById(
+    req => (new ObjectId(req.params.id)),
+  ),
+);
 
 export const onlyManagerAndOwnerCanDoNext = idGetter =>
   async (req, res, next = emptyFunction) => {
@@ -319,10 +344,33 @@ export const postUpdate = (getId = req => new ObjectId(req.params.id)) =>
 
 router.post('/:id',
   getUserId(),
-  getUser,
-  ensureAcceptorCanBeAdded,
-  onlyManagerAndOwnerCanDoNext(req => new ObjectId(req.params.id)),
-  ensureIdIsCorrect,
-  updateProfile,
-  postUpdate());
+  // 只有拥有者或Manager才能执行更新
+  profile.isOwnerOrManager(
+    req => tryRun(() => new ObjectId(req.params.id)),
+    req => req.user.userid,
+    manageDpt,
+    (isOwnerOrManager, req, res, next) => {
+      if (isOwnerOrManager) next();
+      else res.send({ ret: UNAUTHORIZED });
+    }
+  ),
+  // 只有Manager才能更新userid和name字段
+  profile.isManager(
+    req => req.user.userid,
+    manageDpt,
+    (isManager, req, res, next) => {
+      if(!isManager) {
+        delete req.body.userid;
+        delete req.body.name;
+      }
+      next();
+    },
+  ),
+  // 执行更新操作
+  updateById(
+    req => tryRun(() => new ObjectId(req.params.id)),
+    req => req.body,
+    (result, req, res) => res.send({ ret: SUCCESS }),
+  ),
+);
 export default router;

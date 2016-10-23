@@ -1,7 +1,6 @@
 import { connect } from 'react-redux';
 import React, { PropTypes } from 'react';
-import { Cells, Cell, CellFooter, CellBody,
-  Panel, PanelHeader, PanelBody,
+import { Panel, PanelHeader, PanelBody,
   MediaBox, MediaBoxTitle, MediaBoxDescription, MediaBoxInfo, Msg } from 'react-weui';
 import NeedSignup from '../../../components/NeedSignup';
 import * as actions from '../../../actions/cee/list';

@@ -44,5 +44,8 @@ export const OBJECT_IS_NOT_FOUND = 1009;
 // 对象未定义或为空
 export const OBJECT_IS_UNDEFINED_OR_NULL = 1010;
 
+// 对象已存在
+export const OBJECT_ALREADY_EXISTS = 1011;
+
 // 未知错误
 export const UNKNOWN_ERROR = -1;

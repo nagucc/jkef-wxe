@@ -3,7 +3,7 @@ import api from 'wxent-api-redis';
 import { signin, getme, getUserId } from 'wxe-auth-express';
 import { wxentConfig as wxcfg, redisConfig as redis,
   host } from '../../config';
-import { getUser as getUser2, getProfileByUserId, isManager, isSupervisor } from './middlewares';
+import { getProfileByUserId, isManager, isSupervisor } from './middlewares';
 
 const router = new Router();
 const wxapi = api(wxcfg.corpId, wxcfg.secret, wxcfg.agentId, redis.host, redis.port);
