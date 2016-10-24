@@ -14,7 +14,7 @@ import { SUCCESS, UNAUTHORIZED, UNKNOWN_ERROR,
 import { profileMiddlewares as profile, acceptorManager,
   manageDpt, supervisorDpt } from '../../config';
 import { insert, getById, findOneByIdCardNumber, listByRecord,
-  updateById } from './acceptor-middlewares';
+  updateById, addEdu } from './acceptor-middlewares';
 
 const tryRun = func => {
   try {
@@ -132,32 +132,24 @@ export const onlyManagerAndOwnerCanDoNext = idGetter =>
     }
   };
 
-export const putEdu = (getId = req => (new ObjectId(req.params.id))) =>
-  async (req, res) => {
-    const { name, year, degree } = req.body;
-    if (!name
-      || !year
-      || !degree
-      || isNaN(parseInt(year, 10))) {
-      res.send({ ret: -1, msg: '必须提供学校名称、层次和入学年份，入学年份必须是数字' });
-      return;
-    }
-    try {
-      const _id = getId(req, res);
-      await acceptorManager.addEdu(_id, {
-        name, degree,
-        year: parseInt(year, 10),
-      });
-      res.send({ ret: 0 });
-    } catch (e) {
-      res.send({ ret: -1, msg: e });
-    }
-  };
 router.put('/edu/:id',
   getUserId(),
-  getUser,
-  onlyManagerAndOwnerCanDoNext(req => new ObjectId(req.params.id)),
-  putEdu(),
+  profile.isOwnerOrManager(
+    req => tryRun(() => new ObjectId(req.params.id)),
+    req => req.user.userid,
+    manageDpt,
+    (isOwnerOrManager, req, res, next) =>
+      isOwnerOrManager ? next() : res.send({ ret: UNAUTHORIZED }),
+  ),
+   addEdu(
+     req => tryRun(() => new ObjectId(req.params.id)),
+     req => tryRun(() => ({
+       name: req.body.name,
+       year: parseInt(req.body.year, 10),
+       degree: req.body.degree,
+     })),
+     (result, req, res) => res.send({ ret: SUCCESS }),
+   ),
 );
 
 export const deleteEdu = (getId = req => (new ObjectId(req.params.id))) =>

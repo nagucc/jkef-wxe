@@ -148,27 +148,75 @@ export const updateById = (
   }
 };
 
-// // 添加教育经历
-// export const addEdu = (
-//   // 定义如何获取数据的_id，默认使用url中的:id参数
-//   getId = req => (new ObjectId(req.params.id))
-// ) =>async (req, res) => {
-//   const { name, year, degree } = req.body;
-//   if (!name
-//     || !year
-//     || !degree
-//     || isNaN(parseInt(year, 10))) {
-//     res.send({ ret: -1, msg: '必须提供学校名称、层次和入学年份，入学年份必须是数字' });
-//     return;
-//   }
-//   try {
-//     const _id = getId(req, res);
-//     await acceptorManager.addEdu(_id, {
-//       name, degree,
-//       year: parseInt(year, 10),
-//     });
-//     res.send({ ret: 0 });
-//   } catch (e) {
-//     res.send({ ret: -1, msg: e });
-//   }
-// };
+// 添加教育经历
+export const addEdu = (
+  // 定义如何获取数据的_id，默认使用url中的:id参数
+  getId = req => (new ObjectId(req.params.id)),
+  // 获取教育经历信息
+  getEdu = req => req.body,
+  // 定义获取数据之后如何操作，默认为返回成功代码及数据
+  success = (data, req, res, next) => next(),
+  // 定义获取数据失败时如何操作，默认为返回失败代码及描述
+  fail = (e, req, res) => res.send(e),
+) => async (req, res, next) => {
+  try {
+    const id = getId(req, res);
+    if (!id) {
+      fail({ ret: OBJECT_IS_UNDEFINED_OR_NULL, msg: 'id不能为空' }, req, res, next);
+      return;
+    }
+    const edu = getEdu(req, res);
+    if (!edu
+      || !edu.name
+      || !edu.degree
+      || !edu.year
+      || !Number.isInteger(edu.year)
+    ) {
+      fail({
+        ret: OBJECT_IS_UNDEFINED_OR_NULL,
+        msg: '必须提供学校名称、层次和入学年份，入学年份必须是数字',
+      }, req, res, next);
+      return;
+    }
+    const result = await acceptorManager.addEdu(id, edu);
+    success(result, req, res, next);
+  } catch (msg) {
+    fail({ ret: SERVER_FAILED, msg });
+  }
+};
+
+// 添加教育经历
+export const removeEdu = (
+  // 定义如何获取数据的_id，默认使用url中的:id参数
+  getId = req => (new ObjectId(req.params.id)),
+  // 获取教育经历信息
+  getEdu = req => req.body,
+  // 定义获取数据之后如何操作，默认为返回成功代码及数据
+  success = (data, req, res, next) => next(),
+  // 定义获取数据失败时如何操作，默认为返回失败代码及描述
+  fail = (e, req, res) => res.send(e),
+) => async (req, res, next) => {
+  try {
+    const id = getId(req, res);
+    if (!id) {
+      fail({ ret: OBJECT_IS_UNDEFINED_OR_NULL, msg: 'id不能为空' }, req, res, next);
+      return;
+    }
+    const edu = getEdu(req, res);
+    if (!edu
+      || !edu.name
+      || !edu.year
+      || !Number.isInteger(edu.year)
+    ) {
+      fail({
+        ret: OBJECT_IS_UNDEFINED_OR_NULL,
+        msg: '必须提供学校名称和入学年份，入学年份必须是数字',
+      }, req, res, next);
+      return;
+    }
+    const result = await acceptorManager.removeEdu(id, edu);
+    success(result, req, res, next);
+  } catch (msg) {
+    fail({ ret: SERVER_FAILED, msg });
+  }
+};

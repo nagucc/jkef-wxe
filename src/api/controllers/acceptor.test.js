@@ -21,8 +21,15 @@ const getUserIdCookie = async (userName = Math.random()) => {
 const testUser = Math.random().toString();
 const testManager = Math.random().toString();
 const testSupervisor = Math.random().toString();
-
+const rawAcceptor = {
+  name: 'tst',
+  isMale: true,
+  phone: '14356785443',
+  userid: testUser,
+  idCard: { type: 'test', number: Math.random() },
+};
 describe('Acceptor Middlewares', () => {
+  // 预先设定Manager和Supervisor
   before(async () => {
     await profileManager.add({
       name: 'testManager',
@@ -35,19 +42,16 @@ describe('Acceptor Middlewares', () => {
       roles: [supervisorDpt],
     });
   });
+  // 测试结束后删除Manager和Supervisor
   after(async () => {
     const manager = await profileManager.getByUserId(testManager);
     await profileManager.remove(manager._id);
     const supervisor = await profileManager.getByUserId(testSupervisor);
     await profileManager.remove(supervisor._id);
+    const user = await profileManager.getByUserId(testUser);
+    await profileManager.remove(user._id);
   });
-  const rawAcceptor = {
-    name: 'tst',
-    isMale: true,
-    phone: '14356785443',
-    userid: testUser,
-    idCard: { type: 'test', number: Math.random() },
-  };
+
   describe('PUT /add', () => {
     it('未登录，返回错误代码', async () => {
       const res = await agent.put('/api/acceptors/add').send(rawAcceptor);
@@ -158,6 +162,7 @@ describe('Acceptor Middlewares', () => {
       expect(res.body.ret).to.eql(item.ret);
     }));
   });
+  // 更新
   describe('POST /:id', () => {
     it('未登录时，无法操作', async () => {
       const res = await agent.post(`/api/acceptors/${rawAcceptor._id}`)
@@ -205,6 +210,147 @@ describe('Acceptor Middlewares', () => {
       expect(res.body.data.name).to.eql('updated');
       expect(res.body.data.userid).to.eql('updated');
       expect(res.body.data.other).to.eql('updated');
+    });
+  });
+  // 添加教育经历
+  describe('PUT /edu/:id', () => {
+    let url;
+    before(() => (url = `/api/acceptors/edu/${rawAcceptor._id}`));
+    it('未登录时，无法操作', async () => {
+      const res = await agent.put(url)
+        .set('Cookie', null);
+      expect(res.body.ret).to.eql(UNKNOWN_ERROR);
+    });
+    it('普通用户没有权限更新他人教育经历', async () => {
+      const cookie = await getUserIdCookie();
+      const res = await agent.put(url)
+        .set('Cookie', cookie);
+      expect(res.body.ret).to.eql(UNAUTHORIZED);
+    });
+    it('Supervisor没有权限更新他人教育经历', async () => {
+      const cookie = await getUserIdCookie(testSupervisor);
+      const res = await agent.put(url)
+        .set('Cookie', cookie);
+      expect(res.body.ret).to.eql(UNAUTHORIZED);
+    });
+    // 错误处理
+    [
+      { // 无法获取ProfileId
+        getId: () => null,
+        ret: OBJECT_IS_UNDEFINED_OR_NULL,
+      }, {
+        getId: () => rawAcceptor._id,
+        edu: null,
+        ret: OBJECT_IS_UNDEFINED_OR_NULL,
+      }, {
+        getId: () => rawAcceptor._id,
+        edu: {},
+        ret: OBJECT_IS_UNDEFINED_OR_NULL,
+      }, {
+        getId: () => rawAcceptor._id,
+        edu: { name: 'eduname' },
+        ret: OBJECT_IS_UNDEFINED_OR_NULL,
+      }, {
+        getId: () => rawAcceptor._id,
+        edu: { name: 'eduname', degree: 'edu' },
+        ret: OBJECT_IS_UNDEFINED_OR_NULL,
+      }, {
+        getId: () => rawAcceptor._id,
+        edu: { name: 'eduname', degree: 'edu', year: 'ye' },
+        ret: OBJECT_IS_UNDEFINED_OR_NULL,
+      },
+    ].map(item =>
+      it(`错误处理，返回码: ${item.ret}`, async () => {
+        const cookie = await getUserIdCookie(testUser);
+        const res = await agent.put(url)
+          .set('Cookie', cookie)
+          .send(item.edu);
+        expect(res.body.ret).to.eql(item.ret);
+      }));
+    it('普通用户可以更新自己的教育经历', async () => {
+      const cookie = await getUserIdCookie(testUser);
+      const edu = {
+        name: 'updated',
+        degree: 'updated',
+        year: 1944,
+      };
+      let res = await agent.put(url)
+        .set('Cookie', cookie)
+        .send(edu);
+      expect(res.body.ret).to.eql(SUCCESS);
+      res = await agent.get(`/api/acceptors/detail/${rawAcceptor._id}`);
+      expect(res.body.data.eduHistory).to.be.ok;
+      expect(res.body.data.eduHistory.length).to.eql(1);
+      expect(res.body.data.eduHistory[0]).to.eql(edu);
+    });
+    it('Manager可以更新他人的教育经历', async () => {
+      const cookie = await getUserIdCookie(testManager);
+      const edu = {
+        name: 'updated2',
+        degree: 'updated2',
+        year: 1945,
+      };
+      let res = await agent.put(url)
+        .set('Cookie', cookie)
+        .send(edu);
+      expect(res.body.ret).to.eql(SUCCESS);
+      res = await agent.get(`/api/acceptors/detail/${rawAcceptor._id}`);
+      expect(res.body.data.eduHistory).to.be.ok;
+      expect(res.body.data.eduHistory.length).to.eql(2);
+      expect(res.body.data.eduHistory[1]).to.eql(edu);
+    });
+  });
+
+  // 删除教育经历
+  describe('DELETE /edu/:id', () => {
+    let url;
+    before(() => (url = `/api/acceptors/edu/${rawAcceptor._id}`));
+    it('未登录时，无法操作', async () => {
+      const res = await agent.delete(url)
+        .set('Cookie', null);
+      expect(res.body.ret).to.eql(UNKNOWN_ERROR);
+    });
+    it('普通用户没有权限更新他人教育经历', async () => {
+      const cookie = await getUserIdCookie();
+      const res = await agent.delete(url)
+        .set('Cookie', cookie);
+      expect(res.body.ret).to.eql(UNAUTHORIZED);
+    });
+  });
+
+  // 添加工作经历
+  describe('PUT /career/:id', () => {
+    it('未登录时，无法操作', async () => {
+      const res = await agent.put(`/api/acceptors/career/${rawAcceptor._id}`)
+        .set('Cookie', null);
+      expect(res.body.ret).to.eql(UNKNOWN_ERROR);
+    });
+  });
+
+  // 删除工作经历
+  describe('DELETE /career/:id', () => {
+    it('未登录时，无法操作', async () => {
+      const res = await agent.delete(`/api/acceptors/career/${rawAcceptor._id}`)
+        .set('Cookie', null);
+      expect(res.body.ret).to.eql(UNKNOWN_ERROR);
+    });
+  });
+
+  // 添加奖助记录
+  describe('PUT /record/:id', () => {
+    it('未登录时，无法操作', async () => {
+      const res = await agent.put(`/api/acceptors/record/${rawAcceptor._id}`)
+        .set('Cookie', null);
+      expect(res.body.ret).to.eql(UNKNOWN_ERROR);
+    });
+  });
+
+  // 删除奖助记录
+  describe('DELETE /record/:id', () => {
+    it('未登录时，无法操作', async () => {
+      const res = await agent.delete(`/api/acceptors/record/${rawAcceptor._id}/recordId`)
+        .set('Cookie', null);
+      expect(res.body.ret).to.eql(UNKNOWN_ERROR);
     });
   });
 });
