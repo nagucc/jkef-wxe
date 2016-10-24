@@ -15,7 +15,7 @@ import { profileMiddlewares as profile, acceptorManager,
   manageDpt, supervisorDpt } from '../../config';
 import { insert, getById, findOneByIdCardNumber, listByRecord,
   updateById, addEdu, removeEdu,
-  addCareer } from './acceptor-middlewares';
+  addCareer, removeCareer } from './acceptor-middlewares';
 
 const tryRun = func => {
   try {
@@ -172,31 +172,8 @@ router.delete('/edu/:id',
   ),
 );
 
-export const putCareer = (getId = req => (new ObjectId(req.params.id))) =>
-  async (req, res) => {
-    const { name, year } = req.body;
-    if (!name
-      || !year
-      || isNaN(parseInt(year, 10))) {
-      res.send({ ret: -1, msg: '必须提供公司名称和入职年份，入职年份必须是数字' });
-      return;
-    }
-    try {
-      const _id = getId(req, res);
-      await acceptorManager.addCareer(_id, {
-        name,
-        year: parseInt(year, 10),
-      });
-      res.send({ ret: 0 });
-    } catch (e) {
-      res.send({ ret: -1, msg: e });
-    }
-  };
-
 router.put('/career/:id',
   getUserId(),
-  // getUser,
-  // onlyManagerAndOwnerCanDoNext(req => new ObjectId(req.params.id)),
   profile.isOwnerOrManager(
     req => tryRun(() => new ObjectId(req.params.id)),
     req => req.user.userid,
@@ -204,7 +181,6 @@ router.put('/career/:id',
     (isOwnerOrManager, req, res, next) =>
       isOwnerOrManager ? next() : res.send({ ret: UNAUTHORIZED }),
   ),
-  // putCareer(),
   addCareer(
     req => tryRun(() => new ObjectId(req.params.id)),
     req => tryRun(() => ({
@@ -215,32 +191,23 @@ router.put('/career/:id',
   ),
 );
 
-export const deleteCareer = (getId = req => (new ObjectId(req.params.id))) =>
-  async (req, res) => {
-    const { name, year } = req.body;
-    if (!name
-      || !year
-      || isNaN(parseInt(year, 10))) {
-      res.send({ ret: -1, msg: '必须提供公司名称和入职年份，入职年份必须是数字' });
-      return;
-    }
-    try {
-      const _id = getId(req, res);
-      await acceptorManager.removeCareer(_id, {
-        name,
-        year: parseInt(year, 10),
-      });
-      res.send({ ret: 0 });
-    } catch (e) {
-      res.send({ ret: -1, msg: e });
-    }
-  };
-
 router.delete('/career/:id',
   getUserId(),
-  getUser,
-  onlyManagerAndOwnerCanDoNext(req => new ObjectId(req.params.id)),
-  deleteCareer(),
+  profile.isOwnerOrManager(
+    req => tryRun(() => new ObjectId(req.params.id)),
+    req => req.user.userid,
+    manageDpt,
+    (isOwnerOrManager, req, res, next) =>
+      isOwnerOrManager ? next() : res.send({ ret: UNAUTHORIZED }),
+  ),
+  removeCareer(
+    req => tryRun(() => new ObjectId(req.params.id)),
+    req => tryRun(() => ({
+      name: req.body.name,
+      year: parseInt(req.body.year, 10),
+    })),
+    (result, req, res) => res.send({ ret: SUCCESS }),
+  ),
 );
 
 export const onlyManagerCanDoNext = (req, res, next) => {
