@@ -384,10 +384,88 @@ describe('Acceptor Middlewares', () => {
 
   // 添加工作经历
   describe('PUT /career/:id', () => {
+    let url;
+    before(() => (url = `/api/acceptors/career/${rawAcceptor._id}`));
     it('未登录时，无法操作', async () => {
-      const res = await agent.put(`/api/acceptors/career/${rawAcceptor._id}`)
+      const res = await agent.put(url)
         .set('Cookie', null);
       expect(res.body.ret).to.eql(UNKNOWN_ERROR);
+    });
+    it('普通用户没有权限添加他人工作经历', async () => {
+      const cookie = await getUserIdCookie();
+      const res = await agent.put(url)
+        .set('Cookie', cookie);
+      expect(res.body.ret).to.eql(UNAUTHORIZED);
+    });
+    it('Supervisor没有权限添加他人教育经历', async () => {
+      const cookie = await getUserIdCookie(testSupervisor);
+      const res = await agent.put(url)
+        .set('Cookie', cookie);
+      expect(res.body.ret).to.eql(UNAUTHORIZED);
+    });
+    // 错误处理
+    [
+      { // 无法获取ProfileId
+        getId: () => null,
+        ret: OBJECT_IS_UNDEFINED_OR_NULL,
+      }, {
+        getId: () => rawAcceptor._id,
+        edu: null,
+        ret: OBJECT_IS_UNDEFINED_OR_NULL,
+      }, {
+        getId: () => rawAcceptor._id,
+        edu: {},
+        ret: OBJECT_IS_UNDEFINED_OR_NULL,
+      }, {
+        getId: () => rawAcceptor._id,
+        edu: { name: 'eduname' },
+        ret: OBJECT_IS_UNDEFINED_OR_NULL,
+      }, {
+        getId: () => rawAcceptor._id,
+        edu: { name: 'eduname', degree: 'edu' },
+        ret: OBJECT_IS_UNDEFINED_OR_NULL,
+      }, {
+        getId: () => rawAcceptor._id,
+        edu: { name: 'eduname', degree: 'edu', year: 'ye' },
+        ret: OBJECT_IS_UNDEFINED_OR_NULL,
+      },
+    ].map(item =>
+      it(`错误处理，返回码: ${item.ret}`, async () => {
+        const cookie = await getUserIdCookie(testUser);
+        const res = await agent.put(url)
+          .set('Cookie', cookie)
+          .send(item.edu);
+        expect(res.body.ret).to.eql(item.ret);
+      }));
+    it('普通用户可以添加自己的工作经历', async () => {
+      const cookie = await getUserIdCookie(testUser);
+      const career = {
+        name: 'updated',
+        year: 1944,
+      };
+      let res = await agent.put(url)
+        .set('Cookie', cookie)
+        .send(career);
+      expect(res.body.ret).to.eql(SUCCESS);
+      res = await agent.get(`/api/acceptors/detail/${rawAcceptor._id}`);
+      expect(res.body.data.careerHistory).to.be.ok;
+      expect(res.body.data.careerHistory.length).to.eql(1);
+      expect(res.body.data.careerHistory[0]).to.eql(career);
+    });
+    it('Manager可以添加他人的工作经历', async () => {
+      const cookie = await getUserIdCookie(testManager);
+      const career = {
+        name: 'updated2',
+        year: 1945,
+      };
+      let res = await agent.put(url)
+        .set('Cookie', cookie)
+        .send(career);
+      expect(res.body.ret).to.eql(SUCCESS);
+      res = await agent.get(`/api/acceptors/detail/${rawAcceptor._id}`);
+      expect(res.body.data.careerHistory).to.be.ok;
+      expect(res.body.data.careerHistory.length).to.eql(2);
+      expect(res.body.data.careerHistory[1]).to.eql(career);
     });
   });
 

@@ -220,3 +220,38 @@ export const removeEdu = (
     fail({ ret: SERVER_FAILED, msg });
   }
 };
+
+export const addCareer = (
+  // 定义如何获取数据的_id，默认使用url中的:id参数
+  getId = req => (new ObjectId(req.params.id)),
+  // 获取工作经历信息
+  getCareer = req => req.body,
+  // 定义获取数据之后如何操作，默认为返回成功代码及数据
+  success = (data, req, res, next) => next(),
+  // 定义获取数据失败时如何操作，默认为返回失败代码及描述
+  fail = (e, req, res) => res.send(e),
+) => async (req, res, next) => {
+  try {
+    const id = getId(req, res);
+    if (!id) {
+      fail({ ret: OBJECT_IS_UNDEFINED_OR_NULL, msg: 'id不能为空' }, req, res, next);
+      return;
+    }
+    const career = getCareer(req, res);
+    if (!career
+      || !career.name
+      || !career.year
+      || !Number.isInteger(career.year)
+    ) {
+      fail({
+        ret: OBJECT_IS_UNDEFINED_OR_NULL,
+        msg: '必须提供公司名称和入职年份，入职年份必须是数字',
+      }, req, res, next);
+      return;
+    }
+    const result = await acceptorManager.addCareer(id, career);
+    success(result, req, res, next);
+  } catch (msg) {
+    fail({ ret: SERVER_FAILED, msg });
+  }
+};

@@ -14,7 +14,8 @@ import { SUCCESS, UNAUTHORIZED, UNKNOWN_ERROR,
 import { profileMiddlewares as profile, acceptorManager,
   manageDpt, supervisorDpt } from '../../config';
 import { insert, getById, findOneByIdCardNumber, listByRecord,
-  updateById, addEdu, removeEdu } from './acceptor-middlewares';
+  updateById, addEdu, removeEdu,
+  addCareer } from './acceptor-middlewares';
 
 const tryRun = func => {
   try {
@@ -193,10 +194,25 @@ export const putCareer = (getId = req => (new ObjectId(req.params.id))) =>
   };
 
 router.put('/career/:id',
-getUserId(),
-getUser,
-onlyManagerAndOwnerCanDoNext(req => new ObjectId(req.params.id)),
-putCareer(),
+  getUserId(),
+  // getUser,
+  // onlyManagerAndOwnerCanDoNext(req => new ObjectId(req.params.id)),
+  profile.isOwnerOrManager(
+    req => tryRun(() => new ObjectId(req.params.id)),
+    req => req.user.userid,
+    manageDpt,
+    (isOwnerOrManager, req, res, next) =>
+      isOwnerOrManager ? next() : res.send({ ret: UNAUTHORIZED }),
+  ),
+  // putCareer(),
+  addCareer(
+    req => tryRun(() => new ObjectId(req.params.id)),
+    req => tryRun(() => ({
+      name: req.body.name,
+      year: parseInt(req.body.year, 10),
+    })),
+    (result, req, res) => res.send({ ret: SUCCESS }),
+  ),
 );
 
 export const deleteCareer = (getId = req => (new ObjectId(req.params.id))) =>
