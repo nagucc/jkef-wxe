@@ -15,7 +15,7 @@ import bodyParser from 'body-parser';
 import ReactDOM from 'react-dom/server';
 import { match } from 'universal-router';
 import PrettyError from 'pretty-error';
-import models from './data/models';
+// import models from './data/models';
 import routes from './routes';
 import assets from './assets';
 import { port, analytics, showLog } from './config';
@@ -27,7 +27,7 @@ import statCtrl from './api/controllers/stat';
 import acceptorsCtrl from './api/controllers/acceptors';
 import wxeAuthCtrl from './api/controllers/wxe-auth';
 import profileCtrl from './api/controllers/profiles';
-import zxjApplyCtrl from './api/controllers/zxj-apply';
+// import zxjApplyCtrl from './api/controllers/zxj-apply';
 const app = express();
 
 //
@@ -59,7 +59,7 @@ app.use('/api/fundinfo', regData);
 require('./api/controllers/worker');
 app.use('/api/wxe-auth', wxeAuthCtrl);
 app.use('/api/profiles', profileCtrl);
-app.use('/api/zxj-apply', zxjApplyCtrl);
+// app.use('/api/zxj-apply', zxjApplyCtrl);
 
 //
 // Register API middleware
@@ -134,9 +134,10 @@ app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
 // Launch the server
 // -----------------------------------------------------------------------------
 /* eslint-disable no-console */
-models.sync().catch(err => console.error(err.stack)).then(() => {
-  app.listen(port, () => {
-    console.log(`The server is running at http://localhost:${port}/`);
-  });
+app.listen(port, () => {
+  console.log(`The server is running at http://localhost:${port}/`);
 });
+// models.sync().catch(err => console.error(err.stack)).then(() => {
+//
+// });
 /* eslint-enable no-console */

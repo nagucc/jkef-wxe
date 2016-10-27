@@ -5,17 +5,11 @@ eslint-disable no-param-reassign
 import { Router } from 'express';
 
 import { getUserId } from 'wxe-auth-express';
-import { isUndefined, getUser } from './middlewares';
-import emptyFunction from 'fbjs/lib/emptyFunction';
 import { ObjectId } from 'mongodb';
-import { SUCCESS, UNAUTHORIZED, UNKNOWN_ERROR,
-  OBJECT_IS_NOT_FOUND, SERVER_FAILED,
+import { SUCCESS, UNAUTHORIZED,
   OBJECT_ALREADY_EXISTS } from 'nagu-validates';
-import { profileMiddlewares as profile, acceptorManager,
-  manageDpt, supervisorDpt } from '../../config';
-import { insert, getById, findOneByIdCardNumber, listByRecord,
-  updateById, addEdu, removeEdu,
-  addCareer, removeCareer } from './acceptor-middlewares';
+import { profileMiddlewares as profile,
+  manageDpt, supervisorDpt, acceptorMiddlewares } from '../../config';
 
 const tryRun = func => {
   try {
@@ -40,7 +34,7 @@ router.get('/list/:pageIndex',
     },
   ),
   // 获取数据
-  listByRecord(
+  acceptorMiddlewares.listByRecord(
     req => ({
       ...req.query,
       pageIndex: parseInt(req.params.pageIndex, 10),
@@ -53,7 +47,7 @@ router.get('/list/:pageIndex',
 router.put('/add',
   getUserId(),
   // 检查证件号码是否已在
-  findOneByIdCardNumber(
+  acceptorMiddlewares.findOneByIdCardNumber(
     req => req.body.idCard ? req.body.idCard.number : null,
     (acceptor, req, res, next) => {
       if (acceptor) {
@@ -92,7 +86,7 @@ router.put('/add',
     }
   ),
   // 在acceptor中添加数据
-  insert(
+  acceptorMiddlewares.insert(
     // acceptor中的数据包括idCard和profile中的所有字段
     req => ({ idCard: req.body.idCard, ...req.profile }),
     (data, req, res) => res.send({ ret: SUCCESS, data }),
@@ -112,26 +106,10 @@ router.get('/detail/:id',
       else res.send({ ret: UNAUTHORIZED });
     },
   ),
-  getById(
+  acceptorMiddlewares.getById(
     req => (new ObjectId(req.params.id)),
   ),
 );
-
-export const onlyManagerAndOwnerCanDoNext = idGetter =>
-  async (req, res, next = emptyFunction) => {
-    const id = idGetter(req, res);
-    try {
-      const data = await acceptorManager.findById(id);
-      if (!isManager(req.user.department)
-        && req.user.userid !== data.userid) {
-        res.send({ ret: 401, msg: '无权操作' });
-        return;
-      }
-      next();
-    } catch (e) {
-      res.send({ ret: -1, msg: e });
-    }
-  };
 
 router.put('/edu/:id',
   getUserId(),
@@ -142,15 +120,15 @@ router.put('/edu/:id',
     (isOwnerOrManager, req, res, next) =>
       isOwnerOrManager ? next() : res.send({ ret: UNAUTHORIZED }),
   ),
-   addEdu(
-     req => tryRun(() => new ObjectId(req.params.id)),
-     req => tryRun(() => ({
-       name: req.body.name,
-       year: parseInt(req.body.year, 10),
-       degree: req.body.degree,
-     })),
-     (result, req, res) => res.send({ ret: SUCCESS }),
-   ),
+ acceptorMiddlewares.addEdu(
+   req => tryRun(() => new ObjectId(req.params.id)),
+   req => tryRun(() => ({
+     name: req.body.name,
+     year: parseInt(req.body.year, 10),
+     degree: req.body.degree,
+   })),
+   (result, req, res) => res.send({ ret: SUCCESS }),
+ ),
 );
 
 router.delete('/edu/:id',
@@ -162,7 +140,7 @@ router.delete('/edu/:id',
     (isOwnerOrManager, req, res, next) =>
       isOwnerOrManager ? next() : res.send({ ret: UNAUTHORIZED }),
   ),
-  removeEdu(
+  acceptorMiddlewares.removeEdu(
     req => tryRun(() => new ObjectId(req.params.id)),
     req => tryRun(() => ({
       name: req.body.name,
@@ -181,7 +159,7 @@ router.put('/career/:id',
     (isOwnerOrManager, req, res, next) =>
       isOwnerOrManager ? next() : res.send({ ret: UNAUTHORIZED }),
   ),
-  addCareer(
+  acceptorMiddlewares.addCareer(
     req => tryRun(() => new ObjectId(req.params.id)),
     req => tryRun(() => ({
       name: req.body.name,
@@ -200,7 +178,7 @@ router.delete('/career/:id',
     (isOwnerOrManager, req, res, next) =>
       isOwnerOrManager ? next() : res.send({ ret: UNAUTHORIZED }),
   ),
-  removeCareer(
+  acceptorMiddlewares.removeCareer(
     req => tryRun(() => new ObjectId(req.params.id)),
     req => tryRun(() => ({
       name: req.body.name,
@@ -210,103 +188,39 @@ router.delete('/career/:id',
   ),
 );
 
-export const onlyManagerCanDoNext = (req, res, next) => {
-  if (isManager(req.user.department)) next();
-};
-
-export const putRecord = async (req, res) => {
-  const id = req.params.id;
-  if (isUndefined(id)) {
-    res.send({
-      ret: OBJECT_IS_NOT_FOUND,
-      msg: '所给的Id不正确',
-    });
-    return;
-  }
-  const { project, amount, recommander, remark } = req.body;
-  let { date } = req.body;
-  console.log('Date Req: ', date);
-  if (isUndefined(date)) date = Date.now();
-  else date = new Date(date);
-  const _id = new ObjectId();
-  try {
-    await acceptorManager.addRecord(new ObjectId(id), {
-      project, date, amount, recommander, remark,
-      _id,
-    });
-    res.send({
-      ret: SUCCESS,
-      data: {
-        _id,
-        project,
-        date,
-        amount,
-        recommander,
-        remark,
-      },
-    });
-  } catch (e) {
-    res.send({
-      ret: UNKNOWN_ERROR,
-      msg: e,
-    });
-  }
-};
-
 router.put('/record/:id',
   getUserId(),
-  getUser,
-  onlyManagerCanDoNext,
-  putRecord,
+  profile.isManager(
+    req => req.user.userid,
+    manageDpt,
+    (isManager, req, res, next) =>
+      isManager ? next() : res.send({ ret: UNAUTHORIZED }),
+  ),
+  acceptorMiddlewares.addRecord(
+    req => tryRun(() => new ObjectId(req.params.id)),
+    req => tryRun(() => ({
+      project: req.body.project,
+      amount: parseFloat(req.body.amount, 10),
+      date: isNaN(Date.parse(req.body.date)) ? new Date() : new Date(req.body.date),
+    })),
+    (recordId, req, res) => res.send({ ret: SUCCESS, data: recordId }),
+  ),
 );
 
-export const deleteRecord = async (req, res) => {
-  const { id, recordId } = req.params;
-  if (isUndefined(id) || isUndefined(recordId)) {
-    res.send({
-      ret: OBJECT_IS_NOT_FOUND,
-      msg: '所给的Id不正确',
-    });
-    return;
-  }
-  let result = { ret: SUCCESS };
-  try {
-    await acceptorManager.removeRecord(new ObjectId(id), new ObjectId(recordId));
-  } catch (e) {
-    result = {
-      ret: UNKNOWN_ERROR,
-      msg: e,
-    };
-  }
-  res.send(result);
-};
 router.delete('/record/:id/:recordId',
   getUserId(),
-  getUser,
-  onlyManagerCanDoNext,
-  deleteRecord
+  profile.isManager(
+    req => req.user.userid,
+    manageDpt,
+    (isManager, req, res, next) =>
+      isManager ? next() : res.send({ ret: UNAUTHORIZED }),
+  ),
+  acceptorMiddlewares.removeRecord(
+    req => tryRun(() => new ObjectId(req.params.id)),
+    req => tryRun(() => new ObjectId(req.params.recordId)),
+    (recordId, req, res) => res.send({ ret: SUCCESS, data: recordId }),
+  ),
 );
-
-export const postUpdate = (getId = req => new ObjectId(req.params.id)) =>
-  async (req, res) => {
-    const _id = getId(req, res);
-    try {
-      const doc = await acceptorManager.updateById({ ...req.body, _id });
-      if (doc.result.nModified > 0) {
-        res.send({
-          ret: SUCCESS,
-          data: { _id },
-        });
-      } else {
-        res.send({
-          ret: OBJECT_IS_NOT_FOUND,
-          msg: `给定的id(${_id})没找到`,
-        });
-      }
-    } catch (e) {
-      res.send({ ret: SERVER_FAILED, msg: e });
-    }
-  };
 
 router.post('/:id',
   getUserId(),
@@ -325,7 +239,7 @@ router.post('/:id',
     req => req.user.userid,
     manageDpt,
     (isManager, req, res, next) => {
-      if(!isManager) {
+      if (!isManager) {
         delete req.body.userid;
         delete req.body.name;
       }
@@ -333,7 +247,7 @@ router.post('/:id',
     },
   ),
   // 执行更新操作
-  updateById(
+  acceptorMiddlewares.updateById(
     req => tryRun(() => new ObjectId(req.params.id)),
     req => req.body,
     (result, req, res) => res.send({ ret: SUCCESS }),

@@ -2,8 +2,9 @@ import { Router } from 'express';
 import api from 'wxent-api-redis';
 import { signin, getme, getUserId } from 'wxe-auth-express';
 import { wxentConfig as wxcfg, redisConfig as redis,
-  host } from '../../config';
-import { getProfileByUserId, isManager, isSupervisor } from './middlewares';
+  host, profileMiddlewares, supervisorDpt, manageDpt } from '../../config';
+// import { getProfileByUserId, isManager, isSupervisor } from './middlewares';
+import { SUCCESS } from 'nagu-validates';
 
 const router = new Router();
 const wxapi = api(wxcfg.corpId, wxcfg.secret, wxcfg.agentId, redis.host, redis.port);
@@ -21,20 +22,23 @@ router.get('/me', getme());
 
 router.get('/me/roles',
   getUserId(),
-  getProfileByUserId(),
-  (req, res) => {
-    const { department } = req.user;
-    if (!department) {
-      res.send({ ret: -1, msg: req.user.errmsg });
-      return;
-    }
-    res.send({
-      ret: 0,
-      data: {
-        isSupervisor: isSupervisor(req.user.department),
-        isManager: isManager(req.user.department),
-      },
-    });
-  });
+  profileMiddlewares.isSupervisor(
+    req => req.user.userid,
+    supervisorDpt,
+    (isSupervisor, req, res, next) => {
+      res.roles = { isSupervisor }; // eslint-disable-line no-param-reassign
+      next();
+    },
+  ),
+  profileMiddlewares.isManager(
+    req => req.user.userid,
+    manageDpt,
+    (isManager, req, res, next) => {
+      res.roles = { ...res.roles, isManager }; // eslint-disable-line no-param-reassign
+      next();
+    },
+  ),
+  (req, res) => res.send({ ret: SUCCESS, data: res.roles }),
+);
 
 export default router;

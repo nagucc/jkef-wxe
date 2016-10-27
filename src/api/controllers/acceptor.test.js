@@ -28,6 +28,7 @@ const rawAcceptor = {
   userid: testUser,
   idCard: { type: 'test', number: Math.random() },
 };
+let recordId;
 describe('Acceptor Middlewares', () => {
   // 预先设定Manager和Supervisor
   before(async () => {
@@ -262,7 +263,8 @@ describe('Acceptor Middlewares', () => {
     ].map(item =>
       it(`错误处理，返回码: ${item.ret}`, async () => {
         const cookie = await getUserIdCookie(testUser);
-        const res = await agent.put(url)
+        const id = item.getId();
+        const res = await agent.put(`/api/acceptors/edu/${id}`)
           .set('Cookie', cookie)
           .send(item.edu);
         expect(res.body.ret).to.eql(item.ret);
@@ -347,7 +349,8 @@ describe('Acceptor Middlewares', () => {
     ].map(item =>
       it(`错误处理，返回码: ${item.ret}`, async () => {
         const cookie = await getUserIdCookie(testUser);
-        const res = await agent.delete(url)
+        const id = item.getId();
+        const res = await agent.delete(`/api/acceptors/edu/${id}`)
           .set('Cookie', cookie)
           .send(item.edu);
         expect(res.body.ret).to.eql(item.ret);
@@ -432,7 +435,8 @@ describe('Acceptor Middlewares', () => {
     ].map(item =>
       it(`错误处理，返回码: ${item.ret}`, async () => {
         const cookie = await getUserIdCookie(testUser);
-        const res = await agent.put(url)
+        const id = item.getId();
+        const res = await agent.put(`/api/acceptors/career/${id}`)
           .set('Cookie', cookie)
           .send(item.edu);
         expect(res.body.ret).to.eql(item.ret);
@@ -519,7 +523,8 @@ describe('Acceptor Middlewares', () => {
     ].map(item =>
       it(`错误处理，返回码: ${item.ret}`, async () => {
         const cookie = await getUserIdCookie(testUser);
-        const res = await agent.delete(url)
+        const id = item.getId();
+        const res = await agent.delete(`/api/acceptors/career/${id}`)
           .set('Cookie', cookie)
           .send(item.edu);
         expect(res.body.ret).to.eql(item.ret);
@@ -556,19 +561,124 @@ describe('Acceptor Middlewares', () => {
 
   // 添加奖助记录
   describe('PUT /record/:id', () => {
+    let url;
+    before(() => (url = `/api/acceptors/record/${rawAcceptor._id}`));
     it('未登录时，无法操作', async () => {
-      const res = await agent.put(`/api/acceptors/record/${rawAcceptor._id}`)
+      const res = await agent.put(url)
         .set('Cookie', null);
       expect(res.body.ret).to.eql(UNKNOWN_ERROR);
+    });
+    it('普通用户没有权限添加奖助记录', async () => {
+      const cookie = await getUserIdCookie(testUser);
+      const res = await agent.put(url)
+        .set('Cookie', cookie);
+      expect(res.body.ret).to.eql(UNAUTHORIZED);
+    });
+    it('Supervisor没有权限添加他人奖助记录', async () => {
+      const cookie = await getUserIdCookie(testSupervisor);
+      const res = await agent.put(url)
+        .set('Cookie', cookie);
+      expect(res.body.ret).to.eql(UNAUTHORIZED);
+    });
+    // 错误处理
+    [
+      { // 无法获取ProfileId
+        getId: () => null,
+        ret: OBJECT_IS_UNDEFINED_OR_NULL,
+      }, {
+        getId: () => rawAcceptor._id,
+        record: null,
+        ret: OBJECT_IS_UNDEFINED_OR_NULL,
+      }, {
+        getId: () => rawAcceptor._id,
+        record: {},
+        ret: OBJECT_IS_UNDEFINED_OR_NULL,
+      }, {
+        getId: () => rawAcceptor._id,
+        record: { project: 'eduname' },
+        ret: OBJECT_IS_UNDEFINED_OR_NULL,
+      }, {
+        getId: () => rawAcceptor._id,
+        record: { project: 'eduname', amount: 'sdffe' },
+        ret: OBJECT_IS_UNDEFINED_OR_NULL,
+      },
+    ].map(item =>
+      it(`错误处理，返回码: ${item.ret}`, async () => {
+        const cookie = await getUserIdCookie(testManager);
+        const id = item.getId();
+        const res = await agent.put(`/api/acceptors/record/${id}`)
+          .set('Cookie', cookie)
+          .send(item.record);
+        expect(res.body.ret).to.eql(item.ret);
+      }));
+    it('Manager可以添加他人的奖助记录', async () => {
+      const cookie = await getUserIdCookie(testManager);
+      const record = {
+        project: 'updated2',
+        amount: 1945.32,
+        date: new Date(),
+      };
+      let res = await agent.put(url)
+        .set('Cookie', cookie)
+        .send(record);
+      expect(res.body.ret).to.eql(SUCCESS);
+      recordId = res.body.data;
+      res = await agent.get(`/api/acceptors/detail/${rawAcceptor._id}`);
+      expect(res.body.data.records).to.be.ok;
+      expect(res.body.data.records.length).to.eql(1);
+      expect(res.body.data.records[0]._id).to.be.ok;
     });
   });
 
   // 删除奖助记录
   describe('DELETE /record/:id', () => {
+    let url;
+    before(() => (url = `/api/acceptors/record/${rawAcceptor._id}/${recordId}`));
     it('未登录时，无法操作', async () => {
-      const res = await agent.delete(`/api/acceptors/record/${rawAcceptor._id}/recordId`)
+      const res = await agent.delete(url)
         .set('Cookie', null);
       expect(res.body.ret).to.eql(UNKNOWN_ERROR);
+    });
+    it('普通用户没有权限删除奖助记录', async () => {
+      const cookie = await getUserIdCookie(testUser);
+      const res = await agent.delete(url)
+        .set('Cookie', cookie);
+      expect(res.body.ret).to.eql(UNAUTHORIZED);
+    });
+    it('Supervisor没有权限删除他人奖助记录', async () => {
+      const cookie = await getUserIdCookie(testSupervisor);
+      const res = await agent.delete(url)
+        .set('Cookie', cookie);
+      expect(res.body.ret).to.eql(UNAUTHORIZED);
+    });
+    // 错误处理
+    [
+      { // 无法获取ProfileId
+        getId: () => null,
+        getRecordId: () => null,
+        ret: OBJECT_IS_UNDEFINED_OR_NULL,
+      }, {
+        getId: () => rawAcceptor._id,
+        getRecordId: () => null,
+        ret: OBJECT_IS_UNDEFINED_OR_NULL,
+      },
+    ].map(item =>
+      it(`错误处理，返回码: ${item.ret}`, async () => {
+        const cookie = await getUserIdCookie(testManager);
+        const id = item.getId();
+        const rId = item.getRecordId();
+        const res = await agent.delete(`/api/acceptors/record/${id}/${rId}`)
+          .set('Cookie', cookie);
+        expect(res.body.ret).to.eql(item.ret);
+      }));
+    it('Manager可以添加他人的奖助记录', async () => {
+      const cookie = await getUserIdCookie(testManager);
+      let res = await agent.delete(url)
+        .set('Cookie', cookie);
+      expect(res.body.ret).to.eql(SUCCESS);
+      res = await agent.get(`/api/acceptors/detail/${rawAcceptor._id}`);
+      expect(res.body.data.records).to.be.ok;
+      expect(res.body.data.records.length).to.eql(0);
     });
   });
 });

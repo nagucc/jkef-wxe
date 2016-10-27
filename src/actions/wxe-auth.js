@@ -1,5 +1,5 @@
 import { FETCHED_ME, ME_FETCHED_FAILED,
-  USER_IS_GUEST, USER_IS_MEMBER,
+  USER_IS_MEMBER,
   USER_IS_SUPERVISOR, USER_IS_MANAGER,
   UNAUTHORIZED } from '../constants';
 import fetch from '../core/fetch';

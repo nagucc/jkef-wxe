@@ -5,6 +5,7 @@
     "npm": ">=3.3 <4"
   },
   "dependencies": {
+    "acceptor-middlewares": "^0.1.0",
     "accounting": "^0.4.1",
     "babel-polyfill": "6.7.4",
     "babel-runtime": "6.6.1",
@@ -26,7 +27,7 @@
     "history": "2.1.0",
     "isomorphic-style-loader": "1.0.0",
     "jade": "1.11.0",
-    "jkef-model": "^0.2.1",
+    "jkef-model": "^0.2.7",
     "jsonwebtoken": "5.7.0",
     "markdown-it": "6.0.1",
     "mongo-use-collection": "0.1.0",
@@ -50,7 +51,6 @@
     "redux-thunk": "^2.1.0",
     "sequelize": "^3.21.0",
     "source-map-support": "0.4.0",
-    "sqlite3": "^3.1.4",
     "universal-router": "1.1.0-beta.3",
     "weui": "^0.4.2",
     "whatwg-fetch": "0.11.0",
