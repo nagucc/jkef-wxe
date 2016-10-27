@@ -4,7 +4,7 @@ eslint-disable no-param-reassign
 
 import { Router } from 'express';
 
-import { getUserId } from 'wxe-auth-express';
+import * as auth from 'wxe-auth-express';
 import { ObjectId } from 'mongodb';
 import { SUCCESS, UNAUTHORIZED,
   OBJECT_ALREADY_EXISTS } from 'nagu-validates';
@@ -19,13 +19,16 @@ const tryRun = func => {
   }
 };
 
+// 获取当前用户的Id
+const getId = req => req.user.userid;
+
 const router = new Router();
 
 router.get('/list/:pageIndex',
-  getUserId(),
+  auth.getUserId(),
   // 判断是否是Supervisor或Manager，只有这两种角色可以查看列表
   profile.isSupervisorOrManager(
-    req => req.user.userid,
+    getId,
     manageDpt,
     supervisorDpt,
     (isSupervisorOrManager, req, res, next) => {
@@ -45,7 +48,7 @@ router.get('/list/:pageIndex',
 );
 
 router.put('/add',
-  getUserId(),
+  auth.getUserId(),
   // 检查证件号码是否已在
   acceptorMiddlewares.findOneByIdCardNumber(
     req => req.body.idCard ? req.body.idCard.number : null,
@@ -60,7 +63,7 @@ router.put('/add',
   ),
   // 检查当前用户是否是管理员，以确定userid的值
   profile.isManager(
-    req => req.user.userid,
+    getId,
     manageDpt,
     (isManager, req, res, next) => {
       if (!isManager) {
@@ -94,11 +97,11 @@ router.put('/add',
 );
 
 router.get('/detail/:id',
-  getUserId(),
+  auth.getUserId(),
   // 判断用户是否具有查看权限。拥有者、管理者可以查看
   profile.isOwnerOrSupervisorOrManager(
     req => tryRun(() => new ObjectId(req.params.id)),
-    req => req.user.userid,
+    getId,
     manageDpt,
     supervisorDpt,
     (result, req, res, next) => {
@@ -112,10 +115,10 @@ router.get('/detail/:id',
 );
 
 router.put('/edu/:id',
-  getUserId(),
+  auth.getUserId(),
   profile.isOwnerOrManager(
     req => tryRun(() => new ObjectId(req.params.id)),
-    req => req.user.userid,
+    getId,
     manageDpt,
     (isOwnerOrManager, req, res, next) =>
       isOwnerOrManager ? next() : res.send({ ret: UNAUTHORIZED }),
@@ -132,10 +135,10 @@ router.put('/edu/:id',
 );
 
 router.delete('/edu/:id',
-  getUserId(),
+  auth.getUserId(),
   profile.isOwnerOrManager(
     req => tryRun(() => new ObjectId(req.params.id)),
-    req => req.user.userid,
+    getId,
     manageDpt,
     (isOwnerOrManager, req, res, next) =>
       isOwnerOrManager ? next() : res.send({ ret: UNAUTHORIZED }),
@@ -151,10 +154,10 @@ router.delete('/edu/:id',
 );
 
 router.put('/career/:id',
-  getUserId(),
+  auth.getUserId(),
   profile.isOwnerOrManager(
     req => tryRun(() => new ObjectId(req.params.id)),
-    req => req.user.userid,
+    getId,
     manageDpt,
     (isOwnerOrManager, req, res, next) =>
       isOwnerOrManager ? next() : res.send({ ret: UNAUTHORIZED }),
@@ -170,10 +173,10 @@ router.put('/career/:id',
 );
 
 router.delete('/career/:id',
-  getUserId(),
+  auth.getUserId(),
   profile.isOwnerOrManager(
     req => tryRun(() => new ObjectId(req.params.id)),
-    req => req.user.userid,
+    getId,
     manageDpt,
     (isOwnerOrManager, req, res, next) =>
       isOwnerOrManager ? next() : res.send({ ret: UNAUTHORIZED }),
@@ -189,9 +192,9 @@ router.delete('/career/:id',
 );
 
 router.put('/record/:id',
-  getUserId(),
+  auth.getUserId(),
   profile.isManager(
-    req => req.user.userid,
+    getId,
     manageDpt,
     (isManager, req, res, next) =>
       isManager ? next() : res.send({ ret: UNAUTHORIZED }),
@@ -208,9 +211,9 @@ router.put('/record/:id',
 );
 
 router.delete('/record/:id/:recordId',
-  getUserId(),
+  auth.getUserId(),
   profile.isManager(
-    req => req.user.userid,
+    getId,
     manageDpt,
     (isManager, req, res, next) =>
       isManager ? next() : res.send({ ret: UNAUTHORIZED }),
@@ -223,11 +226,11 @@ router.delete('/record/:id/:recordId',
 );
 
 router.post('/:id',
-  getUserId(),
+  auth.getUserId(),
   // 只有拥有者或Manager才能执行更新
   profile.isOwnerOrManager(
     req => tryRun(() => new ObjectId(req.params.id)),
-    req => req.user.userid,
+    getId,
     manageDpt,
     (isOwnerOrManager, req, res, next) => {
       if (isOwnerOrManager) next();
@@ -236,7 +239,7 @@ router.post('/:id',
   ),
   // 只有Manager才能更新userid和name字段
   profile.isManager(
-    req => req.user.userid,
+    getId,
     manageDpt,
     (isManager, req, res, next) => {
       if (!isManager) {
