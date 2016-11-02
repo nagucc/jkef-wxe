@@ -5,7 +5,7 @@
 /*
 eslint-disable consistent-return
  */
-import * as code from './err-codes';
+import * as code from 'nagu-validates';
 
 const isEmpty = value => value === undefined || value === null || value === '';
 const join = (rules) =>

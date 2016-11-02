@@ -5,7 +5,7 @@ import { MongoProfileMiddlewares, MongoProfile } from 'nagu-profile';
 import { writeData as gsWriteData } from './gridstore';
 import EntityManager from './entity';
 import AcceptorManager from 'jkef-model';
-import AcceptorMiddlewares from 'acceptor-middlewares';
+import { AcceptorMiddlewares, StatMiddlewares } from 'acceptor-middlewares';
 
 export const port = process.env.PORT || 3000;
 export const host = process.env.WEBSITE_HOSTNAME || `wx.nagu.cc:${port}`;
@@ -15,7 +15,9 @@ export const databaseUrl = process.env.DATABASE_URL || 'sqlite:database.sqlite';
 export const analytics = {
 
   // https://analytics.google.com/
-  google: { trackingId: process.env.GOOGLE_TRACKING_ID || 'UA-XXXXX-X' },
+  google: {
+    trackingId: process.env.GOOGLE_TRACKING_ID, // UA-XXXXX-X
+  },
 
 };
 
@@ -59,6 +61,8 @@ export const profileManager2 = new MongoProfile(mongoUrl, profileCollection);
 export const acceptorManager = new AcceptorManager(mongoUrl, 'acceptors');
 
 export const acceptorMiddlewares = new AcceptorMiddlewares(mongoUrl, 'acceptors');
+
+export const statMiddlewares = new StatMiddlewares(mongoUrl, 'acceptors');
 
 // 用于受赠者统计的cron字符串,默认为2分钟统计一次。
 export const statCron = process.env.ACCEPTORS_STAT_CRON || '00 */2 * * * *';
