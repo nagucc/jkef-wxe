@@ -1,11 +1,15 @@
-import { acceptorManager } from '../../config';
+/*
+eslint-disable no-console, no-new
+ */
 
-const interval = 60000;
+import { acceptorManager, statCron } from '../../config';
+import { CronJob } from 'cron';
 
-setInterval(async () => {
-  await acceptorManager.computeStatByProject();
-}, interval);
-
-setInterval(async () => {
-  await acceptorManager.computeStatByYear();
-}, interval);
+try {
+  new CronJob(statCron, async () => {
+    await acceptorManager.computeStatByProject();
+    await acceptorManager.computeStatByYear();
+  }, null, true);
+} catch (e) {
+  console.log('[STAT CRON JOB ERROR]', e);
+}
