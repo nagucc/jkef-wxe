@@ -5,7 +5,7 @@
     "npm": ">=3.3 <4"
   },
   "dependencies": {
-    "acceptor-middlewares": "^0.1.0",
+    "acceptor-middlewares": "^0.2.2",
     "accounting": "^0.4.1",
     "babel-polyfill": "6.7.4",
     "babel-runtime": "6.6.1",

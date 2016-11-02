@@ -13,7 +13,7 @@ import { reduxForm } from 'redux-form';
 import { required, range, integer } from 'nagu-validates';
 import { REQUIRED, INVALID_NUMBER,
   TOO_LARGE_NUMBER, TOO_SMALL_NUMBER,
-  INVALID_INTEGER } from '../../../err-codes';
+  INVALID_INTEGER } from 'nagu-validates';
 
 const validate = values => {
   const errors = {
