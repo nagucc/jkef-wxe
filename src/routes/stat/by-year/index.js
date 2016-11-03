@@ -8,6 +8,7 @@ export default {
   async action() {
     return {
       component: <StatByYear />,
+      title: '按年度统计',
     };
   },
 };

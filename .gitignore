@@ -13,3 +13,5 @@ test.js
 dump.rdb
 
 .DS_Store
+docs
+CHANGELOG.md

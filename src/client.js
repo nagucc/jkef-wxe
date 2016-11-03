@@ -16,6 +16,8 @@ import queryString from 'query-string';
 import { createPath } from 'history/PathUtils';
 import history from './core/history';
 import App from './components/App';
+import configureStore from './store/configureStore';
+import { ErrorReporter, deepForceUpdate } from './core/devUtils';
 
 // Global (context) variables that can be easily accessed from any React component
 // https://facebook.github.io/react/docs/context.html
@@ -27,6 +29,9 @@ const context = {
     const removeCss = styles.map(x => x._insertCss());
     return () => { removeCss.forEach(f => f()); };
   },
+  // Initialize a new Redux store
+  // http://redux.js.org/docs/basics/UsageWithReact.html
+  store: configureStore(window.APP_STATE, { history }),
 };
 
 function updateTag(tagName, keyName, keyValue, attrName, attrValue) {
@@ -44,6 +49,13 @@ function updateTag(tagName, keyName, keyValue, attrName, attrValue) {
     document.head.appendChild(nextNode);
   }
 }
+
+// Switch off the native scroll restoration behavior and handle it manually
+// https://developers.google.com/web/updates/2015/09/history-api-scroll-restoration
+const scrollPositionsHistory = {};
+if (window.history && 'scrollRestoration' in window.history) {
+  window.history.scrollRestoration = 'manual';
+}
 function updateMeta(name, content) {
   updateTag('meta', 'name', name, 'content', content);
 }
@@ -52,13 +64,6 @@ function updateCustomMeta(property, content) { // eslint-disable-line no-unused-
 }
 function updateLink(rel, href) { // eslint-disable-line no-unused-vars
   updateTag('link', 'rel', rel, 'href', href);
-}
-
-// Switch off the native scroll restoration behavior and handle it manually
-// https://developers.google.com/web/updates/2015/09/history-api-scroll-restoration
-const scrollPositionsHistory = {};
-if (window.history && 'scrollRestoration' in window.history) {
-  window.history.scrollRestoration = 'manual';
 }
 
 let onRenderComplete = function initialRenderComplete() {
@@ -95,6 +100,12 @@ let onRenderComplete = function initialRenderComplete() {
     // or scroll to the given #hash anchor
     // or scroll to top of the page
     window.scrollTo(scrollX, scrollY);
+
+    // Google Analytics tracking. Don't send 'pageview' event after
+    // the initial rendering, as it was already sent
+    if (window.ga) {
+      window.ga('send', 'pageview', createPath(location));
+    }
   };
 };
 
@@ -102,6 +113,7 @@ let onRenderComplete = function initialRenderComplete() {
 FastClick.attach(document.body);
 
 const container = document.getElementById('app');
+let appInstance;
 let currentLocation = history.location;
 let routes = require('./routes').default;
 
@@ -123,6 +135,7 @@ async function onLocationChange(location) {
     // it finds the first route that matches provided URL path string
     // and whose action method returns anything other than `undefined`.
     const route = await UniversalRouter.resolve(routes, {
+      ...context,
       path: location.pathname,
       query: queryString.parse(location.search),
     });
@@ -137,18 +150,28 @@ async function onLocationChange(location) {
       return;
     }
 
-    ReactDOM.render(
+    appInstance = ReactDOM.render(
       <App context={context}>{route.component}</App>,
       container,
       () => onRenderComplete(route, location)
     );
-  } catch (err) {
+  } catch (error) {
+    console.error(error); // eslint-disable-line no-console
+
+    // Current url has been changed during navigation process, do nothing
+    if (currentLocation.key !== location.key) {
+      return;
+    }
+
+    // Display the error in full-screen for development mode
     if (process.env.NODE_ENV !== 'production') {
-      throw err;
+      appInstance = null;
+      document.title = `Error: ${error.message}`;
+      ReactDOM.render(<ErrorReporter error={error} />, container);
+      return;
     }
 
     // Avoid broken navigation in production mode by a full page reload on error
-    console.error(err); // eslint-disable-line no-console
     window.location.reload();
   }
 }
@@ -162,6 +185,18 @@ onLocationChange(currentLocation);
 if (module.hot) {
   module.hot.accept('./routes', () => {
     routes = require('./routes').default; // eslint-disable-line global-require
+
+    if (appInstance) {
+      try {
+        // Force-update the whole tree, including components that refuse to update
+        deepForceUpdate(appInstance);
+      } catch (error) {
+        appInstance = null;
+        document.title = `Hot Update Error: ${error.message}`;
+        ReactDOM.render(<ErrorReporter error={error} />, container);
+        return;
+      }
+    }
 
     onLocationChange(currentLocation);
   });

@@ -15,11 +15,7 @@ class StatByYear extends React.Component {
     maxAmount: PropTypes.number,
     showToast: PropTypes.bool,
   };
-  static contextTypes = {
-    setTitle: PropTypes.func.isRequired,
-  };
   componentDidMount() {
-    this.context.setTitle('按年度统计');
     this.props.getStatByYear();
   }
   render() {

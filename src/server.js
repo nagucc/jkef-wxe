@@ -28,14 +28,14 @@ import models from './data/models';
 import schema from './data/schema';
 import routes from './routes';
 import assets from './assets'; // eslint-disable-line import/no-unresolved
-import { port, auth, showLog } from './config';
 import configureStore from './store/configureStore';
+import { setRuntimeVariable } from './actions/runtime';
+import { port, auth, showLog } from './config';
 import regData from './api/controllers/RegistrationData';
 import statCtrl from './api/controllers/stat';
 import acceptorsCtrl from './api/controllers/acceptors';
 import wxeAuthCtrl from './api/controllers/wxe-auth';
 import profileCtrl from './api/controllers/profiles';
-// import zxjApplyCtrl from './api/controllers/zxj-apply';
 const app = express();
 
 //
@@ -57,9 +57,10 @@ if (showLog) {
   const morgan = require('morgan');
   app.use(morgan('dev'));
 }
-/*
-注册API
- */
+
+//
+// Authentication
+// -----------------------------------------------------------------------------
 app.use('/api/fundinfo', regData);
 app.use('/api/stat', statCtrl);
 app.use('/api/acceptors', acceptorsCtrl);
@@ -68,6 +69,33 @@ require('./api/controllers/worker');
 app.use('/api/wxe-auth', wxeAuthCtrl);
 app.use('/api/profiles', profileCtrl);
 // app.use('/api/zxj-apply', zxjApplyCtrl);
+
+app.use('/graphql', expressGraphQL(req => ({
+  schema,
+  graphiql: true,
+  rootValue: { request: req },
+  pretty: process.env.NODE_ENV !== 'production',
+})));
+
+app.use(expressJwt({
+  secret: auth.jwt.secret,
+  credentialsRequired: false,
+  getToken: req => req.cookies.id_token,
+}));
+app.use(passport.initialize());
+
+app.get('/login/facebook',
+  passport.authenticate('facebook', { scope: ['email', 'user_location'], session: false })
+);
+app.get('/login/facebook/return',
+  passport.authenticate('facebook', { failureRedirect: '/login', session: false }),
+  (req, res) => {
+    const expiresIn = 60 * 60 * 24 * 180; // 180 days
+    const token = jwt.sign(req.user, auth.jwt.secret, { expiresIn });
+    res.cookie('id_token', token, { maxAge: 1000 * expiresIn, httpOnly: true });
+    res.redirect('/');
+  }
+);
 
 //
 // Register API middleware
@@ -78,6 +106,17 @@ app.use('/api/profiles', profileCtrl);
 // -----------------------------------------------------------------------------
 app.get('*', async (req, res, next) => {
   try {
+    const store = configureStore({
+      user: req.user || null,
+    }, {
+      cookie: req.headers.cookie,
+    });
+
+    store.dispatch(setRuntimeVariable({
+      name: 'initialNow',
+      value: Date.now(),
+    }));
+
     const css = new Set();
 
     // Global (context) variables that can be easily accessed from any React component
@@ -89,10 +128,13 @@ app.get('*', async (req, res, next) => {
         // eslint-disable-next-line no-underscore-dangle
         styles.forEach(style => css.add(style._getCss()));
       },
-      store: configureStore({}),
+      // Initialize a new Redux store
+      // http://redux.js.org/docs/basics/UsageWithReact.html
+      store,
     };
 
     const route = await UniversalRouter.resolve(routes, {
+      ...context,
       path: req.path,
       query: req.query,
     });
@@ -106,6 +148,7 @@ app.get('*', async (req, res, next) => {
     data.children = ReactDOM.renderToString(<App context={context}>{route.component}</App>);
     data.style = [...css].join('');
     data.script = assets.main.js;
+    data.state = context.store.getState();
     data.chunk = assets[route.chunk] && assets[route.chunk].js;
     const html = ReactDOM.renderToStaticMarkup(<Html {...data} />);
 

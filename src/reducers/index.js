@@ -1,3 +1,5 @@
+import user from './user';
+import runtime from './runtime';
 import { combineReducers } from 'redux';
 // import listAcceptors from './listAcceptors';
 import me from './wxe-auth';
@@ -30,4 +32,6 @@ export default combineReducers({
   stat,
   error,
   profile,
+  user,
+  runtime,
 });

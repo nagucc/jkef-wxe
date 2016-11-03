@@ -8,9 +8,10 @@
  */
 
 import React, { PropTypes } from 'react';
+import serialize from 'serialize-javascript';
 import { analytics } from '../config';
 
-function Html({ title, description, style, script, chunk, children }) {
+function Html({ title, description, style, script, chunk, state, children }) {
   return (
     <html className="no-js" lang="en">
       <head>
@@ -21,21 +22,30 @@ function Html({ title, description, style, script, chunk, children }) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="apple-touch-icon" href="apple-touch-icon.png" />
         {style && <style id="css" dangerouslySetInnerHTML={{ __html: style }} />}
+        <link rel="stylesheet" href="/weui.min.css" />
+        <link rel="stylesheet" href="/site.css" />
       </head>
       <body>
         <div id="app" dangerouslySetInnerHTML={{ __html: children }} />
+        {state && (
+          <script
+            dangerouslySetInnerHTML={{ __html:
+            `window.APP_STATE=${serialize(state, { isJSON: true })}` }}
+          />
+        )}
         {script && <script src={script} />}
         {chunk && <script src={chunk} />}
-        {analytics.google.trackingId &&
+        {analytics.google.trackingId && (
           <script
             dangerouslySetInnerHTML={{ __html:
             'window.ga=function(){ga.q.push(arguments)};ga.q=[];ga.l=+new Date;' +
             `ga('create','${analytics.google.trackingId}','auto');ga('send','pageview')` }}
           />
-        }
-        {analytics.google.trackingId &&
+        )}
+        {analytics.google.trackingId && (
           <script src="https://www.google-analytics.com/analytics.js" async defer />
-        }
+        )}
+        <script type="JavaScript" src="http://res.wx.qq.com/open/js/jweixin-1.1.0.js" />
       </body>
     </html>
   );
@@ -47,6 +57,7 @@ Html.propTypes = {
   style: PropTypes.string,
   script: PropTypes.string,
   chunk: PropTypes.string,
+  state: PropTypes.object,
   children: PropTypes.string,
 };
 
