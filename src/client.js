@@ -95,8 +95,6 @@ let onRenderComplete = function initialRenderComplete() {
     // or scroll to the given #hash anchor
     // or scroll to top of the page
     window.scrollTo(scrollX, scrollY);
-
-
   };
 };
 

@@ -9,6 +9,6 @@ export default {
   ],
   async action({ next }) {
     const component = await next();
-    return component;
+    return { component };
   },
 };

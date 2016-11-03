@@ -28,8 +28,8 @@ import models from './data/models';
 import schema from './data/schema';
 import routes from './routes';
 import assets from './assets'; // eslint-disable-line import/no-unresolved
-import { port, auth } from './config';
-
+import { port, auth, showLog } from './config';
+import configureStore from './store/configureStore';
 import regData from './api/controllers/RegistrationData';
 import statCtrl from './api/controllers/stat';
 import acceptorsCtrl from './api/controllers/acceptors';
@@ -89,6 +89,7 @@ app.get('*', async (req, res, next) => {
         // eslint-disable-next-line no-underscore-dangle
         styles.forEach(style => css.add(style._getCss()));
       },
+      store: configureStore({}),
     };
 
     const route = await UniversalRouter.resolve(routes, {

@@ -14,6 +14,10 @@ export default {
 
   // Keep in mind, routes are evaluated in order
   children: [
+    acceptors,
+    ceeResultRegistration,
+    stat,
+    ceeResultRegistration,
     require('./home').default,
     require('./contact').default,
     require('./login').default,
@@ -23,11 +27,6 @@ export default {
     // place new routes before...
     require('./content').default,
     require('./notFound').default,
-
-    acceptors,
-    ceeResultRegistration,
-    stat,
-    ceeResultRegistration,
   ],
 
   async action({ next }) {

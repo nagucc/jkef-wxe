@@ -6,6 +6,8 @@ export default {
   path: '/by-year',
 
   async action() {
-    return <StatByYear />;
+    return {
+      component: <StatByYear />,
+    };
   },
 };

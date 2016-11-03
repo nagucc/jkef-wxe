@@ -8,11 +8,13 @@
  */
 
 import React, { PropTypes } from 'react';
+import { Provider } from 'react-redux';
 
 const ContextType = {
   // Enables critical path CSS rendering
   // https://github.com/kriasoft/isomorphic-style-loader
   insertCss: PropTypes.func.isRequired,
+  store: PropTypes.object.isRequired,
 };
 
 /**
@@ -46,7 +48,11 @@ class App extends React.Component {
   render() {
     // NOTE: If you need to add or modify header, footer etc. of the app,
     // please do that inside the Layout component.
-    return React.Children.only(this.props.children);
+    // return React.Children.only(this.props.children);
+    const store = this.props.context.store;
+    return <Provider store={store}>
+      { this.props.children }
+    </Provider>
   }
 
 }
