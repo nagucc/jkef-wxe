@@ -8,6 +8,9 @@ import EditRecord from './EditRecord';
 export default {
   path: '/edit-record/:id',
   async action({ params }) {
-    return <EditRecord acceptorId={params.id} />;
+    return {
+      component: (<EditRecord acceptorId={params.id} />),
+      title: '编辑奖助记录',
+    };
   },
 };

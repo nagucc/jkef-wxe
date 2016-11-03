@@ -31,7 +31,9 @@ export default {
     const props = {
       action,
     };
-    return <Registration {...props} />;
+    return {
+      component: (<Registration {...props} />),
+      title: '添加受助者',
+    };
   },
-
 };

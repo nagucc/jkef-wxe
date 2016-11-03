@@ -48,7 +48,10 @@ export default {
       action,
       fetchById,
     };
-    return <Registration {...props} />;
+    return {
+      component: (<Registration {...props} />),
+      title: '修改成员信息',
+    };
   },
 
 };

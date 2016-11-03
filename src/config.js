@@ -78,9 +78,8 @@ export const writeData = async (data, filename = null, options = {}) => {
 
 export const zxjApplyManager = new EntityManager('zxjApply', mongoUrl);
 
-export const profileManager = new EntityManager(profileCollection, mongoUrl);
 
-export const profileManager2 = new MongoProfile(mongoUrl, profileCollection);
+export const profileManager = new MongoProfile(mongoUrl, profileCollection);
 
 export const acceptorManager = new AcceptorManager(mongoUrl, 'acceptors');
 

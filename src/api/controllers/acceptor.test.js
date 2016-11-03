@@ -1,5 +1,5 @@
 /* eslint-env mocha */
-/* eslint-disable padded-blocks, no-unused-expressions */
+/* eslint-disable padded-blocks, no-unused-expressions, no-underscore-dangle */
 
 import 'babel-polyfill';
 import { expect } from 'chai';
@@ -8,7 +8,7 @@ import { SUCCESS, UNAUTHORIZED, UNKNOWN_ERROR,
 import request from 'supertest';
 import app from '../express-for-test';
 import acceptorsCtrl from './acceptors';
-import { profileManager2 as profileManager,
+import { profileManager, acceptorManager,
   manageDpt, supervisorDpt } from '../../config';
 
 app.use('/api/acceptors', acceptorsCtrl);
@@ -51,6 +51,7 @@ describe('Acceptor Middlewares', () => {
     await profileManager.remove(supervisor._id);
     const user = await profileManager.getByUserId(testUser);
     await profileManager.remove(user._id);
+    await acceptorManager.removeById(user._id);
   });
 
   describe('PUT /add', () => {

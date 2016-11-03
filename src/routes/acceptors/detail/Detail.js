@@ -24,15 +24,11 @@ class Detail extends React.Component {
     fetchAcceptor: PropTypes.func,
     setUserRole: PropTypes.func,
   };
-  static contextTypes = {
-    setTitle: PropTypes.func.isRequired,
-  };
   constructor(props) {
     super(props);
     this.state = { showActionSheet: false };
   }
   componentDidMount() {
-    this.context.setTitle('详细信息');
     const { acceptorId, fetchAcceptor } = this.props;
     fetchAcceptor(acceptorId);
   }

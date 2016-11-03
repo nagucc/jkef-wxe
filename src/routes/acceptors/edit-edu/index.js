@@ -9,14 +9,17 @@ import { addEdu, deleteEdu,
 
 export default {
   path: '/edit-edu/:id',
-  async action({ params, context }) {
+  async action({ params, store }) {
     const { id } = params;
-    const { dispatch } = context.store;
+    const { dispatch } = store;
     const props = {
       addEdu: edu => dispatch(addEdu(id, edu)),
       deleteEdu: edu => dispatch(deleteEdu(id, edu)),
       initEduHistory: () => dispatch(initEduHistory(id)),
     };
-    return <EditEdu {...props} />;
+    return {
+      component: (<EditEdu {...props} />),
+      title: '编辑教育经历',
+    };
   },
 };

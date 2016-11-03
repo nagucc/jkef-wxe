@@ -23,11 +23,7 @@ export class EditEduComponent extends React.Component {
   static defaultProps = {
     eduHistory: [],
   };
-  static contextTypes = {
-    setTitle: PropTypes.func.isRequired,
-  };
   componentDidMount() {
-    this.context.setTitle('修改教育经历');
     this.props.initEduHistory();
   }
   render() {

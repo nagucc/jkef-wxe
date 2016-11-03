@@ -20,12 +20,8 @@ export class EditRecordComponent extends React.Component {
     toast: PropTypes.object,
     acceptorId: PropTypes.string.isRequired,
   };
-  static contextTypes = {
-    setTitle: PropTypes.func.isRequired,
-  };
   componentDidMount() {
     this.props.init(this.props.acceptorId);
-    this.context.setTitle('修改受赠记录');
   }
   render() {
     const { err, data, toast } = this.props;

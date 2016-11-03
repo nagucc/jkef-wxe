@@ -20,11 +20,7 @@ class ListAcceptors extends React.Component {
     query: PropTypes.object,
     showToast: PropTypes.bool,
   };
-  static contextTypes = {
-    setTitle: PropTypes.func.isRequired,
-  };
   componentDidMount() {
-    this.context.setTitle('成员列表');
     this.props.fetchAcceptors(this.props.query);
   }
   render() {

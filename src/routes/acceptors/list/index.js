@@ -6,10 +6,15 @@ export default {
   path: '/list',
 
   async action({ query }) { // eslint-disable-line react/prop-types
-    return <ListAcceptors query={{
-      text: '',
-      ...query,
-    }}
-    />;
+    const component = (<ListAcceptors
+      query={{
+        text: '',
+        ...query,
+      }}
+    />);
+    return {
+      component,
+      title: '受赠者列表',
+    };
   },
 };

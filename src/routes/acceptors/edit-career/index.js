@@ -9,14 +9,17 @@ import { addCareer, deleteCareer,
 
 export default {
   path: '/edit-career/:id',
-  async action({ params, context }) {
+  async action({ params, store }) {
     const { id } = params;
-    const { dispatch } = context.store;
+    const { dispatch } = store;
     const props = {
       add: career => dispatch(addCareer(id, career)),
       remove: career => dispatch(deleteCareer(id, career)),
       init: () => dispatch(initCareerHistory(id)),
     };
-    return <EditCareer {...props} />;
+    return {
+      component: (<EditCareer {...props} />),
+      title: '编辑工作经历',
+    };
   },
 };
