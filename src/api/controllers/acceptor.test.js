@@ -8,7 +8,7 @@ import { SUCCESS, UNAUTHORIZED, UNKNOWN_ERROR,
 import request from 'supertest';
 import app from '../express-for-test';
 import acceptorsCtrl from './acceptors';
-import { profileManager2 as profileManager,
+import { profileManager,
   manageDpt, supervisorDpt } from '../../config';
 
 app.use('/api/acceptors', acceptorsCtrl);
