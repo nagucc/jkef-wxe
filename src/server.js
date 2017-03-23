@@ -70,12 +70,12 @@ app.use('/api/wxe-auth', wxeAuthCtrl);
 app.use('/api/profiles', profileCtrl);
 // app.use('/api/zxj-apply', zxjApplyCtrl);
 
-app.use('/graphql', expressGraphQL(req => ({
-  schema,
-  graphiql: true,
-  rootValue: { request: req },
-  pretty: process.env.NODE_ENV !== 'production',
-})));
+// app.use('/graphql', expressGraphQL(req => ({
+//   schema,
+//   graphiql: true,
+//   rootValue: { request: req },
+//   pretty: process.env.NODE_ENV !== 'production',
+// })));
 
 app.use(expressJwt({
   secret: auth.jwt.secret,
@@ -84,18 +84,18 @@ app.use(expressJwt({
 }));
 app.use(passport.initialize());
 
-app.get('/login/facebook',
-  passport.authenticate('facebook', { scope: ['email', 'user_location'], session: false })
-);
-app.get('/login/facebook/return',
-  passport.authenticate('facebook', { failureRedirect: '/login', session: false }),
-  (req, res) => {
-    const expiresIn = 60 * 60 * 24 * 180; // 180 days
-    const token = jwt.sign(req.user, auth.jwt.secret, { expiresIn });
-    res.cookie('id_token', token, { maxAge: 1000 * expiresIn, httpOnly: true });
-    res.redirect('/');
-  }
-);
+// app.get('/login/facebook',
+//   passport.authenticate('facebook', { scope: ['email', 'user_location'], session: false })
+// );
+// app.get('/login/facebook/return',
+//   passport.authenticate('facebook', { failureRedirect: '/login', session: false }),
+//   (req, res) => {
+//     const expiresIn = 60 * 60 * 24 * 180; // 180 days
+//     const token = jwt.sign(req.user, auth.jwt.secret, { expiresIn });
+//     res.cookie('id_token', token, { maxAge: 1000 * expiresIn, httpOnly: true });
+//     res.redirect('/');
+//   }
+// );
 
 //
 // Register API middleware
