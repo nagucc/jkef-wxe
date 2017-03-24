@@ -29,7 +29,8 @@ const rawAcceptor = {
   idCard: { type: 'test', number: Math.random() },
 };
 let recordId;
-describe('Acceptor Middlewares', () => {
+describe('Acceptor Middlewares', function() {
+  this.timeout(60000);
   // 预先设定Manager和Supervisor
   before(async () => {
     await profileManager.add({

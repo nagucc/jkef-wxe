@@ -1,4 +1,4 @@
-FROM node:5
+FROM node:7
 
 ADD *.json /rsk/
 ADD src /rsk/src

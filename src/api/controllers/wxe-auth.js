@@ -1,51 +1,53 @@
-/*
-eslint-disable no-console, no-param-reassign
- */
-
 import { Router } from 'express';
-import api from 'wxent-api-redis';
-import { signin, getme, getUserId } from 'wxe-auth-express';
-import { wxentConfig as wxcfg, redisConfig as redis,
-  host, profileMiddlewares, supervisorDpt, manageDpt } from '../../config';
-import { SUCCESS } from 'nagu-validates';
+import expressJwt from 'express-jwt';
+import { SUCCESS, SERVER_FAILED } from 'nagu-validates';
+import WxeApi from 'wxe-api';
+import { signin, getToken } from '../controllers/wxe-auth-middlewares';
+import { host, auth } from '../../config';
 
 const router = new Router();
-const wxapi = api(wxcfg.corpId, wxcfg.secret, wxcfg.agentId, redis.host, redis.port);
-const DEBUG = process.env.NODE_ENV === 'development';
-
-if (DEBUG) console.log('目前处于测试状态');
-
+const wxapi = new WxeApi(auth.wxent);
 router.get('/',
   signin({
-    wxapi,
-    callbackUrl: `http://${DEBUG ? 'wx.nagu.cc:3001' : host}/api/wxe-auth/`,
-  }));
+    wxeApiOpitons: auth.wxent,
+    getCallBackUrl: () => `http://${host}/api/wxe-auth/`,
+  }),
+);
 
 // 获取当前登录用户信息
-router.get('/me', getme());
-
-router.get('/me/roles',
-  getUserId(),
-  // 判断当前用户是否是Supervisor
-  profileMiddlewares.isSupervisor(
-    req => req.user.userid,
-    supervisorDpt,
-    (isSupervisor, req, res, next) => {
-      res.roles = { isSupervisor };
-      next();
-    },
-  ),
-  // 判断当前用户是否是Manager
-  profileMiddlewares.isManager(
-    req => req.user.userid,
-    manageDpt,
-    (isManager, req, res, next) => {
-      res.roles = { ...res.roles, isManager };
-      next();
-    },
-  ),
-  // 返回结果
-  (req, res) => res.send({ ret: SUCCESS, data: res.roles }),
+router.get('/me',
+  expressJwt({
+    secret: auth.jwt.secret,
+    credentialsRequired: true,
+    getToken,
+  }),
+  (req, res) => {
+    res.send({ ret: SUCCESS, data: req.user });
+  }
 );
+
+router.get('/jsconfig', async (req, res) => {
+  try {
+    const data = await wxapi.getJsConfig({
+      ...req.query,
+      debug: req.query.debug === 'true',
+      jsApiList: JSON.parse(req.query.jsApiList),
+    });
+    res.send({ ret: SUCCESS, data });
+  } catch (msg) {
+    console.log(msg);
+    res.send({ ret: SERVER_FAILED, msg });
+  }
+});
+
+router.get('/groupConfig', async (req, res) => {
+  try {
+    const data = await wxapi.getGroupConfig(req.query.url);
+    res.send({ ret: SUCCESS, data });
+  } catch (msg) {
+    console.log(msg);
+    res.send({ ret: SERVER_FAILED, msg });
+  }
+});
 
 export default router;
