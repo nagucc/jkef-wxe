@@ -52,10 +52,8 @@ app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 //
 // Authentication
 // -----------------------------------------------------------------------------
-// app.use('/api/fundinfo', regData);
 app.use('/api/stat', controllers.stat);
 app.use('/api/acceptors', acceptorsCtrl);
-// app.use('/api/fundinfo', regData);
 app.use('/api/profiles', profileCtrl);
 require('./api/controllers/worker');
 // app.use('/api/zxj-apply', zxjApplyCtrl);

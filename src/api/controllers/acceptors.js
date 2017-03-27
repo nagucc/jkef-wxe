@@ -11,7 +11,7 @@ import { SUCCESS, UNAUTHORIZED,
 import { profileMiddlewares as profile,
   manageDpt, supervisorDpt, acceptorMiddlewares } from '../../config';
 
-const tryRun = func => {
+const tryRun = (func) => {
   try {
     return func();
   } catch (e) {
@@ -59,7 +59,7 @@ router.put('/add',
           msg: `证件号码为${acceptor.idCard.number}的数据已存在`,
         });
       } else next();
-    }
+    },
   ),
   // 检查当前用户是否是管理员，以确定userid的值
   profile.isManager(
@@ -74,11 +74,13 @@ router.put('/add',
   ),
   // 在profile中添加数据
   profile.add(
-    req => {
+    (req) => {
       // 只需要添加以下字段，其他字段忽略。
       const { name, isMale, phone, userid } = req.body;
       return {
-        name, phone, userid,
+        name,
+        phone,
+        userid,
         isMale: isMale === 'true',
         isAcceptor: true,
       };
@@ -86,7 +88,7 @@ router.put('/add',
     (prof, req, res, next) => {
       req.profile = prof;
       next();
-    }
+    },
   ),
   // 在acceptor中添加数据
   acceptorMiddlewares.insert(
@@ -235,7 +237,7 @@ router.post('/:id',
     (isOwnerOrManager, req, res, next) => {
       if (isOwnerOrManager) next();
       else res.send({ ret: UNAUTHORIZED });
-    }
+    },
   ),
   // 只有Manager才能更新userid和name字段
   profile.isManager(

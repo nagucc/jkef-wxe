@@ -11,6 +11,7 @@
 /* jscs:disable maximumLineLength */
 import { MongoProfileMiddlewares, MongoProfile } from 'nagu-profile';
 import AcceptorManager from 'jkef-model';
+import debug from 'debug';
 import { AcceptorMiddlewares, StatMiddlewares } from 'acceptor-middlewares';
 import { writeData as gsWriteData } from './gridstore';
 import EntityManager from './entity';
@@ -29,8 +30,16 @@ export const analytics = {
 export const auth = {
 
   jwt: { secret: process.env.JWT_SECRET || 'React Starter Kit' },
-
+  // 微信企业号
+  wxent: {
+    corpId: process.env.WXE_CORPID,
+    secret: process.env.WXE_SECRET,
+    agentId: process.env.WXE_AGENTID || 28,
+  },
 };
+
+export const error = debug('jkef-wxe:error');
+export const info = debug('jkef-wxe:info');
 
 // Mongodb 数据库服务器Url
 export const mongoUrl = process.env.MONGO_URL || 'mongodb://localhost/jkef';

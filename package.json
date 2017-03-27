@@ -13,7 +13,7 @@
     "not ie < 9"
   ],
   "dependencies": {
-    "acceptor-middlewares": "^0.2.2",
+    "acceptor-middlewares": "^0.3.1",
     "accounting": "^0.4.1",
     "babel-polyfill": "^6.22.0",
     "bluebird": "^3.4.7",
@@ -22,6 +22,7 @@
     "cookie-parser": "^1.4.3",
     "core-js": "^2.4.1",
     "cron": "^1.2.1",
+    "debug": "^2.6.3",
     "express": "^4.14.1",
     "express-graphql": "^0.6.3",
     "express-jwt": "^5.1.0",
@@ -30,8 +31,9 @@
     "graphql": "^0.9.1",
     "history": "^4.5.1",
     "isomorphic-style-loader": "^1.1.0",
-    "jkef-model": "^0.2.8",
+    "jkef-model": "^0.2.9",
     "jsonwebtoken": "^7.2.1",
+    "memory-cache": "^0.1.6",
     "nagu-profile": "^0.5.2",
     "nagu-validates": "^0.1.0",
     "node-fetch": "^1.6.3",

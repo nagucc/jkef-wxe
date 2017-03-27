@@ -1,6 +1,6 @@
 import fetch from '../core/fetch';
 
-export const getJson = async(url, options) => {
+export const getJson = async (url, options) => {
   const res = await fetch(url, options);
   return await res.json();
 };

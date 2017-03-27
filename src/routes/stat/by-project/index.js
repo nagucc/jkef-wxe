@@ -6,7 +6,10 @@ export default {
   path: '/by-project',
 
   async action() {
-    return <StatByProject />;
+    return {
+      component: <StatByProject />,
+      title: '按项目统计',
+    };
   },
 
 };

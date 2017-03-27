@@ -2,9 +2,9 @@ import React, { PropTypes } from 'react';
 import { formatMoney, formatNumber } from 'accounting';
 import { connect } from 'react-redux';
 import getStatByProject from '../../../actions/stat/by-project';
-
-import { CellsTitle, Progress, MediaBoxDescription, MediaBox } from 'react-weui';
+import { MediaBoxDescription, MediaBox } from 'react-weui';
 import LoadingToast from '../../../components/LoadingToast';
+import List from './List';
 
 class StatByProject extends React.Component {
   static propTypes = {
@@ -16,41 +16,18 @@ class StatByProject extends React.Component {
     getStatByProject: PropTypes.func.isRequired,
     showToast: PropTypes.bool,
   };
-  static contextTypes = {
-    setTitle: PropTypes.func.isRequired,
-  };
   componentDidMount() {
-    this.context.setTitle('按项目统计');
     this.props.getStatByProject();
   }
   render() {
     const { stat, totalAmount, totalCount, lastUpdated, maxAmount,
       showToast } = this.props;
-    let year = (new Date(lastUpdated)).getYear() + 1900;
-    let month = (new Date(lastUpdated)).getMonth() + 1;
+    const year = (new Date(lastUpdated)).getYear() + 1900;
+    const month = (new Date(lastUpdated)).getMonth() + 1;
     return (
       <div className="progress">
         <div className="bd spacing">
-          {
-            stat.map((item, i) => {
-              if (item.value) {
-                return (
-                  <div key={i}>
-                    <CellsTitle>
-                      <a href={`/acceptors/list/?project=${encodeURIComponent(item._id)}`} >
-                        {item._id}
-                      </a>
-                    </CellsTitle>
-                    <CellsTitle>
-                      {formatMoney(item.value.amount, '¥')}元 | {formatNumber(item.value.count)}人次
-                    </CellsTitle>
-                    <Progress value={(item.value.amount / maxAmount) * 100} />
-                  </div>
-                );
-              }
-              return null;
-            })
-          }
+          <List stat={stat} />
         </div>
         <MediaBox>
           <MediaBoxDescription>
@@ -67,13 +44,13 @@ class StatByProject extends React.Component {
   }
 }
 
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
   const stat = state.stat.byProject.data;
   let totalAmount = 0;
   let totalCount = 0;
   let lastUpdated = 0;
   let maxAmount = 0;
-  stat.forEach(item => {
+  stat.forEach((item) => {
     totalAmount += item.value.amount;
     totalCount += item.value.count;
     lastUpdated = Math.max(lastUpdated,

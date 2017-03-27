@@ -3,12 +3,14 @@ import { Cells, Cell, CellFooter, CellBody,
   Panel, PanelHeader, PanelBody,
   MediaBox, Msg,
   Button } from 'react-weui';
+import { connect } from 'react-redux';
 import NeedSignup from '../../../components/NeedSignup';
 import * as actions from '../../../actions/acceptors/list';
 import * as commonActions from '../../../actions/common';
 import LoadingToast from '../../../components/LoadingToast';
 import Filter from './Filter';
-import { reduxForm } from 'redux-form';
+import EnsureSignupWxe from '../../../components/WeChat/EnsureSignupWxe';
+
 
 class ListAcceptors extends React.Component {
   static propTypes = {
@@ -29,11 +31,11 @@ class ListAcceptors extends React.Component {
       const { fetchAcceptors, query } = this.props;
       query.pageIndex++;
       fetchAcceptors(query);
-    }
+    };
     return (
       <div className="progress">
-        <NeedSignup />
-          {
+        <EnsureSignupWxe />
+        {
             error ? <Msg type="warn" title="发生错误" description={error.msg} /> : (
               <div className="bd">
                 <Filter />
@@ -43,10 +45,10 @@ class ListAcceptors extends React.Component {
                   </PanelHeader>
                   <PanelBody>
                     <MediaBox type="small_appmsg">
-                      <Cells access>
+                      <Cells>
                         {
                           data.map(acc => (
-                            <Cell href={`/acceptors/detail/${acc._id}`} key={acc._id}>
+                            <Cell href={`/acceptors/detail/${acc._id}`} key={acc._id} access>
                               <CellBody>
                                 {acc.name}
                               </CellBody>
@@ -74,11 +76,16 @@ class ListAcceptors extends React.Component {
   }
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = state => ({
   ...state.acceptors.list,
 });
 
-export default reduxForm({
-  form: 'acceptorsList',
-  fields: ['pageIndex', 'year', 'project', 'text'],
-}, mapStateToProps, { ...actions, ...commonActions })(ListAcceptors);
+// export default reduxForm({
+//   form: 'acceptorsList',
+//   fields: ['pageIndex', 'year', 'project', 'text'],
+// }, mapStateToProps, { ...actions, ...commonActions })(ListAcceptors);
+
+export default connect(mapStateToProps, {
+  ...actions,
+  ...commonActions,
+})(ListAcceptors);

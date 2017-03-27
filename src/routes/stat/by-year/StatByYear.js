@@ -1,9 +1,10 @@
 import React, { PropTypes } from 'react';
 import { formatMoney, formatNumber } from 'accounting';
 import { connect } from 'react-redux';
-import { CellsTitle, Progress, MediaBox, MediaBoxDescription } from 'react-weui';
+import { MediaBox, MediaBoxDescription } from 'react-weui';
 import getStatByYear from '../../../actions/stat/by-year';
 import LoadingToast from '../../../components/LoadingToast';
+import List from './List';
 
 class StatByYear extends React.Component {
   static propTypes = {
@@ -26,26 +27,7 @@ class StatByYear extends React.Component {
     return (
       <div className="progress">
         <div className="bd spacing">
-          {
-            stat.map((item, i) => {
-              if (item.value) {
-                return (
-                  <div key={i}>
-                    <CellsTitle>
-                      <a href={`/acceptors/list/?year=${item._id}`}>
-                        {item._id}年
-                      </a>
-                    </CellsTitle>
-                    <CellsTitle>
-                      {formatMoney(item.value.amount, '¥')}元 | {formatNumber(item.value.count)}人次
-                    </CellsTitle>
-                    <Progress value={(item.value.amount / maxAmount) * 100} />
-                  </div>
-                );
-              }
-              return null;
-            })
-          }
+          <List stat={stat} />
         </div>
         <MediaBox>
           <MediaBoxDescription>
