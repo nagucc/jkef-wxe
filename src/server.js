@@ -12,7 +12,6 @@ import express from 'express';
 import cookieParser from 'cookie-parser';
 import bodyParser from 'body-parser';
 import expressJwt from 'express-jwt';
-import expressGraphQL from 'express-graphql';
 import jwt from 'jsonwebtoken';
 import React from 'react';
 import ReactDOM from 'react-dom/server';
@@ -22,21 +21,16 @@ import App from './components/App';
 import Html from './components/Html';
 import { ErrorPageWithoutStyle } from './routes/error/ErrorPage';
 import errorPageStyle from './routes/error/ErrorPage.css';
-import passport from './core/passport';
-import models from './data/models';
-import schema from './data/schema';
 import routes from './routes';
 import assets from './assets.json'; // eslint-disable-line import/no-unresolved
 import configureStore from './store/configureStore';
 import { setRuntimeVariable } from './actions/runtime';
-import { port, auth, showLog } from './config';
-import regData from './api/controllers/RegistrationData';
-import statCtrl from './api/controllers/stat';
 import acceptorsCtrl from './api/controllers/acceptors';
 import wxeAuthCtrl from './api/controllers/wxe-auth';
 import profileCtrl from './api/controllers/profiles';
 import { port, auth } from './config';
-import wxeAuthCtrl from './api/controllers/wxe-auth';
+import controllers from './api/controllers';
+
 const app = express();
 
 //
@@ -54,64 +48,33 @@ app.use(cookieParser(auth.jwt.secret));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
-if (showLog) {
-  const morgan = require('morgan');
-  app.use(morgan('dev'));
-}
 
 //
 // Authentication
 // -----------------------------------------------------------------------------
-app.use('/api/fundinfo', regData);
-app.use('/api/stat', statCtrl);
+// app.use('/api/fundinfo', regData);
+app.use('/api/stat', controllers.stat);
 app.use('/api/acceptors', acceptorsCtrl);
-app.use('/api/fundinfo', regData);
-require('./api/controllers/worker');
-app.use('/api/wxe-auth', wxeAuthCtrl);
+// app.use('/api/fundinfo', regData);
 app.use('/api/profiles', profileCtrl);
+require('./api/controllers/worker');
 // app.use('/api/zxj-apply', zxjApplyCtrl);
 
-// app.use('/graphql', expressGraphQL(req => ({
-//   schema,
-//   graphiql: true,
-//   rootValue: { request: req },
-//   pretty: process.env.NODE_ENV !== 'production',
-// })));
 
 app.use(expressJwt({
   secret: auth.jwt.secret,
   credentialsRequired: false,
   getToken: req => req.cookies.id_token,
 }));
-app.use(passport.initialize());
 
 if (__DEV__) {
   app.enable('trust proxy');
 }
-app.get('/login/facebook',
-  passport.authenticate('facebook', { scope: ['email', 'user_location'], session: false }),
-);
-app.get('/login/facebook/return',
-  passport.authenticate('facebook', { failureRedirect: '/login', session: false }),
-  (req, res) => {
-    const expiresIn = 60 * 60 * 24 * 180; // 180 days
-    const token = jwt.sign(req.user, auth.jwt.secret, { expiresIn });
-    res.cookie('id_token', token, { maxAge: 1000 * expiresIn, httpOnly: true });
-    res.redirect('/');
-  },
-);
 
 //
 // Register API middleware
 // -----------------------------------------------------------------------------
 app.use('/api/wxe-auth', wxeAuthCtrl);
-
-app.use('/graphql', expressGraphQL(req => ({
-  schema,
-  graphiql: __DEV__,
-  rootValue: { request: req },
-  pretty: __DEV__,
-})));
 
 //
 // Register server-side rendering middleware

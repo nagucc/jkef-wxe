@@ -29,7 +29,7 @@ export const addCareer = (id, career) =>
         reject(result);
       }
     } catch (e) {
-      const result = { ret: -1, msg: e }
+      const result = { ret: -1, msg: e };
       dispatch(fetchFailed(result));
       reject(result);
     }

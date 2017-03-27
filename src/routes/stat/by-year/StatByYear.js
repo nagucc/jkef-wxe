@@ -21,8 +21,8 @@ class StatByYear extends React.Component {
   render() {
     const { stat, totalAmount, totalCount, lastUpdated, maxAmount,
       showToast } = this.props;
-    let year = (new Date(lastUpdated)).getYear() + 1900;
-    let month = (new Date(lastUpdated)).getMonth() + 1;
+    const year = (new Date(lastUpdated)).getYear() + 1900;
+    const month = (new Date(lastUpdated)).getMonth() + 1;
     return (
       <div className="progress">
         <div className="bd spacing">
@@ -62,13 +62,13 @@ class StatByYear extends React.Component {
   }
 }
 
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
   const stat = state.stat.byYear.data;
   let totalAmount = 0;
   let totalCount = 0;
   let lastUpdated = 0;
   let maxAmount = 0;
-  stat.forEach(item => {
+  stat.forEach((item) => {
     totalAmount += item.value.amount;
     totalCount += item.value.count;
     lastUpdated = Math.max(lastUpdated,
