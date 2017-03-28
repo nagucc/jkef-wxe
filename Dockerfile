@@ -1,4 +1,4 @@
-FROM node:7
+FROM node:7.7.0-alpine
 
 ADD *.json /rsk/
 ADD src /rsk/src
