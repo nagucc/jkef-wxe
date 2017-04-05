@@ -17,7 +17,7 @@ class Filter extends React.Component {
   render() {
     const { clean, values, fetchAcceptors } = this.props;
     let searchTimeoutId = null;
-    const search = text => {
+    const search = (text) => {
       /*
       为了避免多次提交请求，这里延迟一秒。
       一秒之内如果再次触发onChange事件，则取消上一个动作。
@@ -71,13 +71,14 @@ class Filter extends React.Component {
                 </Select>
               </CellBody>
             </FormCell>
-            <Button onClick={() => {
-              clean();
-              fetchAcceptors({
-                pageIndex: 0,
-                ...values,
-              });
-            }}
+            <Button
+              onClick={() => {
+                clean();
+                fetchAcceptors({
+                  pageIndex: 0,
+                  ...values,
+                });
+              }}
             >
               查询
             </Button>
@@ -88,7 +89,7 @@ class Filter extends React.Component {
   }
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = state => ({
   ...state.acceptors.list,
 });
 

@@ -4,7 +4,6 @@ import { Cells, Cell, CellFooter, CellBody,
   MediaBox, Msg,
   Button } from 'react-weui';
 import { connect } from 'react-redux';
-import NeedSignup from '../../../components/NeedSignup';
 import * as actions from '../../../actions/acceptors/list';
 import * as commonActions from '../../../actions/common';
 import LoadingToast from '../../../components/LoadingToast';
@@ -18,7 +17,7 @@ class ListAcceptors extends React.Component {
     totalCount: PropTypes.number,
     error: PropTypes.object,
     fetchAcceptors: PropTypes.func.isRequired,
-    clean: PropTypes.func.isRequired,
+    // clean: PropTypes.func.isRequired,
     query: PropTypes.object,
     showToast: PropTypes.bool,
   };

@@ -1,9 +1,10 @@
 FROM node:7.7.0-alpine
 
 ADD *.json /rsk/
-ADD src /rsk/src
-ADD tools /rsk/tools
 ADD LICENSE.txt /rsk/
+ADD src /rsk/src
+ADD public /rsk/public
+ADD tools /rsk/tools
 WORKDIR /rsk
 
 RUN npm install

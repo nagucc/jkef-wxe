@@ -11,7 +11,7 @@ export const findAcceptorsByProject = async (project, pageIndex = 0) => {
   throw new Error(`find acceptors by project failed:${JSON.stringify(result.msg)}`);
 };
 
-export const findAcceptors = async ({ project, year, text, pageIndex = 0, pageSize = 100 } = {
+export const findAcceptors = async ({ project, year, text, pageIndex = 0, pageSize = 1000 } = {
   pageIndex: 0,
   pageSize: 100,
 }) => {

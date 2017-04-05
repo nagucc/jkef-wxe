@@ -3,13 +3,15 @@ eslint-disable no-param-reassign
  */
 
 import { Router } from 'express';
+import expressJwt from 'express-jwt';
 
 import * as auth from 'wxe-auth-express';
 import { ObjectId } from 'mongodb';
 import { SUCCESS, UNAUTHORIZED,
   OBJECT_ALREADY_EXISTS } from 'nagu-validates';
 import { profileMiddlewares as profile,
-  manageDpt, supervisorDpt, acceptorMiddlewares } from '../../config';
+  manageDpt, supervisorDpt, acceptorMiddlewares, auth as auth2 } from '../../config';
+import * as wxeAuth from './wxe-auth-middlewares';
 
 const tryRun = (func) => {
   try {
@@ -20,12 +22,17 @@ const tryRun = (func) => {
 };
 
 // 获取当前用户的Id
-const getId = req => req.user.userid;
+const getId = req => req.user.UserId;
 
 const router = new Router();
 
 router.get('/list/:pageIndex',
-  auth.getUserId(),
+  // 确保用户已登录
+  expressJwt({
+    secret: auth2.jwt.secret,
+    credentialsRequired: true,
+    getToken: wxeAuth.getToken,
+  }),
   // 判断是否是Supervisor或Manager，只有这两种角色可以查看列表
   profile.isSupervisorOrManager(
     getId,
@@ -99,7 +106,7 @@ router.put('/add',
 );
 
 router.get('/detail/:id',
-  auth.getUserId(),
+  // auth.getUserId(),
   // 判断用户是否具有查看权限。拥有者、管理者可以查看
   profile.isOwnerOrSupervisorOrManager(
     req => tryRun(() => new ObjectId(req.params.id)),
