@@ -8,7 +8,7 @@ export default {
 
   async action() {
     // 提交到服务器进行注册的方法
-    const action = async data => {
+    const action = async (data) => {
       let result;
       try {
         const res = await fetch('/api/acceptors/add', {
@@ -33,7 +33,7 @@ export default {
     };
     return {
       component: (<Registration {...props} />),
-      title: '添加受助者',
+      title: '添加受赠者',
     };
   },
 };

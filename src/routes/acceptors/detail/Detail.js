@@ -13,6 +13,7 @@ import RecordHistory from './RecordHistory';
 import BaseInfo from './BaseInfo';
 import * as actions from '../../../actions/acceptors/detail';
 import { setUserRole } from '../../../actions/wxe-auth';
+import Container from '../../../components/Weui/Container';
 
 class Detail extends React.Component {
   static propTypes = {
@@ -44,7 +45,7 @@ class Detail extends React.Component {
   }
   render() {
     const { acceptor, acceptor: { name, _id },
-      error, showToast, isManager } = this.props;
+      error, showToast, isManager, toast } = this.props;
 
     const actionSheetParams = {
       show: this.state.showActionSheet,
@@ -70,13 +71,12 @@ class Detail extends React.Component {
     };
 
     return (
-      <div className="progress">
-        <div className="hd">
+      <Container>
+        <div className="page__hd" >
           <h1 className="page_title">{name}</h1>
         </div>
-        <div className="bd">
+        <div className="page__bd">
           <NeedSignup />
-          <CheckRoles success={roles => this.props.setUserRole(roles)} />
           {
             error ? <Msg type="warn" title="发生错误" description={JSON.stringify(error.msg)} /> : (
               <div>
@@ -98,19 +98,19 @@ class Detail extends React.Component {
             )
           }
         </div>
-        <Toast icon="loading" show={showToast} >加载中...</Toast>
-      </div>
+        <Toast icon="loading" show={toast.loading} >加载中...</Toast>
+      </Container>
     );
   }
 }
 
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
   const { acceptor, error, toast } = state.acceptors.detail;
   return {
-    showToast: toast.show,
+    ...state.wechat,
     acceptor,
     error,
-    isManager: state.me.roles.isManager,
+    isManager: false, //state.me.roles.isManager,
   };
 };
 export default connect(mapStateToProps, { ...actions, setUserRole })(Detail);

@@ -5,9 +5,9 @@ class Footer extends React.Component {
     return (
       <div className="weui-footer" style={{ marginTop: '10px' }}>
         <p className="weui-footer__links">
-          <a href="http://www.itc.ynu.edu.cn" className="weui-footer__link">信息技术中心</a>
+          <a href="http://jkef.nagu.cc" className="weui-footer__link">家琨教育基金会</a>
         </p>
-        <p className="weui-footer__text">Copyright © 2016-{(new Date()).getFullYear()} 云南大学</p>
+        <p className="weui-footer__text">Copyright © 2006-{(new Date()).getFullYear()} 云南大学</p>
       </div>
     );
   }

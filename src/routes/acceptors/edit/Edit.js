@@ -3,21 +3,23 @@ eslint-disable react/prop-types
  */
 import React, { PropTypes } from 'react';
 import { CellsTitle, CellHeader, CellBody,
-  Form, FormCell, Input, Select, Button, Msg, Toast } from 'react-weui';
-import NeedSignup from '../../../components/NeedSignup';
-import CheckRoles from '../../../components/CheckRoles';
+  Form, FormCell, Button, Msg, Toast, Cell, Cells } from 'react-weui';
+// import NeedSignup from '../../../components/NeedSignup';
+// import CheckRoles from '../../../components/CheckRoles';
 import { connect } from 'react-redux';
 import { reduxForm, Field, formValueSelector } from 'redux-form';
 import Container from '../../../components/Weui/Container';
 import Footer from '../../../components/Footer';
 import * as registrationActions from '../../../actions/acceptors/registration';
 import * as authActions from '../../../actions/wxe-auth';
+import * as detailActions from '../../../actions/acceptors/detail';
+import * as actions from '../../../actions/acceptors';
 
 /*
 受赠者登记表
 包括：姓名、证件信息、性别、手机号
  */
-export class RegistrationComponent extends React.Component {
+export class Edit extends React.Component {
   static propTypes = {
     setIdCardTypeGroup: PropTypes.func.isRequired,
     setIdCardTypePerson: PropTypes.func.isRequired,
@@ -29,46 +31,21 @@ export class RegistrationComponent extends React.Component {
     handleSubmit: PropTypes.func.isRequired,
   };
   async componentDidMount() {
-    // 设置标题
-    const { error, fetchById, showRegistration, unauthorized } = this.props;
-
-    if (fetchById) showRegistration(await fetchById());
-
-    if (error) {
-      unauthorized();
-      return;
-    }
-    const event = new MouseEvent('change', {
-      view: window,
-      bubbles: true,
-    });
-    // document.getElementById('idCardType').dispatchEvent(event);
+    const { fetchAcceptor, acceptorId } = this.props;
+    fetchAcceptor(acceptorId);
   }
   render() {
-    const { ui, setUserRole, fields, action, title, defaultTitle, toast, values } = this.props;
+    const { ui, setUserRole, title, defaultTitle, toast, values, acceptorId, updateAcceptor } = this.props;
 
-    // 处理证件类型改变时的事件
-    const typeChanged = (e) => {
-      // fields.idCard.type.onChange(e);
-      const { setIdCardTypeGroup, setIdCardTypePerson } = this.props;
-      switch (e.target.value) {
-        case '统一社会信用代码证':
-          setIdCardTypeGroup();
-          break;
-        case '身份证':
-          setIdCardTypePerson();
-          break;
-        default:
+    const submit = async (data) => {
+      let result;
+      try {
+        result = await updateAcceptor(acceptorId, data);
+        window.location = `/acceptors/detail/${acceptorId}`;
+      } catch (e) {
+        alert(`操作失败：${JSON.stringify(result)}`); // eslint-disable-line no-alert
       }
     };
-
-    // 处理提交按钮的点击事件
-    const submit = values => action(values).then((acc) => {
-      window.location = `/acceptors/detail/${acc._id}`;
-    }, (result) => {
-      alert(`操作失败：${JSON.stringify(result)}`); // eslint-disable-line no-alert
-    });
-
     // 返回组件
     return (
       <Container>
@@ -81,30 +58,29 @@ export class RegistrationComponent extends React.Component {
               <Msg type="warn" title="发生错误" description={ui.errorMsg.msg} />
               ) : null
           }
+          <CellsTitle>证件信息</CellsTitle>
           {
             ui.cardPanel.visiable ? (
-              <Form>
-                <CellsTitle>证件信息</CellsTitle>
-                <FormCell select>
+              <Cells>
+                <Cell select>
                   <CellBody>
                     <Field
                       name="idCard.type" component="select"
                       className="weui-select"
-                      onChange={typeChanged}
                     >
                       <option value="">请选择证件类型</option>
                       <option value="身份证">身份证</option>
                       <option value="统一社会信用代码证">统一社会信用代码证</option>
                     </Field>
                   </CellBody>
-                </FormCell>
-                <FormCell>
+                </Cell>
+                <Cell>
                   <CellHeader>证件号码</CellHeader>
                   <CellBody>
                     <Field name="idCard.number" component="input" placeholder="请输入证件号码" className="weui-input" />
                   </CellBody>
-                </FormCell>
-              </Form>
+                </Cell>
+              </Cells>
             ) : null
           }
           {
@@ -120,8 +96,8 @@ export class RegistrationComponent extends React.Component {
               </Form>
             ) : null
           }
+          <CellsTitle>基本信息</CellsTitle>
           <Form>
-            <CellsTitle>基本信息</CellsTitle>
             <FormCell>
               <CellHeader>名称</CellHeader>
               <CellBody>
@@ -129,7 +105,7 @@ export class RegistrationComponent extends React.Component {
               </CellBody>
             </FormCell>
             {
-              values.idCard && values.idCard.type === '身份证' ? (
+              values && values.idCard && values.idCard.type === '身份证' ? (
                 <FormCell select>
                   <CellBody>
                     <Field component="select" name="isMale" className="weui-select">
@@ -158,18 +134,29 @@ export class RegistrationComponent extends React.Component {
 }
 
 const selector = formValueSelector('registration');
-const mapStateToProps = state => ({
-  ...state.acceptors.registration,
-  ...state.wechat,
-  values: selector(state, 'name', 'idCard'),
-  me: state.me,
-  title: state.acceptors.registration.data.name,
-  // initialValues: state.acceptors.registration.data,
-});
-export default reduxForm({
-  form: 'registration',
-  // fields: ['userid', 'idCard.number', 'idCard.type', 'name', 'phone', 'isMale'],
-})(connect(mapStateToProps, {
+const mapStateToProps = (state) => {
+  let result = {
+    ...state.acceptors.registration,
+    ...state.wechat,
+    values: selector(state, 'name', 'idCard'),
+    me: state.me,
+    title: state.acceptors.detail.acceptor.name,
+  };
+  if (state.acceptors.detail.acceptor.name) {
+    result = {
+      ...result,
+      initialValues: state.acceptors.detail.acceptor,
+    };
+  }
+  return result;
+};
+
+export default connect(mapStateToProps, {
   ...registrationActions,
   ...authActions,
-})(RegistrationComponent));
+  ...detailActions,
+  ...actions,
+})(reduxForm({
+  form: 'registration',
+  // fields: ['userid', 'idCard.number', 'idCard.type', 'name', 'phone', 'isMale'],
+})(Edit));

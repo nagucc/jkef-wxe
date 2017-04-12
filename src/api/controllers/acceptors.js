@@ -4,7 +4,6 @@ eslint-disable no-param-reassign
 
 import { Router } from 'express';
 import expressJwt from 'express-jwt';
-
 import * as auth from 'wxe-auth-express';
 import { ObjectId } from 'mongodb';
 import { SUCCESS, UNAUTHORIZED,
@@ -55,7 +54,12 @@ router.get('/list/:pageIndex',
 );
 
 router.put('/add',
-  auth.getUserId(),
+  // 确保用户已登录
+  expressJwt({
+    secret: auth2.jwt.secret,
+    credentialsRequired: true,
+    getToken: wxeAuth.getToken,
+  }),
   // 检查证件号码是否已在
   acceptorMiddlewares.findOneByIdCardNumber(
     req => req.body.idCard ? req.body.idCard.number : null,
@@ -107,6 +111,12 @@ router.put('/add',
 
 router.get('/detail/:id',
   // auth.getUserId(),
+  // 确保用户已登录
+  expressJwt({
+    secret: auth2.jwt.secret,
+    credentialsRequired: true,
+    getToken: wxeAuth.getToken,
+  }),
   // 判断用户是否具有查看权限。拥有者、管理者可以查看
   profile.isOwnerOrSupervisorOrManager(
     req => tryRun(() => new ObjectId(req.params.id)),
@@ -235,7 +245,13 @@ router.delete('/record/:id/:recordId',
 );
 
 router.post('/:id',
-  auth.getUserId(),
+  // auth.getUserId(),
+  // 确保用户已登录
+  expressJwt({
+    secret: auth2.jwt.secret,
+    credentialsRequired: true,
+    getToken: wxeAuth.getToken,
+  }),
   // 只有拥有者或Manager才能执行更新
   profile.isOwnerOrManager(
     req => tryRun(() => new ObjectId(req.params.id)),

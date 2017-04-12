@@ -2,7 +2,7 @@ import { Router } from 'express';
 import expressJwt from 'express-jwt';
 import { SUCCESS, SERVER_FAILED } from 'nagu-validates';
 import WxeApi from 'wxe-api';
-import { signin, getToken } from '../controllers/wxe-auth-middlewares';
+import { signin, getToken, getUserId } from '../controllers/wxe-auth-middlewares';
 import { host, auth } from '../../config';
 
 const router = new Router();
@@ -23,7 +23,7 @@ router.get('/me',
   }),
   (req, res) => {
     res.send({ ret: SUCCESS, data: req.user });
-  }
+  },
 );
 
 router.get('/jsconfig', async (req, res) => {

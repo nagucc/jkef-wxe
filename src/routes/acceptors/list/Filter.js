@@ -2,6 +2,7 @@ import React, { PropTypes } from 'react';
 import { Form, FormCell, CellsTitle, CellBody, CellHeader,
   Panel, PanelHeader, PanelBody,
   Select, Button, SearchBar, CellFooter, Switch } from 'react-weui';
+import { connect } from 'react-redux';
 import { reduxForm } from 'redux-form';
 import * as actions from '../../../actions/acceptors/list';
 import * as commonActions from '../../../actions/common';
@@ -15,6 +16,7 @@ class Filter extends React.Component {
     query: PropTypes.object,
   };
   render() {
+    // console.log('###', this.props);
     const { clean, values, fetchAcceptors } = this.props;
     let searchTimeoutId = null;
     const search = (text) => {
@@ -93,7 +95,11 @@ const mapStateToProps = state => ({
   ...state.acceptors.list,
 });
 
-export default reduxForm({
-  form: 'acceptorsList',
-  fields: ['year', 'project'],
-}, mapStateToProps, { ...actions, ...commonActions })(Filter);
+export default connect(
+  mapStateToProps, {
+    ...actions,
+    ...commonActions,
+  })(reduxForm({
+    form: 'acceptorsList',
+    fields: ['year', 'project'],
+  })(Filter));
