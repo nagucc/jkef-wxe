@@ -12,14 +12,14 @@ import { Form, FormCell,
 import { reduxForm } from 'redux-form';
 import { required } from '../../../validates';
 
-const validate = values => {
+const validate = (values) => {
   const errors = {
     needRemove: required(values.needRemove),
   };
   return errors;
 };
 
-export class RemoveCareerComponent extends React.Component {
+class RemoveCareerComponent extends React.Component {
   static propTypes = {
     remove: PropTypes.func.isRequired,
     resetForm: PropTypes.func,
@@ -40,15 +40,16 @@ export class RemoveCareerComponent extends React.Component {
         <CellsTitle>删除工作经历</CellsTitle>
         <FormCell>
           <CellHeader>
-            <Select {...needRemove} data={[{
-              value: '',
-              label: '请选择',
-            },
-            ...history.map(career => ({
-              value: JSON.stringify(career),
-              label: career.name,
-            })),
-            ]}
+            <Select
+              {...needRemove} data={[{
+                value: '',
+                label: '请选择',
+              },
+                ...history.map(career => ({
+                  value: JSON.stringify(career),
+                  label: career.name,
+                })),
+              ]}
             />
           </CellHeader>
         </FormCell>

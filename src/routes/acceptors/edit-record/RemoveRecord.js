@@ -12,14 +12,14 @@ import { Form, FormCell,
 import { reduxForm } from 'redux-form';
 import { required } from '../../../validates';
 
-const validate = values => {
+const validate = (values) => {
   const errors = {
     record: required(values.record),
   };
   return errors;
 };
 
-export class RemoveRecord extends React.Component {
+class RemoveRecord extends React.Component {
   static propTypes = {
     remove: PropTypes.func.isRequired,
     resetForm: PropTypes.func,
@@ -39,17 +39,18 @@ export class RemoveRecord extends React.Component {
         <CellsTitle>删除受赠记录</CellsTitle>
         <FormCell select>
           <CellBody>
-            <Select {...record} data={[{
-              value: '',
-              label: '请选择',
-            },
-            ...data.map(rec => ({
-              value: rec._id,
-              label: `${(new Date(rec.date)).getFullYear()}年|${rec.project}|${rec.amount / 1000}`,
-            })),
-            ]}
+            <Select
+              {...record} data={[{
+                value: '',
+                label: '请选择',
+              },
+                ...data.map(rec => ({
+                  value: rec._id,
+                  label: `${(new Date(rec.date)).getFullYear()}年|${rec.project}|${rec.amount / 1000}`,
+                })),
+              ]}
             />
-        </CellBody>
+          </CellBody>
         </FormCell>
         <Button type="warn" onClick={handleSubmit(submit)}>删除</Button>
       </Form>

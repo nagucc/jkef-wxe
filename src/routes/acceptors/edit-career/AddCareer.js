@@ -9,7 +9,7 @@ import { Form, FormCell, Icon,
   CellHeader, CellBody, CellFooter,
   CellsTitle, CellsTips, Input, Cells, Cell,
   Button } from 'react-weui';
-// import { connect } from 'react-redux';
+import { connect } from 'react-redux';
 import { reduxForm, Field } from 'redux-form';
 import { required, range, integer, REQUIRED, INVALID_NUMBER,
   TOO_LARGE_NUMBER, TOO_SMALL_NUMBER,
@@ -23,7 +23,7 @@ const validate = (values) => {
   return errors;
 };
 
-export class AddCareerComponent extends React.Component {
+class AddCareerComponent extends React.Component {
   static propTypes = {
     add: PropTypes.func.isRequired,
     // resetForm: PropTypes.func.isRequired,
@@ -35,7 +35,6 @@ export class AddCareerComponent extends React.Component {
     const submitNew = values => (add(values).then(() => {
       this.props.resetForm();
     }));
-
     return (
       <div>
         <CellsTitle>添加工作经历</CellsTitle>

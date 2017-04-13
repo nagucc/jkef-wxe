@@ -3,21 +3,21 @@
  */
 import React, { PropTypes } from 'react';
 import { Toast, Msg } from 'react-weui';
+import { connect } from 'react-redux';
 import CareerHistory from '../detail/CareerHistory';
 import AddCareer from './AddCareer';
 import RemoveCareer from './RemoveCareer';
-import { connect } from 'react-redux';
 import NeedSignup from '../../../components/NeedSignup';
 
 export class EditCareerComponent extends React.Component {
   static propTypes = {
-    history: React.PropTypes.array,
-    add: PropTypes.func,
-    remove: PropTypes.func,
-    init: PropTypes.func,
-    err: PropTypes.object,
-    fields: PropTypes.object,
-    toast: PropTypes.object,
+    // history: React.PropTypes.array,
+    // add: PropTypes.func,
+    // remove: PropTypes.func,
+    init: PropTypes.func.isRequired,
+    // err: PropTypes.object,
+    // fields: PropTypes.object,
+    // toast: PropTypes.object,
   };
   static defaultProps = {
     history: [],
