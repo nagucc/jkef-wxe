@@ -85,3 +85,7 @@ export const statMiddlewares = new StatMiddlewares(mongoUrl, 'acceptors');
 
 // 用于受赠者统计的cron字符串,默认为2分钟统计一次。
 export const statCron = process.env.ACCEPTORS_STAT_CRON || '00 */2 * * * *';
+
+export const apiHost = process.env.JKEF_API_HOST || 'http://api.jkef.nagu.cc';
+
+export const apiToken = process.env.JKEF_API_TOKEN || '';
