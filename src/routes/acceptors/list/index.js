@@ -9,6 +9,8 @@ export default {
     const component = (<ListAcceptors
       query={{
         text: '',
+        pageIndex: 0,
+        pageSize: 10,
         ...query,
       }}
     />);
