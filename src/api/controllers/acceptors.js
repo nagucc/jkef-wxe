@@ -11,6 +11,7 @@ import { SUCCESS, UNAUTHORIZED,
 import { profileMiddlewares as profile,
   manageDpt, supervisorDpt, acceptorMiddlewares, auth as auth2 } from '../../config';
 import * as wxeAuth from './wxe-auth-middlewares';
+import * as acceptorsMiddleware from '../middlewares/acceptors';
 
 const tryRun = (func) => {
   try {
@@ -32,6 +33,7 @@ router.get('/list/:pageIndex',
     credentialsRequired: true,
     getToken: wxeAuth.getToken,
   }),
+
   // 判断是否是Supervisor或Manager，只有这两种角色可以查看列表
   profile.isSupervisorOrManager(
     getId,
@@ -43,14 +45,18 @@ router.get('/list/:pageIndex',
     },
   ),
   // 获取数据
-  acceptorMiddlewares.listByRecord(
-    req => ({
-      ...req.query,
-      pageIndex: parseInt(req.params.pageIndex, 10),
-      pageSize: parseInt(req.query.pageSize, 10),
-    }),
-    (data, req, res) => res.send({ ret: SUCCESS, data }),
-  ),
+  acceptorsMiddleware.list(),
+
+  // 返回数据
+  (req, res) => res.json({ ret: SUCCESS, data: res.data }),
+  // acceptorMiddlewares.listByRecord(
+  //   req => ({
+  //     ...req.query,
+  //     pageIndex: parseInt(req.params.pageIndex, 10),
+  //     pageSize: parseInt(req.query.pageSize, 10),
+  //   }),
+  //   (data, req, res) => res.send({ ret: SUCCESS, data }),
+  // ),
 );
 
 router.put('/add',
@@ -110,7 +116,6 @@ router.put('/add',
 );
 
 router.get('/detail/:id',
-  // auth.getUserId(),
   // 确保用户已登录
   expressJwt({
     secret: auth2.jwt.secret,
@@ -128,9 +133,10 @@ router.get('/detail/:id',
       else res.send({ ret: UNAUTHORIZED });
     },
   ),
-  acceptorMiddlewares.getById(
+  acceptorsMiddleware.getById(
     req => (new ObjectId(req.params.id)),
   ),
+  (req, res) => res.send({ ret: SUCCESS, data: res.data }),
 );
 
 router.put('/edu/:id',
@@ -173,7 +179,12 @@ router.delete('/edu/:id',
 );
 
 router.put('/career/:id',
-  auth.getUserId(),
+  // 确保用户已登录
+  expressJwt({
+    secret: auth2.jwt.secret,
+    credentialsRequired: true,
+    getToken: wxeAuth.getToken,
+  }),
   profile.isOwnerOrManager(
     req => tryRun(() => new ObjectId(req.params.id)),
     getId,
@@ -192,7 +203,12 @@ router.put('/career/:id',
 );
 
 router.delete('/career/:id',
-  auth.getUserId(),
+  // 确保用户已登录
+  expressJwt({
+    secret: auth2.jwt.secret,
+    credentialsRequired: true,
+    getToken: wxeAuth.getToken,
+  }),
   profile.isOwnerOrManager(
     req => tryRun(() => new ObjectId(req.params.id)),
     getId,
