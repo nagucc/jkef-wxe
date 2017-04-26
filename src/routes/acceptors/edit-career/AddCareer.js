@@ -26,14 +26,14 @@ const validate = (values) => {
 class AddCareerComponent extends React.Component {
   static propTypes = {
     add: PropTypes.func.isRequired,
-    // resetForm: PropTypes.func.isRequired,
+    reset: PropTypes.func.isRequired,
     handleSubmit: PropTypes.func.isRequired,
   };
   render() {
     const { add } = this.props;
 
     const submitNew = values => (add(values).then(() => {
-      this.props.resetForm();
+      this.props.reset();
     }));
     return (
       <div>

@@ -9,7 +9,7 @@ import { Form, FormCell,
   CellHeader, Select,
   CellsTitle,
   Button } from 'react-weui';
-import { reduxForm } from 'redux-form';
+import { reduxForm, Field } from 'redux-form';
 import { required } from '../../../validates';
 
 const validate = (values) => {
@@ -22,17 +22,17 @@ const validate = (values) => {
 class RemoveCareerComponent extends React.Component {
   static propTypes = {
     remove: PropTypes.func.isRequired,
-    resetForm: PropTypes.func,
+    reset: PropTypes.func,
     fields: PropTypes.object,
     handleSubmit: PropTypes.func.isRequired,
     history: PropTypes.array.isRequired,
   };
   render() {
-    const { fields: { needRemove }, handleSubmit, remove, history } = this.props;
+    const { handleSubmit, remove, history } = this.props;
 
-    const submitRemove = () => {
-      remove(JSON.parse(needRemove.value))
-        .then(() => this.props.resetForm());
+    const submitRemove = (values) => {
+      remove(JSON.parse(values.needRemove))
+        .then(() => this.props.reset());
     };
 
     return (
@@ -40,17 +40,17 @@ class RemoveCareerComponent extends React.Component {
         <CellsTitle>删除工作经历</CellsTitle>
         <FormCell>
           <CellHeader>
-            <Select
-              {...needRemove} data={[{
-                value: '',
-                label: '请选择',
-              },
-                ...history.map(career => ({
-                  value: JSON.stringify(career),
-                  label: career.name,
-                })),
-              ]}
-            />
+            <Field defaultValue="" name="needRemove" component="select" className="weui-select" >
+              <option value="">请选择</option>
+              {
+                history.map((career, i) => (<option
+                  key={i}
+                  value={JSON.stringify(career)}
+                >
+                  {career.name}
+                </option>))
+              }
+            </Field>
           </CellHeader>
         </FormCell>
         <Button type="warn" onClick={handleSubmit(submitRemove)}>删除</Button>
@@ -61,6 +61,5 @@ class RemoveCareerComponent extends React.Component {
 }
 export default reduxForm({
   form: 'careerHistory',
-  fields: ['needRemove'],
   validate,
 })(RemoveCareerComponent);

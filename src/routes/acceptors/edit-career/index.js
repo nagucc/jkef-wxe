@@ -16,6 +16,7 @@ export default {
       add: career => dispatch(addCareer(id, career)),
       remove: career => dispatch(deleteCareer(id, career)),
       init: () => dispatch(initCareerHistory(id)),
+      acceptorId: id,
     };
     return {
       component: (<EditCareer {...props} />),
