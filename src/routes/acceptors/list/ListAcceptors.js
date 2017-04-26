@@ -1,7 +1,7 @@
 import React, { PropTypes } from 'react';
 import { Cells, Cell, CellFooter, CellBody,
   Panel, PanelHeader, PanelBody,
-  MediaBox, Msg,
+  MediaBox, Msg, Toast,
   Button } from 'react-weui';
 import { connect } from 'react-redux';
 import * as actions from '../../../actions/acceptors/list';
@@ -25,7 +25,7 @@ class ListAcceptors extends React.Component {
     this.props.fetchAcceptors(this.props.query);
   }
   render() {
-    const { data, totalCount, showToast, error } = this.props;
+    const { data, totalCount, toast, error } = this.props;
     const nextPage = () => {
       const { fetchAcceptors, query } = this.props;
       query.pageIndex++;
@@ -69,7 +69,7 @@ class ListAcceptors extends React.Component {
               </div>
             )
           }
-        <LoadingToast show={showToast} />
+        <Toast icon="loading" show={toast.loading}>加载中</Toast>
       </div>
     );
   }
@@ -77,6 +77,7 @@ class ListAcceptors extends React.Component {
 
 const mapStateToProps = state => ({
   ...state.acceptors.list,
+  ...state.wechat,
 });
 
 // export default reduxForm({
