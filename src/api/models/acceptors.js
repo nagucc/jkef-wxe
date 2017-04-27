@@ -1,6 +1,8 @@
 import { SUCCESS } from 'nagu-validates';
 import fetch from '../../core/fetch';
 import { apiHost, error, info, apiToken } from '../../config';
+import * as cacheKey from './cache-key';
+import * as cache from './memory-cache-proxy';
 
 export const list = async (pageIndex = 0, pageSize = 10) => {
   const url = `${apiHost}/acceptors/list/${pageIndex}?pageSize=${pageSize}&token=${apiToken}`;
@@ -23,7 +25,7 @@ export const getById = async (id) => {
     const res = await fetch(url);
     const result = await res.json();
     if (result.ret === SUCCESS) return result.data;
-    throw new Error(`服务器返回错误：${result.msg}`);
+    throw new Error(`服务器返回错误：${JSON.stringify(result)}`);
   } catch (e) {
     error('getById - Acceptor错误', e.message);
     return null;
@@ -62,7 +64,10 @@ export const addEdu = async (id, edu) => {
       },
     });
     const result = await res.json();
-    if (result.ret === SUCCESS) return result.data;
+    if (result.ret === SUCCESS) {
+      cache.del(cacheKey.acceptor(id));
+      return result.data;
+    }
     throw new Error(`服务器返回错误：${result.msg}`);
   } catch (e) {
     error('addEdu - Acceptor错误', e.message);
@@ -82,7 +87,10 @@ export const removeEdu = async (id, edu) => {
       },
     });
     const result = await res.json();
-    if (result.ret === SUCCESS) return result.data;
+    if (result.ret === SUCCESS) {
+      cache.del(cacheKey.acceptor(id));
+      return result.data;
+    }
     throw new Error(`服务器返回错误：${result.msg}`);
   } catch (e) {
     error('removeEdu - Acceptor错误', e.message);
