@@ -6,8 +6,7 @@ import { Router } from 'express';
 import expressJwt from 'express-jwt';
 import * as auth from 'wxe-auth-express';
 import { ObjectId } from 'mongodb';
-import { SUCCESS, UNAUTHORIZED,
-  OBJECT_ALREADY_EXISTS } from 'nagu-validates';
+import { SUCCESS, UNAUTHORIZED } from 'nagu-validates';
 import { profileMiddlewares as profile,
   manageDpt, supervisorDpt, acceptorMiddlewares, auth as auth2 } from '../../config';
 import * as wxeAuth from './wxe-auth-middlewares';
@@ -49,14 +48,6 @@ router.get('/list/:pageIndex',
 
   // 返回数据
   (req, res) => res.json({ ret: SUCCESS, data: res.data }),
-  // acceptorMiddlewares.listByRecord(
-  //   req => ({
-  //     ...req.query,
-  //     pageIndex: parseInt(req.params.pageIndex, 10),
-  //     pageSize: parseInt(req.query.pageSize, 10),
-  //   }),
-  //   (data, req, res) => res.send({ ret: SUCCESS, data }),
-  // ),
 );
 
 router.put('/add',
@@ -66,53 +57,21 @@ router.put('/add',
     credentialsRequired: true,
     getToken: wxeAuth.getToken,
   }),
-  // 检查证件号码是否已在
-  acceptorMiddlewares.findOneByIdCardNumber(
-    req => req.body.idCard ? req.body.idCard.number : null,
-    (acceptor, req, res, next) => {
-      if (acceptor) {
-        res.send({
-          ret: OBJECT_ALREADY_EXISTS,
-          msg: `证件号码为${acceptor.idCard.number}的数据已存在`,
-        });
-      } else next();
-    },
-  ),
-  // 检查当前用户是否是管理员，以确定userid的值
-  profile.isManager(
-    getId,
-    manageDpt,
-    (isManager, req, res, next) => {
-      if (!isManager) {
-        req.body.userid = req.user.userid; // 如果用户不是管理员，则只能取当前用户自己的userid
-      }
-      next();
-    },
-  ),
-  // 在profile中添加数据
-  profile.add(
-    (req) => {
+  acceptorsMiddleware.add({
+    getAcceptor: (req) => {
       // 只需要添加以下字段，其他字段忽略。
-      const { name, isMale, phone, userid } = req.body;
+      const { name, isMale, phone, userid, idCard } = req.body;
       return {
         name,
         phone,
         userid,
+        idCard,
         isMale: isMale === 'true',
         isAcceptor: true,
       };
     },
-    (prof, req, res, next) => {
-      req.profile = prof;
-      next();
-    },
-  ),
-  // 在acceptor中添加数据
-  acceptorMiddlewares.insert(
-    // acceptor中的数据包括idCard和profile中的所有字段
-    req => ({ idCard: req.body.idCard, ...req.profile }),
-    (data, req, res) => res.send({ ret: SUCCESS, data }),
-  ),
+  }),
+  (req, res) => res.json({ ret: SUCCESS, data: res.data }),
 );
 
 router.get('/detail/:id',
@@ -140,42 +99,39 @@ router.get('/detail/:id',
 );
 
 router.put('/edu/:id',
-  auth.getUserId(),
+  // 确保用户已登录
+  expressJwt({
+    secret: auth2.jwt.secret,
+    credentialsRequired: true,
+    getToken: wxeAuth.getToken,
+  }),
   profile.isOwnerOrManager(
     req => tryRun(() => new ObjectId(req.params.id)),
     getId,
     manageDpt,
     (isOwnerOrManager, req, res, next) =>
-      isOwnerOrManager ? next() : res.send({ ret: UNAUTHORIZED }),
+      (isOwnerOrManager ? next() : res.send({ ret: UNAUTHORIZED })),
   ),
- acceptorMiddlewares.addEdu(
-   req => tryRun(() => new ObjectId(req.params.id)),
-   req => tryRun(() => ({
-     name: req.body.name,
-     year: parseInt(req.body.year, 10),
-     degree: req.body.degree,
-   })),
-   (result, req, res) => res.send({ ret: SUCCESS }),
- ),
+ acceptorsMiddleware.addEdu(),
+ (req, res) => res.json({ ret: SUCCESS }),
 );
 
 router.delete('/edu/:id',
-  auth.getUserId(),
+  // 确保用户已登录
+  expressJwt({
+    secret: auth2.jwt.secret,
+    credentialsRequired: true,
+    getToken: wxeAuth.getToken,
+  }),
   profile.isOwnerOrManager(
     req => tryRun(() => new ObjectId(req.params.id)),
     getId,
     manageDpt,
     (isOwnerOrManager, req, res, next) =>
-      isOwnerOrManager ? next() : res.send({ ret: UNAUTHORIZED }),
+      (isOwnerOrManager ? next() : res.send({ ret: UNAUTHORIZED })),
   ),
-  acceptorMiddlewares.removeEdu(
-    req => tryRun(() => new ObjectId(req.params.id)),
-    req => tryRun(() => ({
-      name: req.body.name,
-      year: parseInt(req.body.year, 10),
-    })),
-    (result, req, res) => res.send({ ret: SUCCESS }),
-  ),
+  acceptorsMiddleware.removeEdu(),
+  (req, res) => res.json({ ret: SUCCESS }),
 );
 
 router.put('/career/:id',

@@ -1,7 +1,7 @@
 import { ADDED_ACCEPTOR_EDU,
   DELETED_ACCEPTOR_EDU,
   INIT_ACCEPTOR_EDU_HISTORY } from '../../constants';
-import { fetchFailed, fetching } from '../common';
+import { fetchFailed, fetching, fetchDone } from '../common';
 import fetch from '../../core/fetch';
 
 export const addEdu = (id, edu) =>
@@ -23,6 +23,7 @@ export const addEdu = (id, edu) =>
           type: ADDED_ACCEPTOR_EDU,
           edu,
         });
+        dispatch(fetchDone());
         resolve();
       } else {
         dispatch(fetchFailed(result));
@@ -37,6 +38,7 @@ export const addEdu = (id, edu) =>
 
 export const deleteEdu = (id, edu) =>
   dispatch => new Promise(async (resolve, reject) => {
+    console.log('##@', edu);
     dispatch(fetching());
     try {
       const res = await fetch(`/api/acceptors/edu/${id}`, {
@@ -54,6 +56,7 @@ export const deleteEdu = (id, edu) =>
           type: DELETED_ACCEPTOR_EDU,
           edu,
         });
+        dispatch(fetchDone());
         resolve();
       } else {
         dispatch(fetchFailed(result));
@@ -78,6 +81,7 @@ export const initEduHistory = id =>
           type: INIT_ACCEPTOR_EDU_HISTORY,
           eduHistory: result.data.eduHistory || [],
         });
+        dispatch(fetchDone());
       } else dispatch(fetchFailed(result));
     } catch (e) {
       dispatch(fetchFailed({ ret: -1, msg: e }));

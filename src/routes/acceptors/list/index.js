@@ -10,7 +10,7 @@ export default {
       query={{
         text: '',
         pageIndex: 0,
-        pageSize: 10,
+        pageSize: 500,
         ...query,
       }}
     />);

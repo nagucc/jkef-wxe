@@ -50,7 +50,7 @@ export const list = options => async (req, res, next) => {
   getPageIndex = getPageIndex || (() => req.params.pageIndex);
 
   // 定义如何获取pageSize
-  getPageSize = getPageSize || (() => req.body.pageSize);
+  getPageSize = getPageSize || (() => req.query.pageSize);
 
   // 定义获取数据之后如何操作，默认为返回成功代码及数据
   success = success || ((data, req, res, next) => {
@@ -68,6 +68,104 @@ export const list = options => async (req, res, next) => {
     success(data, req, res, next);
   } catch (e) {
     error('acceptor.list中间件错误', e.message);
+    fail({
+      ret: SERVER_FAILED,
+      msg: e,
+    }, req, res, next);
+  }
+};
+
+// 新增Acceptor
+export const add = options => async (req, res, next) => {
+  let { getAcceptor, success, fail } = options || {};
+
+    // 定义如何获取Acceptor
+  getAcceptor = getAcceptor || (() => req.body);
+
+  // 定义获取数据之后如何操作，默认为返回成功代码及数据
+  success = success || ((data, req, res, next) => {
+    res.data = data;
+    next();
+  });
+    // 定义获取数据失败时如何操作，默认为返回失败代码及描述
+  fail = fail || ((e, req, res) => res.send(e));
+
+  try {
+    const acceptor = getAcceptor(req, res);
+
+    const data = await model2.add(acceptor);
+    success(data, req, res, next);
+  } catch (e) {
+    error('acceptor.add中间件错误', e.message);
+    fail({
+      ret: SERVER_FAILED,
+      msg: e,
+    }, req, res, next);
+  }
+};
+
+// 新增Acceptor的教育信息
+export const addEdu = options => async (req, res, next) => {
+  let { getId, getEdu, success, fail } = options || {};
+
+    // 定义如何获取Acceptor的Id
+  getId = getId || (req => req.params.id);
+
+  // 定义如何获取Edu信息
+  getEdu = getEdu || (req => ({
+    name: req.body.name,
+    year: parseInt(req.body.year, 10),
+    degree: req.body.degree,
+  }));
+  // 定义获取数据之后如何操作，默认为返回成功代码及数据
+  success = success || ((data, req, res, next) => {
+    res.data = data;
+    next();
+  });
+    // 定义获取数据失败时如何操作，默认为返回失败代码及描述
+  fail = fail || ((e, req, res) => res.send(e));
+
+  try {
+    const id = getId(req, res);
+    const edu = getEdu(req, res);
+    const data = await model2.addEdu(id, edu);
+    success(data, req, res, next);
+  } catch (e) {
+    error('acceptor.addEdu中间件错误', e.message);
+    fail({
+      ret: SERVER_FAILED,
+      msg: e,
+    }, req, res, next);
+  }
+};
+
+// 删除Acceptor的教育信息
+export const removeEdu = options => async (req, res, next) => {
+  let { getId, getEdu, success, fail } = options || {};
+
+    // 定义如何获取Acceptor的Id
+  getId = getId || (req => req.params.id);
+
+  // 定义如何获取Edu信息
+  getEdu = getEdu || (req => ({
+    name: req.body.name,
+    year: parseInt(req.body.year, 10),
+  }));
+  // 定义获取数据之后如何操作，默认为返回成功代码及数据
+  success = success || ((data, req, res, next) => {
+    res.data = data;
+    next();
+  });
+    // 定义获取数据失败时如何操作，默认为返回失败代码及描述
+  fail = fail || ((e, req, res) => res.send(e));
+
+  try {
+    const id = getId(req, res);
+    const edu = getEdu(req, res);
+    const data = await model2.removeEdu(id, edu);
+    success(data, req, res, next);
+  } catch (e) {
+    error('acceptor.removeEdu中间件错误', e.message);
     fail({
       ret: SERVER_FAILED,
       msg: e,

@@ -64,13 +64,13 @@ export const showLog = Boolean(process.env.SHOW_LOG) || true;
 
 export const profileMiddlewares = new MongoProfileMiddlewares(mongoUrl, profileCollection);
 
-export const writeData = async (data, filename = null, options = {}) => {
-  try {
-    return await gsWriteData(mongoUrl, data, filename, options);
-  } catch (e) {
-    throw e;
-  }
-};
+// export const writeData = async (data, filename = null, options = {}) => {
+//   try {
+//     return await gsWriteData(mongoUrl, data, filename, options);
+//   } catch (e) {
+//     throw e;
+//   }
+// };
 
 export const zxjApplyManager = new EntityManager('zxjApply', mongoUrl);
 

@@ -1,4 +1,5 @@
 import fetch from '../core/fetch';
+// import { error, info } from '../config';
 
 export const getJson = async (url, options) => {
   const res = await fetch(url, options);
@@ -21,7 +22,9 @@ export const findAcceptors = async ({ project, year, text, pageIndex = 0, pageSi
   query += `&pageSize=${pageSize}`;
   let result;
   try {
-    const res = await fetch(`/api/acceptors/list/${pageIndex}?${query}`, {
+    const url = `/api/acceptors/list/${pageIndex}?${query}`;
+    // info('fetch from url:', url);
+    const res = await fetch(url, {
       credentials: 'same-origin',
     });
     result = await res.json();
